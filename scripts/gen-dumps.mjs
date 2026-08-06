@@ -7,7 +7,7 @@
  */
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync, mkdirSync, rmSync, readdirSync, existsSync } from 'node:fs';
-import { join, dirname, basename } from 'node:path';
+import { join, dirname, basename, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -44,8 +44,76 @@ const READABLE_ONLY = [
   '-dsuppress-var-kinds',
 ];
 
-const ghcVersion = execFileSync('ghc', ['--numeric-version'], { encoding: 'utf8' }).trim();
+/**
+ * Locate the compiler to generate dumps with.
+ *
+ * You build GHC in vendor/ghc, so the compiler that matches the source this
+ * handbook documents is the one sitting in that build tree — preferred over
+ * whatever unrelated GHC happens to be on PATH. `$GHC` overrides everything.
+ */
+function resolveGhc() {
+  if (process.env.GHC) {
+    if (!existsSync(process.env.GHC)) {
+      console.error(`✗ $GHC is set to ${process.env.GHC}, which does not exist.`);
+      process.exit(1);
+    }
+    return process.env.GHC;
+  }
+
+  for (const stage of ['stage2', 'stage1']) {
+    const candidate = join(ROOT, pin.checkoutDir, '_build', stage, 'bin', 'ghc');
+    if (existsSync(candidate)) return candidate;
+  }
+
+  try {
+    execFileSync('ghc', ['--numeric-version'], { stdio: 'ignore' });
+    return 'ghc';
+  } catch {
+    console.error('✗ no GHC found.');
+    console.error(`    looked for : $GHC`);
+    console.error(`                 ${pin.checkoutDir}/_build/stage{2,1}/bin/ghc`);
+    console.error(`                 ghc on PATH`);
+    console.error('');
+    console.error('  Build GHC in the vendored checkout, or point $GHC at a compiler.');
+    console.error('  The site build itself needs neither — only dump regeneration does.');
+    process.exit(1);
+  }
+}
+
+/**
+ * A dump from the wrong compiler is not obviously wrong when you read it — it is
+ * subtly wrong, and it would be committed. So a mismatch stops the run unless it
+ * is overridden deliberately.
+ */
+function checkVersion(version, path) {
+  if (version === pin.ghcVersion) return;
+
+  if (process.env.ALLOW_GHC_MISMATCH !== '1') {
+    console.error('✗ GHC version mismatch');
+    console.error(`    compiler : ${version}  (${path})`);
+    console.error(`    pinned   : ${pin.ghcVersion}  (from ghc-pin.json, tag ${pin.tag})`);
+    console.error('');
+    console.error(`  The handbook documents ${pin.tag}, so dumps should come from that`);
+    console.error('  compiler. To generate anyway (they are stamped with the real version');
+    console.error('  and the site labels them as stale):');
+    console.error('    ALLOW_GHC_MISMATCH=1 scripts/gen-dumps.sh');
+    process.exit(1);
+  }
+
+  console.warn(`⚠ generating with GHC ${version}, but the handbook is pinned to ${pin.ghcVersion}.`);
+  console.warn('  Dumps will be stamped with the real version and labelled stale.');
+}
+
+const GHC = resolveGhc();
+const ghcVersion = execFileSync(GHC, ['--numeric-version'], { encoding: 'utf8' }).trim();
 const stale = ghcVersion !== pin.ghcVersion;
+
+// Stage1 and stage2 compilers report the same version but do not always behave
+// identically, so record which one ran. Relativised: an absolute path would leak
+// the generating machine's layout and churn the diff on every contributor.
+const ghcPath = GHC.startsWith(ROOT + '/') ? relative(ROOT, GHC) : GHC;
+
+checkVersion(ghcVersion, ghcPath);
 
 function compile(src, outDir, variant) {
   mkdirSync(outDir, { recursive: true });
@@ -59,7 +127,7 @@ function compile(src, outDir, variant) {
     src,
   ];
   try {
-    execFileSync('ghc', flags, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+    execFileSync(GHC, flags, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
   } catch (err) {
     console.error(`✗ ghc failed on ${src} (${variant})`);
     console.error(err.stderr || err.message);
@@ -151,7 +219,7 @@ function main() {
     writeFileSync(
       join(OUT, `${name}.json`),
       JSON.stringify(
-        { name, source: readFileSync(src, 'utf8'), stages, ghcVersion, pinnedVersion: pin.ghcVersion, stale },
+        { name, source: readFileSync(src, 'utf8'), stages, ghcVersion, ghcPath, pinnedVersion: pin.ghcVersion, stale },
         null,
         2,
       ) + '\n',
@@ -161,7 +229,7 @@ function main() {
 
   writeFileSync(
     join(OUT, 'manifest.json'),
-    JSON.stringify({ ghcVersion, pinnedVersion: pin.ghcVersion, stale, examples: manifest }, null, 2) +
+    JSON.stringify({ ghcVersion, ghcPath, pinnedVersion: pin.ghcVersion, stale, examples: manifest }, null, 2) +
       '\n',
   );
 

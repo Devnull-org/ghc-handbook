@@ -1,5 +1,6 @@
 {
   "tag": "ghc-9.14.1-release",
+  "commit": "902339d332fb4ce2b3c87dcac1ee6495d41ad886",
   "ghcVersion": "9.14.1",
   "canonical": {
     "host": "gitlab.haskell.org",
@@ -13,5 +14,5 @@
   },
   "sourceRoots": ["compiler", "rts", "libraries"],
   "referenceRoots": ["compiler", "rts"],
-  "checkoutDir": ".ghc-src"
+  "checkoutDir": "vendor/ghc"
 }

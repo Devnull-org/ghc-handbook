@@ -1,5 +1,6 @@
 {
   "ghcVersion": "9.4.7",
+  "ghcPath": "ghc",
   "pinnedVersion": "9.14.1",
   "stale": true,
   "examples": [

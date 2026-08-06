@@ -1,0 +1,10 @@
+[submodule "vendor/ghc"]
+	path = vendor/ghc
+	url = https://github.com/ghc/ghc
+	branch = ghc-9.14.1-release
+	# You build GHC in this checkout, which leaves _build/ (and other Hadrian
+	# output) inside the submodule. Without `ignore = dirty` the handbook's
+	# `git status` is permanently dirty and `git add -A` risks committing a
+	# submodule pointer move you did not intend. Commit moves are still
+	# reported — only working-tree noise is suppressed.
+	ignore = dirty

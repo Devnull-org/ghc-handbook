@@ -21,6 +21,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Explicitly NOT the GHC submodule. The whole point of committing
+          # data/ is that the site builds from it alone — no GHC, no GHC source.
+          # Checking it out would pull a very large tree to be ignored.
+          submodules: false
 
       - uses: actions/setup-node@v4
         with:

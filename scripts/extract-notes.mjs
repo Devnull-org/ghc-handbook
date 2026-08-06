@@ -7,21 +7,17 @@
  *
  *   node scripts/extract-notes.mjs [--quiet]
  */
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, relative, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { execFileSync } from 'node:child_process';
 import { parseSource, resolveNotes } from './lib/notes.mjs';
+import { walkSources } from './lib/walk.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const pin = JSON.parse(readFileSync(join(ROOT, 'ghc-pin.json'), 'utf8'));
 const SRC = join(ROOT, pin.checkoutDir);
 const QUIET = process.argv.includes('--quiet');
-
-// Haskell sources carry the bulk of the Notes; the RTS keeps its own in C and
-// Cmm, and references reach across the boundary in both directions.
-const EXTENSIONS = ['.hs', '.hs-boot', '.y', '.x', '.c', '.h', '.cmm'];
-
-const IGNORED_DIRS = new Set(['dist-newstyle', '.git', 'testsuite', 'tests', 'dist']);
 
 /** Which part of the tree a note came from, so the site can scope/filter. */
 function areaOf(relPath) {
@@ -29,15 +25,19 @@ function areaOf(relPath) {
   return root === 'compiler' ? 'compiler' : root === 'rts' ? 'rts' : 'libraries';
 }
 
-function walk(dir, out = []) {
-  for (const entry of readdirSync(dir)) {
-    if (IGNORED_DIRS.has(entry)) continue;
-    const full = join(dir, entry);
-    const st = statSync(full);
-    if (st.isDirectory()) walk(full, out);
-    else if (EXTENSIONS.some((e) => entry.endsWith(e))) out.push(full);
+/**
+ * The commit actually checked out in vendor/ghc.
+ *
+ * Recorded in the output so a notes.json can always be traced to the exact tree
+ * it came from — a tag is not enough once you are building from a checkout you
+ * control and may have patched.
+ */
+function checkedOutCommit() {
+  try {
+    return execFileSync('git', ['-C', SRC, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+  } catch {
+    return null;
   }
-  return out;
 }
 
 function main() {
@@ -45,13 +45,25 @@ function main() {
   for (const root of pin.sourceRoots) {
     const dir = join(SRC, root);
     try {
-      files.push(...walk(dir));
+      files.push(...walkSources(dir));
     } catch {
       console.error(
-        `✗ cannot read ${dir}\n  Run scripts/fetch-ghc-src.sh first (fetches GHC ${pin.tag}).`,
+        `✗ cannot read ${dir}\n` +
+          `  vendor/ghc looks uninitialised. Run:  npm run fetch-src\n` +
+          `  (that is 'git submodule update --init ${pin.checkoutDir}' plus a commit check).`,
       );
       process.exit(1);
     }
+  }
+
+  const commit = checkedOutCommit();
+  if (pin.commit && commit && commit !== pin.commit) {
+    console.warn(
+      `⚠ ${pin.checkoutDir} is at ${commit.slice(0, 12)}, but ghc-pin.json pins ` +
+        `${pin.commit.slice(0, 12)} (${pin.tag}).\n` +
+        `  Extracting anyway — the output records the commit actually read, but the\n` +
+        `  site's source links are built from the pin, so line numbers may disagree.`,
+    );
   }
 
   const referenceRoots = new Set(pin.referenceRoots ?? pin.sourceRoots);
@@ -93,7 +105,7 @@ function main() {
   for (const n of notes) byModule[n.module] = (byModule[n.module] ?? 0) + 1;
 
   const payload = {
-    generatedFrom: { tag: pin.tag, ghcVersion: pin.ghcVersion },
+    generatedFrom: { tag: pin.tag, commit, ghcVersion: pin.ghcVersion },
     stats: {
       files: files.length,
       notes: notes.length,
