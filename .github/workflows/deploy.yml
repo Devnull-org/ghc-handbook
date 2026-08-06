@@ -5,11 +5,17 @@ on:
     branches: [main]
   workflow_dispatch:
 
-# Allow one concurrent deployment, and let a newer push supersede an in-flight
-# one rather than queueing behind it.
+# One deployment at a time. Queued runs wait rather than cancelling the one
+# ahead of them.
+#
+# `cancel-in-progress: true` is the right default for CI, but wrong for a
+# deployment: it kills a run that may already be publishing. It also fails badly
+# when runners are scarce — jobs that sit queued for ten minutes cancel each
+# other in turn and nothing ever reaches a runner. GitHub's own Pages starter
+# workflow sets this to false for the same reasons.
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: read
