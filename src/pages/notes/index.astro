@@ -15,12 +15,14 @@ const index = notes.map((n) => ({
   r: n.refsIn.length,
 }));
 
-const modules = [...new Set(notes.map((n) => n.module).filter(Boolean))] as string[];
 // Group by top-level subsystem (GHC.Tc.*, GHC.Core.*) — the useful granularity.
+// Count *notes*, not modules: the number next to a chip is read as "how much is
+// written about this", and a module count answers a different question.
 const subsystems = new Map<string, number>();
-for (const m of modules) {
-  const parts = m.split('.');
-  const key = parts.length >= 2 ? parts.slice(0, 2).join('.') : m;
+for (const note of notes) {
+  if (!note.module) continue;
+  const parts = note.module.split('.');
+  const key = parts.length >= 2 ? parts.slice(0, 2).join('.') : note.module;
   subsystems.set(key, (subsystems.get(key) ?? 0) + 1);
 }
 const topSubsystems = [...subsystems.entries()].sort((a, b) => b[1] - a[1]).slice(0, 14);
