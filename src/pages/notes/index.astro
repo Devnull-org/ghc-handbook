@@ -1,7 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
 import { loadNotes, pin } from '../../lib/ghc';
-import { noteHref } from '../../lib/paths';
 
 const { notes, stats } = loadNotes();
 
@@ -30,7 +29,7 @@ const topSubsystems = [...subsystems.entries()].sort((a, b) => b[1] - a[1]).slic
 <Base
   title="Notes"
   description={`Every Note [...] comment in GHC ${pin.ghcVersion}, cross-linked and searchable.`}
-  wide
+  width="wide"
 >
   <h1>The Note index</h1>
   <p class="lede">

@@ -1,0 +1,153 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { chapterHref, withBase } from '../../lib/paths';
+import { pipeline } from '../../data/pipeline';
+
+const chapters = (await getCollection('chapters')).sort((a, b) => a.data.order - b.data.order);
+const written = new Set(chapters.flatMap((c) => c.data.phases));
+
+// Phases that have no chapter yet, so the list is honest about what is missing
+// rather than quietly stopping after the written ones.
+const upcoming = pipeline.flatMap((part) =>
+  part.phases
+    .filter((p) => !written.has(p.id))
+    .map((p) => ({ ...p, part: part.title })),
+);
+---
+
+<Base title="Chapters" description="The handbook's chapters, in pipeline order." width="wide">
+  <h1>Chapters</h1>
+  <p class="lede">
+    In pipeline order. Each chapter explains what a phase does and why it is built the way it is,
+    then points at the source so you can carry on from there.
+  </p>
+
+  <ol class="chapters">
+    {
+      chapters.map((chapter) => (
+        <li>
+          <a href={chapterHref(chapter.id)}>
+            <span class="num">{String(chapter.data.order).padStart(2, '0')}</span>
+            <span class="body">
+              <span class="title">{chapter.data.title}</span>
+              <span class="summary">{chapter.data.summary}</span>
+            </span>
+          </a>
+        </li>
+      ))
+    }
+  </ol>
+
+  {
+    upcoming.length > 0 && (
+      <section class="upcoming">
+        <h2>Not yet written</h2>
+        <p>
+          These phases are on <a href={withBase('/')}>the pipeline map</a> and their Notes are in{' '}
+          <a href={withBase('/notes/')}>the index</a>, but they do not have a chapter yet.
+        </p>
+        <ul>
+          {upcoming.map((phase) => (
+            <li>
+              <span class="up-name">{phase.name}</span>
+              <span class="up-blurb">{phase.transform}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+</Base>
+
+<style>
+  .lede {
+    color: var(--ink-muted);
+    max-width: var(--measure);
+    margin-bottom: 2.5rem;
+  }
+
+  .chapters {
+    list-style: none;
+    margin: 0 0 4rem;
+    padding: 0;
+  }
+  .chapters li {
+    border-top: 1px solid var(--rule);
+  }
+  .chapters li:last-child {
+    border-bottom: 1px solid var(--rule);
+  }
+  .chapters a {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1.1rem 0.3rem;
+    text-decoration: none;
+    color: inherit;
+  }
+  .chapters a:hover {
+    background: var(--paper-raised);
+  }
+  .num {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--ink-faint);
+    padding-top: 0.2rem;
+  }
+  .body {
+    display: grid;
+    gap: 0.25rem;
+    max-width: var(--measure);
+  }
+  .title {
+    font-family: var(--font-sans);
+    font-size: var(--step-1);
+    font-weight: 600;
+    color: var(--link);
+  }
+  .summary {
+    color: var(--ink-muted);
+    font-size: var(--step--1);
+    line-height: 1.55;
+  }
+
+  .upcoming h2 {
+    font-family: var(--font-sans);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-faint);
+    margin: 0 0 0.6rem;
+  }
+  .upcoming p {
+    font-size: var(--step--1);
+    color: var(--ink-muted);
+    max-width: var(--measure);
+  }
+  .upcoming ul {
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+    gap: 0.5rem;
+  }
+  .upcoming li {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.6rem 0.8rem;
+    border: 1px dashed var(--rule);
+    border-radius: 4px;
+  }
+  .up-name {
+    font-family: var(--font-sans);
+    font-size: var(--step--1);
+    color: var(--ink-muted);
+  }
+  .up-blurb {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+  }
+</style>

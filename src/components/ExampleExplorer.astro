@@ -1,0 +1,318 @@
+---
+/**
+ * Shows one example program alongside what GHC turns it into at each stage.
+ *
+ * All panels are rendered server-side and toggled with CSS, so switching stages
+ * is instant and the whole thing still works as a plain document.
+ */
+import { Code } from 'astro:components';
+import { readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+
+interface Props {
+  /** Example basename, e.g. "Syntax" — matches examples/<name>.hs */
+  example: string;
+  /** Which stages to show, in order. Defaults to the whole pipeline. */
+  stages?: string[];
+  caption?: string;
+}
+
+const ALL_STAGES = [
+  'parsed-ast',
+  'parsed',
+  'renamed',
+  'typechecked',
+  'core-desugared',
+  'core-optimised',
+  'stg',
+] as const;
+
+const LABELS: Record<string, string> = {
+  source: 'Source',
+  'parsed-ast': 'Parsed AST',
+  parsed: 'Parsed',
+  renamed: 'Renamed',
+  typechecked: 'Typechecked',
+  'core-desugared': 'Core (desugared)',
+  'core-optimised': 'Core (optimised)',
+  stg: 'STG',
+};
+
+const HINTS: Record<string, string> = {
+  source: 'What you wrote.',
+  'parsed-ast':
+    'The raw syntax tree, including the annotations that let GHC reprint your source exactly as written.',
+  parsed: 'The same tree, pretty-printed back out as Haskell — note what layout became.',
+  renamed: 'Every name now resolved to the specific entity it refers to.',
+  typechecked: 'Types inferred, and class constraints made explicit.',
+  'core-desugared': 'All of Haskell reduced to Core, before any optimisation.',
+  'core-optimised': 'The same program after the simplifier has run.',
+  stg: 'Allocation and evaluation made explicit, ready for code generation.',
+};
+
+const { example, stages = [...ALL_STAGES], caption } = Astro.props;
+
+const dumpPath = join(process.cwd(), 'data', 'dumps', `${example}.json`);
+const available = existsSync(dumpPath);
+const data = available ? JSON.parse(readFileSync(dumpPath, 'utf8')) : null;
+
+const shown = stages.filter((s) => data?.stages?.[s]?.readable || data?.stages?.[s]?.full);
+const tabs = ['source', ...shown];
+const uid = `ex-${example}-${Math.random().toString(36).slice(2, 8)}`;
+---
+
+{
+  !available ? (
+    <div class="missing">
+      <strong>Dumps not generated yet.</strong>
+      <p>
+        Run <code>scripts/gen-dumps.sh</code> from a shell with the pinned GHC on <code>PATH</code>{' '}
+        to populate <code>data/dumps/</code>.
+      </p>
+    </div>
+  ) : (
+    <figure class="explorer" id={uid}>
+      <div class="bar">
+        <div class="tabs" role="tablist" aria-label={`Compilation stages for ${example}.hs`}>
+          {tabs.map((stage, i) => (
+            <button
+              type="button"
+              role="tab"
+              class="tab"
+              data-stage={stage}
+              id={`${uid}-tab-${stage}`}
+              aria-controls={`${uid}-panel-${stage}`}
+              aria-selected={i === 0 ? 'true' : 'false'}
+              tabindex={i === 0 ? 0 : -1}
+            >
+              {LABELS[stage] ?? stage}
+            </button>
+          ))}
+        </div>
+
+        <label class="detail-toggle">
+          <input type="checkbox" data-detail-toggle />
+          <span>Full detail</span>
+        </label>
+      </div>
+
+      {data.stale && (
+        <p class="stale">
+          Generated with GHC {data.ghcVersion}, but this handbook documents {data.pinnedVersion}. Re-run{' '}
+          <code>scripts/gen-dumps.sh</code> under the pinned compiler to refresh.
+        </p>
+      )}
+
+      <div
+        class="panel"
+        role="tabpanel"
+        id={`${uid}-panel-source`}
+        aria-labelledby={`${uid}-tab-source`}
+      >
+        <p class="hint">{HINTS.source}</p>
+        <div class="scroll-x">
+          {/* Themes must be set here too: the global markdown Shiki config does
+              not reach the standalone <Code> component. */}
+          <Code
+            code={data.source.trimEnd()}
+            lang="haskell"
+            themes={{ light: 'github-light', dark: 'github-dark' }}
+          />
+        </div>
+      </div>
+
+      {shown.map((stage) => (
+        <div
+          class="panel"
+          role="tabpanel"
+          hidden
+          id={`${uid}-panel-${stage}`}
+          aria-labelledby={`${uid}-tab-${stage}`}
+        >
+          <p class="hint">{HINTS[stage]}</p>
+          <div class="scroll-x">
+            <pre
+              class="dump"
+              data-variant="readable"
+              set:text={data.stages[stage].readable ?? data.stages[stage].full}
+            />
+            <pre
+              class="dump"
+              data-variant="full"
+              hidden
+              set:text={data.stages[stage].full ?? data.stages[stage].readable}
+            />
+          </div>
+        </div>
+      ))}
+
+      {caption && <figcaption>{caption}</figcaption>}
+    </figure>
+  )
+}
+
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>('.explorer')) {
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('.tab')];
+    const toggle = root.querySelector<HTMLInputElement>('[data-detail-toggle]');
+
+    function select(stage: string | undefined) {
+      if (!stage) return;
+      for (const tab of tabs) {
+        const active = tab.dataset.stage === stage;
+        tab.setAttribute('aria-selected', String(active));
+        tab.tabIndex = active ? 0 : -1;
+        const controls = tab.getAttribute('aria-controls');
+        if (!controls) continue;
+        const panel = root.querySelector<HTMLElement>(`#${CSS.escape(controls)}`);
+        if (panel) panel.hidden = !active;
+      }
+    }
+
+    for (const tab of tabs) {
+      tab.addEventListener('click', () => select(tab.dataset.stage));
+    }
+
+    // Arrow-key navigation is what makes a tablist usable without a mouse.
+    root.querySelector('.tabs')?.addEventListener('keydown', (event) => {
+      const key = (event as KeyboardEvent).key;
+      const i = tabs.findIndex((t) => t.getAttribute('aria-selected') === 'true');
+      let next: number | null = null;
+      if (key === 'ArrowRight') next = (i + 1) % tabs.length;
+      else if (key === 'ArrowLeft') next = (i - 1 + tabs.length) % tabs.length;
+      else if (key === 'Home') next = 0;
+      else if (key === 'End') next = tabs.length - 1;
+      if (next === null) return;
+      event.preventDefault();
+      select(tabs[next]!.dataset.stage);
+      tabs[next]!.focus();
+    });
+
+    toggle?.addEventListener('change', () => {
+      const variant = toggle.checked ? 'full' : 'readable';
+      for (const pre of root.querySelectorAll<HTMLElement>('.dump')) {
+        pre.hidden = pre.dataset.variant !== variant;
+      }
+    });
+  }
+</script>
+
+<style>
+  .explorer {
+    margin: 2rem 0;
+    border: 1px solid var(--rule-strong);
+    border-radius: 5px;
+    background: var(--paper-raised);
+    overflow: hidden;
+  }
+
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-bottom: 1px solid var(--rule);
+    background: var(--paper-sunken);
+    padding: 0 0.5rem;
+  }
+
+  .tabs {
+    display: flex;
+    overflow-x: auto;
+    flex: 1;
+    scrollbar-width: thin;
+  }
+
+  .tab {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    font-family: var(--font-sans);
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+    padding: 0.6rem 0.7rem;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .tab:hover {
+    color: var(--ink);
+  }
+  .tab[aria-selected='true'] {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    font-weight: 600;
+  }
+
+  .detail-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: var(--font-sans);
+    font-size: 0.72rem;
+    color: var(--ink-muted);
+    cursor: pointer;
+    padding-right: 0.4rem;
+    flex-shrink: 0;
+  }
+
+  .stale {
+    margin: 0;
+    padding: 0.5rem 1rem;
+    font-family: var(--font-sans);
+    font-size: 0.74rem;
+    color: var(--ink-muted);
+    background: var(--accent-soft);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .panel {
+    padding: 0.9rem 1rem 1rem;
+  }
+
+  .hint {
+    font-family: var(--font-sans);
+    font-size: 0.78rem;
+    color: var(--ink-faint);
+    margin: 0 0 0.7rem;
+  }
+
+  .panel :global(pre) {
+    margin: 0;
+    max-height: 32rem;
+    overflow: auto;
+    background: transparent;
+    border: 1px solid var(--rule);
+  }
+
+  .dump {
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    line-height: 1.5;
+    white-space: pre;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    color: var(--ink);
+  }
+
+  figcaption {
+    padding: 0.7rem 1rem;
+    border-top: 1px solid var(--rule);
+    font-family: var(--font-sans);
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+  }
+
+  .missing {
+    border: 1px dashed var(--rule-strong);
+    border-radius: 5px;
+    padding: 1rem 1.2rem;
+    margin: 2rem 0;
+    font-family: var(--font-sans);
+    font-size: var(--step--1);
+    color: var(--ink-muted);
+  }
+  .missing p {
+    margin: 0.3rem 0 0;
+  }
+</style>

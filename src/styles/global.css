@@ -14,8 +14,12 @@
   --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
   --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace;
 
+  /* Reading measure for prose, and the two wider containers: `wide` for index
+     pages, `page` for chapters, which need room for a prose column plus a
+     sidebar plus full-width interactive figures. */
   --measure: 34rem;
   --measure-wide: 52rem;
+  --measure-page: 68rem;
 
   --step--1: clamp(0.83rem, 0.8rem + 0.15vw, 0.9rem);
   --step-0: clamp(1.02rem, 0.98rem + 0.2vw, 1.12rem);
@@ -111,6 +115,9 @@ h1,
 h2,
 h3,
 h4 {
+  /* The site header is sticky, so anchor jumps must clear it or they land with
+     the target heading hidden underneath. */
+  scroll-margin-top: 4.5rem;
   font-family: var(--font-sans);
   font-weight: 600;
   line-height: 1.2;

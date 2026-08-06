@@ -1,0 +1,145 @@
+---
+/**
+ * Quote a real `Note [...]` from the GHC source inside a chapter.
+ *
+ * The prose around it is ours; this is the primary source. Long Notes are
+ * collapsed by default so a chapter stays readable, but nothing is paraphrased
+ * away — the full text is always one click from the page you are on.
+ */
+import { notesById, sourceUrl, shortLocation } from '../lib/ghc';
+import { renderNoteBody } from '../lib/render-note';
+import { noteHref } from '../lib/paths';
+
+interface Props {
+  /** Note id, e.g. "GHC.Parser.shift-reduce-conflicts". */
+  id: string;
+  /** Show only the first N lines, with the rest behind a disclosure. */
+  clamp?: number;
+}
+
+const { id, clamp = 18 } = Astro.props;
+
+const note = notesById().get(id);
+if (!note) {
+  throw new Error(
+    `NoteCard: no Note with id "${id}". Note ids change when GHC is re-pinned — ` +
+      `check data/notes.json for the current id.`,
+  );
+}
+
+const lines = note.body.split('\n');
+const needsClamp = lines.length > clamp;
+const head = needsClamp ? lines.slice(0, clamp).join('\n') : note.body;
+const tail = needsClamp ? lines.slice(clamp).join('\n') : '';
+
+const headHtml = renderNoteBody(head, note.module);
+const tailHtml = needsClamp ? renderNoteBody(tail, note.module) : '';
+---
+
+<figure class="note-card">
+  <figcaption>
+    <a class="title" href={noteHref(note.id)}>
+      <span class="kw">Note</span> [{note.title}]
+    </a>
+    <a class="loc" href={sourceUrl(note.file, note.line)} rel="noopener">
+      {shortLocation(note.file, note.line)}
+    </a>
+  </figcaption>
+
+  <div class="scroll-x">
+    <pre class="body" set:html={headHtml} />
+  </div>
+
+  {
+    needsClamp && (
+      <details>
+        <summary>
+          Show the rest of this Note ({lines.length - clamp} more lines)
+        </summary>
+        <div class="scroll-x">
+          <pre class="body" set:html={tailHtml} />
+        </div>
+      </details>
+    )
+  }
+</figure>
+
+<style>
+  .note-card {
+    margin: 1.8rem 0;
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 5px 5px 0;
+    background: var(--paper-raised);
+    overflow: hidden;
+  }
+
+  figcaption {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.5rem 0.9rem;
+    border-bottom: 1px solid var(--rule);
+    background: var(--paper-sunken);
+  }
+
+  .title {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .title:hover {
+    color: var(--link);
+    text-decoration: underline;
+  }
+  .kw {
+    color: var(--ink-faint);
+    font-weight: 400;
+  }
+
+  .loc {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--ink-faint);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .body {
+    margin: 0;
+    padding: 0.9rem 1rem;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    font-size: 0.76rem;
+    line-height: 1.55;
+    white-space: pre;
+  }
+  .body :global(a.note-ref) {
+    color: var(--link);
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-underline-offset: 0.2em;
+  }
+  .body :global(a.ticket-ref) {
+    color: var(--ink-muted);
+  }
+
+  details summary {
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    font-family: var(--font-sans);
+    font-size: 0.74rem;
+    color: var(--ink-muted);
+    border-top: 1px dashed var(--rule);
+  }
+  details summary:hover {
+    color: var(--ink);
+  }
+  details[open] summary {
+    border-bottom: 1px dashed var(--rule);
+  }
+</style>

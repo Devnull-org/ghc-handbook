@@ -40,7 +40,7 @@ for (const link of note.refsIn) {
 const inbound = [...inboundGroups.values()].sort((a, b) => b.sites.length - a.sites.length);
 ---
 
-<Base title={note.title} description={`GHC Note [${note.title}] from ${note.module ?? note.file}`} wide>
+<Base title={note.title} description={`GHC Note [${note.title}] from ${note.module ?? note.file}`} width="wide">
   <article class="note" data-pagefind-body>
     <nav class="crumbs" aria-label="Breadcrumb">
       <a href={withBase('/notes/')}>Notes</a>

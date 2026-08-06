@@ -6,10 +6,11 @@ import { pin } from '../lib/ghc';
 interface Props {
   title: string;
   description?: string;
-  wide?: boolean;
+  /** Container width: prose column, index width, or full chapter width. */
+  width?: 'prose' | 'wide' | 'page';
 }
 
-const { title, description, wide = false } = Astro.props;
+const { title, description, width = 'prose' } = Astro.props;
 const fullTitle = title === 'GHC Handbook' ? title : `${title} — GHC Handbook`;
 
 const nav = [
@@ -88,7 +89,7 @@ const current = Astro.url.pathname.replace(/\/$/, '');
       </div>
     </header>
 
-    <main id="main" class={wide ? 'wide' : undefined}>
+    <main id="main" class={width}>
       <slot />
     </main>
 
@@ -209,12 +210,17 @@ const current = Astro.url.pathname.replace(/\/$/, '');
       }
 
       main {
-        max-width: var(--measure);
         margin: 0 auto;
         padding: 3rem 1.25rem 5rem;
       }
+      main.prose {
+        max-width: var(--measure);
+      }
       main.wide {
         max-width: var(--measure-wide);
+      }
+      main.page {
+        max-width: var(--measure-page);
       }
 
       .site-footer {
