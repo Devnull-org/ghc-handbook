@@ -1,0 +1,282 @@
+---
+title: Parsing Haskell
+summary: >-
+  How GHC turns a stream of characters into a syntax tree — the layout algorithm,
+  a grammar that forbids its own ambiguities, and the trick that lets one
+  production parse three different languages at once.
+order: 1
+phases: ['lexer', 'parser']
+sources:
+  - file: compiler/GHC/Parser/Lexer.x
+    blurb: Alex lexer, the layout algorithm, and the P monad
+  - file: compiler/GHC/Parser.y
+    blurb: the Happy grammar — every piece of Haskell syntax
+  - file: compiler/GHC/Parser/PostProcess.hs
+    blurb: resolves what the grammar deliberately left ambiguous
+  - file: compiler/GHC/Parser/Annotation.hs
+    blurb: the annotations that let GHC reprint your source exactly
+---
+
+import ExampleExplorer from '../../components/ExampleExplorer.astro';
+import NoteCard from '../../components/NoteCard.astro';
+
+Parsing is the phase people are most tempted to skip. It sounds like solved
+territory: a lexer, a grammar, a tree. But Haskell hands its parser two problems
+most languages never face — indentation that carries meaning, and a syntax so
+ambiguous that the parser genuinely cannot tell an expression from a pattern
+until long after it has read both — and the way GHC solves them shapes everything
+downstream.
+
+By the end of this phase GHC has a `HsModule GhcPs`: a syntax tree that mirrors
+your source so faithfully it can be printed back out character for character,
+comments and all. Nothing has been resolved, checked, or simplified. Every name
+is still just a string in a namespace, and `x + y` is still three tokens rather
+than an application of anything.
+
+## Two tools, two generated files
+
+GHC does not hand-write its lexer or its parser. Both are generated:
+
+- `GHC/Parser/Lexer.x` is processed by **Alex**, which compiles regular
+  expressions into a table-driven scanner.
+- `GHC/Parser.y` is processed by **Happy**, which compiles a context-free grammar
+  into an LALR shift-reduce parser.
+
+Both files are large — the lexer runs to about 3,700 lines and the grammar to
+about 4,700 — and both are mostly *not* regular expressions and productions.
+They are Haskell: the actions attached to each rule, plus a substantial preamble
+of supporting code. The generated tables are the small part.
+
+The split matters more than it looks. A lexer that only recognised tokens could
+be a pure function from `String` to `[Token]`. GHC's cannot, because Haskell's
+layout rule means the tokens you emit depend on what you have already seen.
+
+## The parser monad
+
+Both the lexer and the parser run in `P`, a state monad over `PState`:
+
+```haskell
+newtype P a = P { unP :: PState -> ParseResult a }
+```
+
+`PState` carries what you would expect — the input `StringBuffer`, the current
+location, accumulated warnings and errors — and a few things you might not:
+
+```haskell
+data PState = PState {
+        buffer     :: StringBuffer,
+        options    :: ParserOpts,
+        warnings   :: Messages PsMessage,
+        errors     :: Messages PsMessage,
+        last_tk    :: Strict.Maybe (PsLocated Token),
+        loc        :: PsLoc,       -- current loc (end of prev token + 1)
+        context    :: [LayoutContext],
+        lex_state  :: [Int],
+        ...
+```
+
+Two fields there do the interesting work. `context` is the stack of open layout
+contexts, which we will come back to. And `last_tk` — the last non-comment token
+— exists because Haskell has a construct whose meaning depends on what preceded
+it, which we will also come back to.
+
+The result type is a small performance flourish worth noticing, because it tells
+you how hot this code is:
+
+```haskell
+newtype ParseResult a = PR (# (# PState, a #) | PState #)
+
+pattern POk :: PState -> a -> ParseResult a
+pattern POk s a = PR (# (# s , a #) | #)
+
+pattern PFailed :: PState -> ParseResult a
+pattern PFailed s = PR (# | s #)
+```
+
+That is an unboxed sum, hidden behind pattern synonyms so the rest of the
+compiler can pretend it is an ordinary two-constructor data type. Success or
+failure costs no allocation at all. GHC uses its own extensions on itself, and
+the parser is one of the places it does so most aggressively.
+
+## Layout: where indentation becomes syntax
+
+Haskell lets you write this:
+
+```haskell
+greet name = case name of
+  Just n -> "hello, " ++ n
+  Nothing -> "hello"
+```
+
+and the language definition says it means this:
+
+```haskell
+greet name = case name of { Just n -> "hello, " ++ n ; Nothing -> "hello" }
+```
+
+Somebody has to insert those braces and semicolons, and that somebody is the
+lexer. When it emits a token that opens a block — `where`, `let`, `do`, `of` — it
+switches into a dedicated start state and pushes a new layout context recording
+the column the block began at:
+
+```haskell
+data LayoutContext
+  = NoLayout
+  | Layout !Int !GenSemic
+```
+
+That `Int` is the reference column. Every subsequent line is compared against the
+top of the `context` stack: start at the same column and you get a virtual
+semicolon, start further left and the context is popped and you get a virtual
+close brace. The tokens are called `ITvocurly`, `ITvccurly` and `ITsemi` —
+*virtual* open and close curly — and they are what the grammar actually sees.
+
+This is why the layout rule cannot live in the grammar. Happy sees a token stream
+in which the braces are already there; it never knows they were implied. And it
+is why the lexer needs state: the offside rule is a stack machine, not a regular
+language.
+
+## Whitespace, in a place you would not expect
+
+Layout is the famous case of whitespace mattering. There is a second, subtler
+one. Consider:
+
+```haskell
+f (!a) = ...     -- a bang pattern:  ! is a prefix operator here
+g a ! b          -- an infix operator application
+```
+
+The same character means different things depending on the spaces around it.
+GHC's rule, from the accepted proposal on whitespace-sensitive bang patterns,
+classifies every operator occurrence into one of four categories by looking at
+what sits immediately either side — which is exactly why `PState` bothers to
+remember `last_tk`.
+
+<NoteCard id="GHC.Parser.Lexer.whitespace-sensitive-operator-parsing" clamp={40} />
+
+The table in the middle of that Note is the whole rule. `a ! b` and `a!b` are
+both infix; `a !b` is prefix and `a! b` is suffix. Only then does GHC consult a
+per-operator override to decide which token to emit — so `!` in prefix position
+becomes `ITbang`, a strictness annotation, while a loose infix `!` stays an
+ordinary operator.
+
+## A grammar that forbids its own ambiguities
+
+Shift-reduce parsers have a characteristic failure mode: a state where the parser
+could either push the next token or reduce what it already has, and the choice
+changes the parse. Happy resolves these silently by default, which is a
+reasonable thing for a parser generator to do and a terrible thing for a language
+whose behaviour is a specification.
+
+So `Parser.y` declares, near the top:
+
+```
+%expect 0
+```
+
+Zero unresolved shift-reduce conflicts. Every genuine ambiguity in Haskell's
+grammar must be resolved *explicitly*, and the file documents each one. The
+canonical worked example is in the grammar's own preamble:
+
+<NoteCard id="GHC.Parser.shift-reduce-conflicts" clamp={44} />
+
+Search the grammar for `%shift` and you will find the individual resolutions,
+each with its own Note — `%shift: exp10 -> fexp`, `%shift: type -> btype`, and a
+dozen more. They are among the most narrowly-scoped comments in GHC, and they
+exist because a future contributor *will* perturb the grammar and need to know
+which conflicts were deliberate.
+
+## When the grammar genuinely cannot decide
+
+Conflicts you can resolve with a precedence declaration are the easy case. Haskell
+also has ambiguities that no amount of lookahead will fix, because the
+disambiguating token can be arbitrarily far away:
+
+```haskell
+f (Con a b     ) = ...   -- 'Con a b' is a pattern
+f (Con a b -> x) = ...   -- 'Con a b' is an expression
+```
+
+Until the parser reaches `->` or `=`, it cannot know which language it is reading.
+The same shape recurs in `do` blocks, in guards, and — with a third possibility,
+arrow commands — inside `proc`.
+
+The obvious fixes are all bad. Parsing both and backtracking is expensive and
+Happy will not do it. Parsing into a union type means every downstream consumer
+handles cases that cannot occur. Duplicating the grammar triples it.
+
+GHC's answer is to make the production *polymorphic* in what it is building:
+
+<NoteCard id="GHC.Parser.PostProcess.ambiguous-syntactic-categories" clamp={48} />
+
+This is a tagless-final encoding. A single grammar production is written against
+the `DisambECP` class, and the instance chosen at the call site decides whether
+the result is an expression, a command, or a pattern. One production, three
+languages, no backtracking and no union type — at the cost of a layer of
+indirection that makes `PostProcess.hs` one of the harder files in the front end
+to read cold.
+
+## Nothing is thrown away
+
+A parser that only needed to feed a compiler could discard comments, forget
+whether you wrote `(a, b)` or `( a , b )`, and normalise away the parentheses it
+no longer needs. GHC cannot, because the same tree is used by tooling — HLint,
+Ormolu, ghc-exactprint, IDEs — that has to reproduce your source exactly.
+
+<NoteCard id="GHC.Parser.Annotation.exact-print-annotations" clamp={30} />
+
+So the tree carries the source span of every keyword, bracket and comma, plus the
+comments and where they attached. This is a large part of why the parsed AST dump
+below is so much bigger than the program that produced it.
+
+## Seeing it happen
+
+Here is a small module exercising layout, an operator section, a user-defined
+infix operator, and `do` notation. Step through the stages — the first two tabs
+are what this chapter produced.
+
+<ExampleExplorer
+  example="Syntax"
+  caption="The Parsed tab is the AST pretty-printed back to Haskell: note the braces and semicolons that layout inserted, and that (|+| 1) is still an unresolved section."
+/>
+
+Two things are worth pausing on.
+
+In **Parsed**, the layout you wrote has become explicit braces and semicolons —
+that is the offside rule's output, made visible. And in **Parsed AST**, notice
+how much of the bulk is `EpAnn` and `Anchor` nodes recording exact source
+positions: the annotations from the previous section, in the flesh.
+
+Notice also what has *not* happened. `x |+| y * 2` sits in the tree as a flat
+`OpApp` chain with no grouping, even though `|+|` is declared `infixl 6` right
+there in the file. Fixity resolution needs to know the fixity of every operator
+in scope, including imported ones, and that information does not exist yet — it
+arrives with the renamer, in the next chapter.
+
+## What the parser hands on
+
+The output is `HsModule GhcPs`. That `GhcPs` is a phase index: the same AST types
+are reused by the renamer as `GhcRn` and the typechecker as `GhcTc`, with
+different field types at each stage. The technique is called *Trees That Grow*,
+and it is why `GHC/Hs/Expr.hs` is full of type families rather than concrete
+fields.
+
+At `GhcPs`, every identifier is a `RdrName` — a name exactly as written,
+qualified or not, with no idea what it refers to. Turning those into `Name`s that
+point at actual entities is the renamer's job.
+
+## Reading the source yourself
+
+If you want to work on the front end, a reasonable order is:
+
+1. **`GHC/Parser/Lexer.x`**, bottom half first. The Haskell preamble — `P`,
+   `PState`, `new_layout_context`, `maybe_layout` — is more approachable than the
+   Alex rules above it, and explains what those rules are doing.
+2. **`GHC/Parser.y`**, starting with its Notes rather than its productions. The
+   preamble Notes explain the conventions the 4,700 lines below them follow.
+3. **`GHC/Parser/PostProcess.hs`** last, once `DisambECP` has a reason to exist.
+
+The parser is also the easiest phase in which to make a first contribution: its
+behaviour is observable from the outside with `-ddump-parsed-ast`, its tests are
+plain source files, and a change here cannot silently miscompile anything —
+either it parses or it does not.

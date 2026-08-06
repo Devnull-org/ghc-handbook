@@ -1,0 +1,11 @@
+{
+  "ghcVersion": "9.4.7",
+  "pinnedVersion": "9.14.1",
+  "stale": true,
+  "examples": [
+    "Classes",
+    "Fusion",
+    "Patterns",
+    "Syntax"
+  ]
+}

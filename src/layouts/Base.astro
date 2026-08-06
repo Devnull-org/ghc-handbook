@@ -1,0 +1,250 @@
+---
+import '../styles/global.css';
+import { withBase } from '../lib/paths';
+import { pin } from '../lib/ghc';
+
+interface Props {
+  title: string;
+  description?: string;
+  /** Container width: prose column, index width, or full chapter width. */
+  width?: 'prose' | 'wide' | 'page';
+}
+
+const { title, description, width = 'prose' } = Astro.props;
+const fullTitle = title === 'GHC Handbook' ? title : `${title} — GHC Handbook`;
+
+const nav = [
+  { href: '/', label: 'Pipeline' },
+  { href: '/handbook/', label: 'Chapters' },
+  { href: '/notes/', label: 'Notes' },
+  { href: '/about/', label: 'About' },
+];
+
+const current = Astro.url.pathname.replace(/\/$/, '');
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    {description && <meta name="description" content={description} />}
+    <link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
+    {/* Set the theme before first paint so there is no flash of the wrong theme. */}
+    <script is:inline>
+      (() => {
+        try {
+          const stored = localStorage.getItem('ghc-handbook-theme');
+          if (stored === 'light' || stored === 'dark') {
+            document.documentElement.dataset.theme = stored;
+          }
+        } catch {}
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="wordmark" href={withBase('/')}>
+          <span class="wordmark-name">GHC</span>
+          <span class="wordmark-sub">Handbook</span>
+        </a>
+
+        <nav aria-label="Primary">
+          <ul>
+            {
+              nav.map((item) => {
+                const href = withBase(item.href);
+                const isCurrent =
+                  href.replace(/\/$/, '') === current ||
+                  (item.href !== '/' && current.startsWith(href.replace(/\/$/, '')));
+                return (
+                  <li>
+                    <a href={href} aria-current={isCurrent ? 'page' : undefined}>
+                      {item.label}
+                    </a>
+                  </li>
+                );
+              })
+            }
+          </ul>
+        </nav>
+
+        <button
+          type="button"
+          class="theme-toggle"
+          data-theme-toggle
+          aria-label="Toggle colour theme"
+          title="Toggle colour theme"
+        >
+          <svg aria-hidden="true" viewBox="0 0 16 16" width="15" height="15">
+            <path
+              fill="currentColor"
+              d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm0 1.6v10.8a5.4 5.4 0 0 1 0-10.8Z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <main id="main" class={width}>
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <p>
+        Built from GHC <code>{pin.tag}</code>. Quoted comments and code are from the GHC source,
+        licensed under its <a href="https://gitlab.haskell.org/ghc/ghc/-/blob/master/LICENSE"
+          >BSD-3-Clause licence</a
+        >.
+      </p>
+    </footer>
+
+    <script>
+      const toggle = document.querySelector('[data-theme-toggle]');
+      toggle?.addEventListener('click', () => {
+        const root = document.documentElement;
+        const currentTheme =
+          root.dataset.theme ??
+          (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        const next = currentTheme === 'dark' ? 'light' : 'dark';
+        root.dataset.theme = next;
+        try {
+          localStorage.setItem('ghc-handbook-theme', next);
+        } catch {}
+      });
+    </script>
+
+    <style>
+      .skip-link {
+        position: absolute;
+        left: -9999px;
+        top: 0;
+        background: var(--paper-raised);
+        padding: 0.6rem 1rem;
+        border: 1px solid var(--rule-strong);
+        z-index: 10;
+      }
+      .skip-link:focus {
+        left: 0.5rem;
+        top: 0.5rem;
+      }
+
+      .site-header {
+        border-bottom: 1px solid var(--rule);
+        background: var(--paper);
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        backdrop-filter: blur(6px);
+      }
+
+      .header-inner {
+        max-width: var(--measure-wide);
+        margin: 0 auto;
+        padding: 0.7rem 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+      }
+
+      .wordmark {
+        font-family: var(--font-sans);
+        text-decoration: none;
+        color: var(--ink);
+        display: flex;
+        align-items: baseline;
+        gap: 0.4rem;
+        flex-shrink: 0;
+      }
+      .wordmark-name {
+        font-weight: 700;
+        letter-spacing: 0.02em;
+      }
+      .wordmark-sub {
+        color: var(--ink-muted);
+        font-size: 0.85em;
+      }
+
+      nav {
+        margin-left: auto;
+      }
+      nav ul {
+        list-style: none;
+        display: flex;
+        gap: 1.1rem;
+        margin: 0;
+        padding: 0;
+      }
+      nav a {
+        font-family: var(--font-sans);
+        font-size: var(--step--1);
+        color: var(--ink-muted);
+        text-decoration: none;
+        padding-bottom: 2px;
+        border-bottom: 1.5px solid transparent;
+      }
+      nav a:hover {
+        color: var(--ink);
+      }
+      nav a[aria-current='page'] {
+        color: var(--ink);
+        border-bottom-color: var(--accent);
+      }
+
+      .theme-toggle {
+        background: none;
+        border: 1px solid var(--rule);
+        border-radius: 4px;
+        color: var(--ink-muted);
+        cursor: pointer;
+        padding: 0.3rem 0.4rem;
+        display: grid;
+        place-items: center;
+      }
+      .theme-toggle:hover {
+        color: var(--ink);
+        border-color: var(--rule-strong);
+      }
+
+      main {
+        margin: 0 auto;
+        padding: 3rem 1.25rem 5rem;
+      }
+      main.prose {
+        max-width: var(--measure);
+      }
+      main.wide {
+        max-width: var(--measure-wide);
+      }
+      main.page {
+        max-width: var(--measure-page);
+      }
+
+      .site-footer {
+        border-top: 1px solid var(--rule);
+        margin-top: 4rem;
+      }
+      .site-footer p {
+        max-width: var(--measure-wide);
+        margin: 0 auto;
+        padding: 1.5rem 1.25rem;
+        font-family: var(--font-sans);
+        font-size: var(--step--1);
+        color: var(--ink-faint);
+      }
+
+      @media (max-width: 34rem) {
+        .header-inner {
+          flex-wrap: wrap;
+          gap: 0.6rem 1rem;
+        }
+        nav ul {
+          gap: 0.9rem;
+        }
+      }
+    </style>
+  </body>
+</html>
