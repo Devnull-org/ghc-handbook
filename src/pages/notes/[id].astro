@@ -1,0 +1,246 @@
+---
+import Base from '../../layouts/Base.astro';
+import { loadNotes, notesById, sourceUrl, shortLocation, type Note } from '../../lib/ghc';
+import { renderNoteBody } from '../../lib/render-note';
+import { noteHref, withBase } from '../../lib/paths';
+
+export async function getStaticPaths() {
+  return loadNotes().notes.map((note) => ({
+    params: { id: note.id },
+    props: { note },
+  }));
+}
+
+interface Props {
+  note: Note;
+}
+
+const { note } = Astro.props;
+const bodyHtml = renderNoteBody(note.body, note.module, note.id);
+
+const byId = notesById();
+const outbound = note.refsOut.map((id) => byId.get(id)).filter((n): n is Note => Boolean(n));
+
+// Backlinks come from individual call sites; group them by the Note or module
+// they live in so a Note referenced 130 times stays readable.
+const inboundGroups = new Map<string, { note: Note | null; label: string; sites: typeof note.refsIn }>();
+for (const link of note.refsIn) {
+  const key = link.id ?? link.module ?? link.file;
+  const existing = inboundGroups.get(key);
+  if (existing) {
+    existing.sites.push(link);
+  } else {
+    inboundGroups.set(key, {
+      note: link.id ? (byId.get(link.id) ?? null) : null,
+      label: link.module ?? link.file,
+      sites: [link],
+    });
+  }
+}
+const inbound = [...inboundGroups.values()].sort((a, b) => b.sites.length - a.sites.length);
+---
+
+<Base title={note.title} description={`GHC Note [${note.title}] from ${note.module ?? note.file}`} wide>
+  <article class="note" data-pagefind-body>
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href={withBase('/notes/')}>Notes</a>
+      <span aria-hidden="true">/</span>
+      <span>{note.module ?? note.area}</span>
+    </nav>
+
+    <h1>
+      <span class="note-kw">Note</span> [{note.title}]
+    </h1>
+
+    <p class="meta">
+      <a href={sourceUrl(note.file, note.line)} rel="noopener" class="src-link">
+        {shortLocation(note.file, note.line)}
+      </a>
+      <span class="dot" aria-hidden="true">·</span>
+      <span class="area area-{note.area}">{note.area}</span>
+      {
+        note.tickets.length > 0 && (
+          <>
+            <span class="dot" aria-hidden="true">·</span>
+            <span>
+              {note.tickets.length} ticket{note.tickets.length === 1 ? '' : 's'}
+            </span>
+          </>
+        )
+      }
+    </p>
+
+    <div class="scroll-x">
+      <pre class="note-body" set:html={bodyHtml} />
+    </div>
+
+    <div class="graph">
+      <section>
+        <h2>References <span class="count">{outbound.length}</span></h2>
+        {
+          outbound.length === 0 ? (
+            <p class="empty">This Note does not link to any other.</p>
+          ) : (
+            <ul class="ref-list">
+              {outbound.map((target) => (
+                <li>
+                  <a href={noteHref(target.id)}>{target.title}</a>
+                  <span class="ref-mod">{target.module}</span>
+                </li>
+              ))}
+            </ul>
+          )
+        }
+      </section>
+
+      <section>
+        <h2>Referenced by <span class="count">{note.refsIn.length}</span></h2>
+        {
+          inbound.length === 0 ? (
+            <p class="empty">Nothing in the tree points here.</p>
+          ) : (
+            <ul class="ref-list">
+              {inbound.map((group) => (
+                <li>
+                  {group.note ? (
+                    <a href={noteHref(group.note.id)}>{group.note.title}</a>
+                  ) : (
+                    <a href={sourceUrl(group.sites[0]!.file, group.sites[0]!.line)} rel="noopener">
+                      {group.label}
+                    </a>
+                  )}
+                  <span class="ref-mod">
+                    {group.note ? group.note.module : 'call site'}
+                    {group.sites.length > 1 && ` ×${group.sites.length}`}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )
+        }
+      </section>
+    </div>
+  </article>
+</Base>
+
+<style>
+  .crumbs {
+    font-family: var(--font-sans);
+    font-size: var(--step--1);
+    color: var(--ink-faint);
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .crumbs a {
+    color: var(--ink-muted);
+  }
+
+  h1 {
+    font-family: var(--font-mono);
+    font-size: var(--step-2);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .note-kw {
+    color: var(--ink-faint);
+    font-weight: 400;
+  }
+
+  .meta {
+    font-family: var(--font-sans);
+    font-size: var(--step--1);
+    color: var(--ink-faint);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+  }
+  .src-link {
+    font-family: var(--font-mono);
+  }
+  .area {
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.8em;
+    padding: 0.1em 0.45em;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+  }
+  .area-compiler {
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-color: transparent;
+  }
+
+  .note-body {
+    white-space: pre;
+    tab-size: 8;
+    background: var(--paper-raised);
+    border-left: 2px solid var(--rule-strong);
+    border-radius: 0 4px 4px 0;
+    padding: 1.2rem 1.4rem;
+    margin: 0 0 2.5rem;
+  }
+  .note-body :global(a.note-ref) {
+    color: var(--link);
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-underline-offset: 0.2em;
+  }
+  .note-body :global(a.ticket-ref) {
+    color: var(--ink-muted);
+  }
+
+  .graph {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 2rem;
+    border-top: 1px solid var(--rule);
+    padding-top: 1.5rem;
+  }
+  .graph h2 {
+    font-family: var(--font-sans);
+    font-size: var(--step--1);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--ink-muted);
+    margin: 0 0 0.8rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+  .count {
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-faint);
+    font-size: 0.9em;
+  }
+
+  .ref-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: var(--step--1);
+  }
+  .ref-list li {
+    padding: 0.35rem 0;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: baseline;
+  }
+  .ref-mod {
+    font-family: var(--font-mono);
+    font-size: 0.82em;
+    color: var(--ink-faint);
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .empty {
+    font-size: var(--step--1);
+    color: var(--ink-faint);
+    font-style: italic;
+  }
+</style>

@@ -1,0 +1,2804 @@
+{
+  "unresolved": [
+    {
+      "title": "Levity and representation polymorphic primops",
+      "qualifier": null,
+      "fromModule": "GHC.Builtin.PrimOps.Ids",
+      "file": "compiler/GHC/Builtin/PrimOps/Ids.hs",
+      "line": 95
+    },
+    {
+      "title": "Unexposed TyCons",
+      "qualifier": null,
+      "fromModule": "GHC.Builtin.Types.Prim",
+      "file": "compiler/GHC/Builtin/Types/Prim.hs",
+      "line": 232
+    },
+    {
+      "title": "Unexposed TyCons",
+      "qualifier": null,
+      "fromModule": "GHC.Builtin.Types.Prim",
+      "file": "compiler/GHC/Builtin/Types/Prim.hs",
+      "line": 246
+    },
+    {
+      "title": "TYPE and CONSTRAINT",
+      "qualifier": "GHC.Builtin.Types.Prim",
+      "fromModule": "GHC.Builtin.Types",
+      "file": "compiler/GHC/Builtin/Types.hs",
+      "line": 1913
+    },
+    {
+      "title": "Empty lists",
+      "qualifier": "GHC.Hs.Expr",
+      "fromModule": "GHC.Builtin.Types",
+      "file": "compiler/GHC/Builtin/Types.hs",
+      "line": 2604,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "AutoApply.cmm for vectors",
+      "qualifier": null,
+      "fromModule": "GHC.Cmm.CallConv",
+      "file": "compiler/GHC/Cmm/CallConv.hs",
+      "line": 318
+    },
+    {
+      "title": "Compressed TrieMap",
+      "qualifier": "GHC.Core.Map.Expr",
+      "fromModule": "GHC.Cmm.CommonBlockElim",
+      "file": "compiler/GHC/Cmm/CommonBlockElim.hs",
+      "line": 293,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "unpack_cstring closures",
+      "qualifier": "StgStdThunks.cmm",
+      "fromModule": "GHC.Cmm.Info.Build",
+      "file": "compiler/GHC/Cmm/Info/Build.hs",
+      "line": 792,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Heap memory barriers",
+      "qualifier": "SMP.h",
+      "fromModule": "GHC.Cmm.Parser",
+      "file": "compiler/GHC/Cmm/Parser.y",
+      "line": 230,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "unpack_cstring closures",
+      "qualifier": "StgStdThunks.cmm",
+      "fromModule": "GHC.Cmm",
+      "file": "compiler/GHC/Cmm.hs",
+      "line": 343,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "extra spill slots",
+      "qualifier": "X86",
+      "fromModule": "GHC.CmmToAsm.AArch64.Instr",
+      "file": "compiler/GHC/CmmToAsm/AArch64/Instr.hs",
+      "line": 518,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "CFG Edge Weights",
+      "qualifier": null,
+      "fromModule": "GHC.CmmToAsm.CFG",
+      "file": "compiler/GHC/CmmToAsm/CFG.hs",
+      "line": 553
+    },
+    {
+      "title": "extra spill slots",
+      "qualifier": "X86",
+      "fromModule": "GHC.CmmToAsm.PPC.Instr",
+      "file": "compiler/GHC/CmmToAsm/PPC/Instr.hs",
+      "line": 100,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Subsections Via Symbols",
+      "qualifier": "X86",
+      "fromModule": "GHC.CmmToAsm.PPC.Ppr",
+      "file": "compiler/GHC/CmmToAsm/PPC/Ppr.hs",
+      "line": 80,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "extra spill slots",
+      "qualifier": "X86",
+      "fromModule": "GHC.CmmToAsm.RV64.Instr",
+      "file": "compiler/GHC/CmmToAsm/RV64/Instr.hs",
+      "line": 451,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Native code generator",
+      "qualifier": null,
+      "fromModule": "GHC.CmmToAsm",
+      "file": "compiler/GHC/CmmToAsm.hs",
+      "line": 8
+    },
+    {
+      "title": "ATyCon for classes",
+      "qualifier": "GHC.Core.TyCo.Rep",
+      "fromModule": "GHC.Core.Class",
+      "file": "compiler/GHC/Core/Class.hs",
+      "line": 62,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "RoughMap and rm_empty",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Coercion.Axiom",
+      "file": "compiler/GHC/Core/Coercion/Axiom.hs",
+      "line": 488
+    },
+    {
+      "title": "ForAllCo",
+      "qualifier": "GHC.Tc.TyCo.Rep",
+      "fromModule": "GHC.Core.Coercion",
+      "file": "compiler/GHC/Core/Coercion.hs",
+      "line": 2173,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Rule free var hack",
+      "qualifier": null,
+      "fromModule": "GHC.Core.FVs",
+      "file": "compiler/GHC/Core/FVs.hs",
+      "line": 431
+    },
+    {
+      "title": "Rule free var hack",
+      "qualifier": null,
+      "fromModule": "GHC.Core.FVs",
+      "file": "compiler/GHC/Core/FVs.hs",
+      "line": 487
+    },
+    {
+      "title": "Implicit axioms",
+      "qualifier": "GHC.Core.TyCon",
+      "fromModule": "GHC.Core.FamInstEnv",
+      "file": "compiler/GHC/Core/FamInstEnv.hs",
+      "line": 792,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Orphans",
+      "qualifier": "GHC.Core.InstEnv",
+      "fromModule": "GHC.Core.InstEnv",
+      "file": "compiler/GHC/Core/InstEnv.hs",
+      "line": 305,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Overlapping instances",
+      "qualifier": null,
+      "fromModule": "GHC.Core.InstEnv",
+      "file": "compiler/GHC/Core/InstEnv.hs",
+      "line": 694
+    },
+    {
+      "title": "Desugaring non-canonical evidence",
+      "qualifier": "GHC.HsToCore.Binds",
+      "fromModule": "GHC.Core.InstEnv",
+      "file": "compiler/GHC/Core/InstEnv.hs",
+      "line": 1099,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Overlapping instances",
+      "qualifier": null,
+      "fromModule": "GHC.Core.InstEnv",
+      "file": "compiler/GHC/Core/InstEnv.hs",
+      "line": 1239
+    },
+    {
+      "title": "Overlapping instances",
+      "qualifier": null,
+      "fromModule": "GHC.Core.InstEnv",
+      "file": "compiler/GHC/Core/InstEnv.hs",
+      "line": 1636
+    },
+    {
+      "title": "Overlapping instances",
+      "qualifier": null,
+      "fromModule": "GHC.Core.InstEnv",
+      "file": "compiler/GHC/Core/InstEnv.hs",
+      "line": 1684
+    },
+    {
+      "title": "Computing equality on types",
+      "qualifier": "GHC.Core.Type",
+      "fromModule": "GHC.Core.Map.Type",
+      "file": "compiler/GHC/Core/Map/Type.hs",
+      "line": 150,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Equality on AppTys",
+      "qualifier": "GHC.Core.Type",
+      "fromModule": "GHC.Core.Map.Type",
+      "file": "compiler/GHC/Core/Map/Type.hs",
+      "line": 153,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Equality on AppTys",
+      "qualifier": "GHC.Core.Type",
+      "fromModule": "GHC.Core.Map.Type",
+      "file": "compiler/GHC/Core/Map/Type.hs",
+      "line": 159,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Equality on AppTys",
+      "qualifier": "GHC.Core.Type",
+      "fromModule": "GHC.Core.Map.Type",
+      "file": "compiler/GHC/Core/Map/Type.hs",
+      "line": 162,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Equality on AppTys",
+      "qualifier": "GHC.Core.Type",
+      "fromModule": "GHC.Core.Map.Type",
+      "file": "compiler/GHC/Core/Map/Type.hs",
+      "line": 251,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Occurrence analysis for lambda binders",
+      "qualifier": "GHc.Core.Opt.OccurAnal",
+      "fromModule": "GHC.Core.Opt.Arity",
+      "file": "compiler/GHC/Core/Opt/Arity.hs",
+      "line": 417,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "DataAlt occ info",
+      "qualifier": "GHC.Core.Opt.Simplify",
+      "fromModule": "GHC.Core.Opt.CSE",
+      "file": "compiler/GHC/Core/Opt/CSE.hs",
+      "line": 834,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "String literals in GHC",
+      "qualifier": "CString.hs",
+      "fromModule": "GHC.Core.Opt.ConstantFold",
+      "file": "compiler/GHC/Core/Opt/ConstantFold.hs",
+      "line": 2492,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Optimistic field binder CPR",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Opt.CprAnal",
+      "file": "compiler/GHC/Core/Opt/CprAnal.hs",
+      "line": 839
+    },
+    {
+      "title": "Optimistic field binder CPR",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Opt.CprAnal",
+      "file": "compiler/GHC/Core/Opt/CprAnal.hs",
+      "line": 1214
+    },
+    {
+      "title": "Optimistic field binder CPR",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Opt.CprAnal",
+      "file": "compiler/GHC/Core/Opt/CprAnal.hs",
+      "line": 1236
+    },
+    {
+      "title": "Optimistic case binder CPR",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Opt.CprAnal",
+      "file": "compiler/GHC/Core/Opt/CprAnal.hs",
+      "line": 1292
+    },
+    {
+      "title": "Optimistic case binder CPR",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Opt.CprAnal",
+      "file": "compiler/GHC/Core/Opt/CprAnal.hs",
+      "line": 1294
+    },
+    {
+      "title": "Recursive superclasses",
+      "qualifier": "TcInstDcls",
+      "fromModule": "GHC.Core.Opt.DmdAnal",
+      "file": "compiler/GHC/Core/Opt/DmdAnal.hs",
+      "line": 2601,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "extra_fvs (1)",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Opt.FloatIn",
+      "file": "compiler/GHC/Core/Opt/FloatIn.hs",
+      "line": 407
+    },
+    {
+      "title": "extra_fvs (2)",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Opt.FloatIn",
+      "file": "compiler/GHC/Core/Opt/FloatIn.hs",
+      "line": 425
+    },
+    {
+      "title": "extra_fvs (1)",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Opt.FloatIn",
+      "file": "compiler/GHC/Core/Opt/FloatIn.hs",
+      "line": 586
+    },
+    {
+      "title": "extra_fvs (2)",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Opt.FloatIn",
+      "file": "compiler/GHC/Core/Opt/FloatIn.hs",
+      "line": 586
+    },
+    {
+      "title": "extra_fvs (2)",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Opt.FloatIn",
+      "file": "compiler/GHC/Core/Opt/FloatIn.hs",
+      "line": 594
+    },
+    {
+      "title": "extra_fvs (1)",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Opt.FloatIn",
+      "file": "compiler/GHC/Core/Opt/FloatIn.hs",
+      "line": 599
+    },
+    {
+      "title": "extra_fvs (1)",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Opt.FloatIn",
+      "file": "compiler/GHC/Core/Opt/FloatIn.hs",
+      "line": 622
+    },
+    {
+      "title": "extra_fvs (2)",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Opt.FloatIn",
+      "file": "compiler/GHC/Core/Opt/FloatIn.hs",
+      "line": 622
+    },
+    {
+      "title": "Inlining and hs-boot files",
+      "qualifier": "GHC.Core.ToIface",
+      "fromModule": "GHC.Core.Opt.OccurAnal",
+      "file": "compiler/GHC/Core/Opt/OccurAnal.hs",
+      "line": 390,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Rules for recursive functions",
+      "qualifier": "GHC.Core.Opt.Simplify",
+      "fromModule": "GHC.Core.Opt.OccurAnal",
+      "file": "compiler/GHC/Core/Opt/OccurAnal.hs",
+      "line": 594,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Loop breaking",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Opt.OccurAnal",
+      "file": "compiler/GHC/Core/Opt/OccurAnal.hs",
+      "line": 1149
+    },
+    {
+      "title": "Occurrence analysis for lambda binders",
+      "qualifier": "GHc.Core.Opt.OccurAnal",
+      "fromModule": "GHC.Core.Opt.OccurAnal",
+      "file": "compiler/GHC/Core/Opt/OccurAnal.hs",
+      "line": 2115,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Cast worker/wrapper",
+      "qualifier": "GHC.Core.Opt.Simplify",
+      "fromModule": "GHC.Core.Opt.OccurAnal",
+      "file": "compiler/GHC/Core/Opt/OccurAnal.hs",
+      "line": 2224,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Merge Nested Cases",
+      "qualifier": "GHC.Core.Opt.Simplify.Utils",
+      "fromModule": "GHC.Core.Opt.OccurAnal",
+      "file": "compiler/GHC/Core/Opt/OccurAnal.hs",
+      "line": 3294,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Care with binder-swap on dictionaries",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Opt.OccurAnal",
+      "file": "compiler/GHC/Core/Opt/OccurAnal.hs",
+      "line": 3331
+    },
+    {
+      "title": "Care with binder-swap on dictionaries",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Opt.OccurAnal",
+      "file": "compiler/GHC/Core/Opt/OccurAnal.hs",
+      "line": 3341
+    },
+    {
+      "title": "Care with binder-swap on dictionaries",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Opt.OccurAnal",
+      "file": "compiler/GHC/Core/Opt/OccurAnal.hs",
+      "line": 3446
+    },
+    {
+      "title": "no-case-of-case",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Opt.OccurAnal",
+      "file": "compiler/GHC/Core/Opt/OccurAnal.hs",
+      "line": 3496
+    },
+    {
+      "title": "Suppressing the case binder-swap",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Opt.OccurAnal",
+      "file": "compiler/GHC/Core/Opt/OccurAnal.hs",
+      "line": 3511
+    },
+    {
+      "title": "Need for cloning during float-out",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Opt.SetLevels",
+      "file": "compiler/GHC/Core/Opt/SetLevels.hs",
+      "line": 20
+    },
+    {
+      "title": "Binder-swap during float-out",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Opt.SetLevels",
+      "file": "compiler/GHC/Core/Opt/SetLevels.hs",
+      "line": 41
+    },
+    {
+      "title": "Top level scope",
+      "qualifier": "GHC.Core.Opt.Specialise",
+      "fromModule": "GHC.Core.Opt.SetLevels",
+      "file": "compiler/GHC/Core/Opt/SetLevels.hs",
+      "line": 1730
+    },
+    {
+      "title": "Binder-swap during float-out",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Opt.SetLevels",
+      "file": "compiler/GHC/Core/Opt/SetLevels.hs",
+      "line": 1757
+    },
+    {
+      "title": "Need for cloning during float-out",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Opt.SetLevels",
+      "file": "compiler/GHC/Core/Opt/SetLevels.hs",
+      "line": 1911
+    },
+    {
+      "title": "In-scope set as a substitution",
+      "qualifier": "GHC.Core.Opt.Simplify",
+      "fromModule": "GHC.Core.Opt.Simplify.Env",
+      "file": "compiler/GHC/Core/Opt/Simplify/Env.hs",
+      "line": 963,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Case binders and join points",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Opt.Simplify.Iteration",
+      "file": "compiler/GHC/Core/Opt/Simplify/Iteration.hs",
+      "line": 1874
+    },
+    {
+      "title": "Simplification of runRW#",
+      "qualifier": "GHC.CoreToSTG.Prep",
+      "fromModule": "GHC.Core.Opt.Simplify.Iteration",
+      "file": "compiler/GHC/Core/Opt/Simplify/Iteration.hs",
+      "line": 2281,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Plan (AFTER)",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Opt.Simplify.Iteration",
+      "file": "compiler/GHC/Core/Opt/Simplify/Iteration.hs",
+      "line": 2556
+    },
+    {
+      "title": "Shadowing in Core",
+      "qualifier": "GHC.Core.hs",
+      "fromModule": "GHC.Core.Opt.Simplify.Iteration",
+      "file": "compiler/GHC/Core/Opt/Simplify/Iteration.hs",
+      "line": 2569,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Case binder next",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Opt.Simplify.Iteration",
+      "file": "compiler/GHC/Core/Opt/Simplify/Iteration.hs",
+      "line": 2985
+    },
+    {
+      "title": "Join point abstraction",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Opt.Simplify.Iteration",
+      "file": "compiler/GHC/Core/Opt/Simplify/Iteration.hs",
+      "line": 4081
+    },
+    {
+      "title": "Case binders and join points",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Opt.Simplify.Iteration",
+      "file": "compiler/GHC/Core/Opt/Simplify/Iteration.hs",
+      "line": 4310
+    },
+    {
+      "title": "Lambda-bound unfoldings",
+      "qualifier": "GHC.Core.Opt.DmdAnal",
+      "fromModule": "GHC.Core.Opt.Simplify.Iteration",
+      "file": "compiler/GHC/Core/Opt/Simplify/Iteration.hs",
+      "line": 4345
+    },
+    {
+      "title": "Join point abstraction",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Opt.Simplify.Iteration",
+      "file": "compiler/GHC/Core/Opt/Simplify/Iteration.hs",
+      "line": 4502
+    },
+    {
+      "title": "Top-level flag on inline rules",
+      "qualifier": "GHC.Core.Unfold",
+      "fromModule": "GHC.Core.Opt.Simplify.Iteration",
+      "file": "compiler/GHC/Core/Opt/Simplify/Iteration.hs",
+      "line": 4659,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "RHS of lets",
+      "qualifier": "GHC.Core.Unfold",
+      "fromModule": "GHC.Core.Opt.Simplify.Utils",
+      "file": "compiler/GHC/Core/Opt/Simplify/Utils.hs",
+      "line": 426,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Lone variables",
+      "qualifier": "GHC.Core.Unfold",
+      "fromModule": "GHC.Core.Opt.Simplify.Utils",
+      "file": "compiler/GHC/Core/Opt/Simplify/Utils.hs",
+      "line": 536,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Gentle mode",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Opt.Simplify.Utils",
+      "file": "compiler/GHC/Core/Opt/Simplify/Utils.hs",
+      "line": 1387
+    },
+    {
+      "title": "Arity decrease",
+      "qualifier": "GHC.Core.Opt.Simplify",
+      "fromModule": "GHC.Core.Opt.Specialise",
+      "file": "compiler/GHC/Core/Opt/Specialise.hs",
+      "line": 1815
+    },
+    {
+      "title": "CPR for thunks",
+      "qualifier": "GHC.Core.Opt.DmdAnal",
+      "fromModule": "GHC.Core.Opt.WorkWrap.Utils",
+      "file": "compiler/GHC/Core/Opt/WorkWrap/Utils.hs",
+      "line": 313,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "TYPE and CONSTRAINT",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Opt.WorkWrap.Utils",
+      "file": "compiler/GHC/Core/Opt/WorkWrap/Utils.hs",
+      "line": 837
+    },
+    {
+      "title": "Orphans",
+      "qualifier": "GHC.Core.InstEnv",
+      "fromModule": "GHC.Core.Rules",
+      "file": "compiler/GHC/Core/Rules.hs",
+      "line": 208,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Typechecker equality vs definitional equality",
+      "qualifier": null,
+      "fromModule": "GHC.Core.TyCo.Compare",
+      "file": "compiler/GHC/Core/TyCo/Compare.hs",
+      "line": 80
+    },
+    {
+      "title": "Pointer comparison operations",
+      "qualifier": "GHC.Builtin.primops.txt.pp",
+      "fromModule": "GHC.Core.TyCo.Compare",
+      "file": "compiler/GHC/Core/TyCo/Compare.hs",
+      "line": 197
+    },
+    {
+      "title": "Computing equality on types",
+      "qualifier": "Type",
+      "fromModule": "GHC.Core.TyCo.Compare",
+      "file": "compiler/GHC/Core/TyCo/Compare.hs",
+      "line": 356,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Equality on AppTys",
+      "qualifier": "GHC.Core.Type",
+      "fromModule": "GHC.Core.TyCo.Compare",
+      "file": "compiler/GHC/Core/TyCo/Compare.hs",
+      "line": 407,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Typechecker equality vs definitional equality",
+      "qualifier": null,
+      "fromModule": "GHC.Core.TyCo.Compare",
+      "file": "compiler/GHC/Core/TyCo/Compare.hs",
+      "line": 580
+    },
+    {
+      "title": "Equality on AppTys",
+      "qualifier": "GHC.Core.Type",
+      "fromModule": "GHC.Core.TyCo.Compare",
+      "file": "compiler/GHC/Core/TyCo/Compare.hs",
+      "line": 820,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "VarBndrs, ForAllTyBinders, TyConBinders, and visibility",
+      "qualifier": "GHC.Core.TyCo.Rep",
+      "fromModule": "GHC.Core.TyCon",
+      "file": "compiler/GHC/Core/TyCon.hs",
+      "line": 651,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Care with binder-swap on dictionaries",
+      "qualifier": null,
+      "fromModule": "GHC.Core.TyCon",
+      "file": "compiler/GHC/Core/TyCon.hs",
+      "line": 1586
+    },
+    {
+      "title": "TYPE and CONSTRAINT",
+      "qualifier": "GHC.Builtin.Types.Prim",
+      "fromModule": "GHC.Core.Type",
+      "file": "compiler/GHC/Core/Type.hs",
+      "line": 617
+    },
+    {
+      "title": "TYPE and CONSTRAINT",
+      "qualifier": "GHC.Builtin.Types.Prim",
+      "fromModule": "GHC.Core.Type",
+      "file": "compiler/GHC/Core/Type.hs",
+      "line": 3376
+    },
+    {
+      "title": "TYPE and CONSTRAINT",
+      "qualifier": "GHC.Builtin.Types.Prim",
+      "fromModule": "GHC.Core.Type",
+      "file": "compiler/GHC/Core/Type.hs",
+      "line": 3409
+    },
+    {
+      "title": "TYPE and CONSTRAINT",
+      "qualifier": "GHC.Builtin.Types.Prim",
+      "fromModule": "GHC.Core.Type",
+      "file": "compiler/GHC/Core/Type.hs",
+      "line": 3423
+    },
+    {
+      "title": "Unary class magic",
+      "qualifier": "GHC",
+      "fromModule": "GHC.Core.Unfold",
+      "file": "compiler/GHC/Core/Unfold.hs",
+      "line": 288,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Computing equality on types",
+      "qualifier": "GHC.Core.Type",
+      "fromModule": "GHC.Core.Unify",
+      "file": "compiler/GHC/Core/Unify.hs",
+      "line": 1609,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Interaction of exprIsWorkFree and lone variables",
+      "qualifier": "GHC.Core.Unfold",
+      "fromModule": "GHC.Core.Utils",
+      "file": "compiler/GHC/Core/Utils.hs",
+      "line": 1443,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Lone variables",
+      "qualifier": "GHC.Core.Unfold",
+      "fromModule": "GHC.Core.Utils",
+      "file": "compiler/GHC/Core/Utils.hs",
+      "line": 1633,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Binder-swap during float-out",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Utils",
+      "file": "compiler/GHC/Core/Utils.hs",
+      "line": 2035
+    },
+    {
+      "title": "Empty case alternatives",
+      "qualifier": "GHC.Data.TrieMap",
+      "fromModule": "GHC.Core.Utils",
+      "file": "compiler/GHC/Core/Utils.hs",
+      "line": 2629,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Shadowing in SpecConstr",
+      "qualifier": "GHC.Core.Opt.SpecContr",
+      "fromModule": "GHC.Core",
+      "file": "compiler/GHC/Core.hs",
+      "line": 393,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "The let/app invariant",
+      "qualifier": null,
+      "fromModule": "GHC.Core",
+      "file": "compiler/GHC/Core.hs",
+      "line": 458
+    },
+    {
+      "title": "Bottoming expressions",
+      "qualifier": "GHC.Core.Utils",
+      "fromModule": "GHC.Core",
+      "file": "compiler/GHC/Core.hs",
+      "line": 719,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Injecting implicit bindings",
+      "qualifier": "GHC.Iface.Tidy",
+      "fromModule": "GHC.CoreToStg.AddImplicitBinds",
+      "file": "compiler/GHC/CoreToStg/AddImplicitBinds.hs",
+      "line": 101,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Do not eta-expand join points",
+      "qualifier": "GHC.Core.Opt.Simplify.Utils",
+      "fromModule": "GHC.CoreToStg.Prep",
+      "file": "compiler/GHC/CoreToStg/Prep.hs",
+      "line": 714,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Fusion for zipN/zipWithN",
+      "qualifier": "List.hs",
+      "fromModule": "GHC.Data.List.NonEmpty",
+      "file": "compiler/GHC/Data/List/NonEmpty.hs",
+      "line": 16,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Eta-reduction in -O0",
+      "qualifier": null,
+      "fromModule": "GHC.Driver.DynFlags",
+      "file": "compiler/GHC/Driver/DynFlags.hs",
+      "line": 1218
+    },
+    {
+      "title": "simpleTidyPgm - mkBootModDetailsTc",
+      "qualifier": null,
+      "fromModule": "GHC.Driver.Main",
+      "file": "compiler/GHC/Driver/Main.hs",
+      "line": 1886
+    },
+    {
+      "title": "Pending Splices",
+      "qualifier": null,
+      "fromModule": "GHC.Hs.Expr",
+      "file": "compiler/GHC/Hs/Expr.hs",
+      "line": 190
+    },
+    {
+      "title": "Lifecycle of a splice",
+      "qualifier": null,
+      "fromModule": "GHC.Hs.Expr",
+      "file": "compiler/GHC/Hs/Expr.hs",
+      "line": 2214
+    },
+    {
+      "title": "Pending Splices",
+      "qualifier": null,
+      "fromModule": "GHC.Hs.Expr",
+      "file": "compiler/GHC/Hs/Expr.hs",
+      "line": 2269
+    },
+    {
+      "title": "Strict argument type constraints",
+      "qualifier": "GHC.HsToCore.Pmc.Solver",
+      "fromModule": "GHC.Hs.Extension",
+      "file": "compiler/GHC/Hs/Extension.hs",
+      "line": 151
+    },
+    {
+      "title": "Lifecycle of a splice",
+      "qualifier": "GHC.Hs.Expr",
+      "fromModule": "GHC.Hs.Pat",
+      "file": "compiler/GHC/Hs/Pat.hs",
+      "line": 152
+    },
+    {
+      "title": "default method Name",
+      "qualifier": "GHC.Iface.Recomp",
+      "fromModule": "GHC.HsToCore.Docs",
+      "file": "compiler/GHC/HsToCore/Docs.hs",
+      "line": 97
+    },
+    {
+      "title": "default method Name",
+      "qualifier": "GHC.Iface.Recomp",
+      "fromModule": "GHC.HsToCore.Docs",
+      "file": "compiler/GHC/HsToCore/Docs.hs",
+      "line": 312
+    },
+    {
+      "title": "default method Name",
+      "qualifier": "GHC.Iface.Recomp",
+      "fromModule": "GHC.HsToCore.Docs",
+      "file": "compiler/GHC/HsToCore/Docs.hs",
+      "line": 331
+    },
+    {
+      "title": "Holes in expressions",
+      "qualifier": "GHC.Tc.Types.Constraint",
+      "fromModule": "GHC.HsToCore.Expr",
+      "file": "compiler/GHC/HsToCore/Expr.hs",
+      "line": 280,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Case elimination",
+      "qualifier": "GHC.Core.Opt.Simplify",
+      "fromModule": "GHC.HsToCore.Match",
+      "file": "compiler/GHC/HsToCore/Match.hs",
+      "line": 347,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "COMPLETE sets on data families",
+      "qualifier": null,
+      "fromModule": "GHC.HsToCore.Pmc.Solver",
+      "file": "compiler/GHC/HsToCore/Pmc/Solver.hs",
+      "line": 860
+    },
+    {
+      "title": "How brackets and nested splices are handled",
+      "qualifier": "GHC.Tc.Gen.Splice",
+      "fromModule": "GHC.HsToCore.Quote",
+      "file": "compiler/GHC/HsToCore/Quote.hs",
+      "line": 1539
+    },
+    {
+      "title": "GHC.Prim",
+      "qualifier": null,
+      "fromModule": "GHC.Iface.Load",
+      "file": "compiler/GHC/Iface/Load.hs",
+      "line": 1030
+    },
+    {
+      "title": "GHC.Prim",
+      "qualifier": null,
+      "fromModule": "GHC.Iface.Load",
+      "file": "compiler/GHC/Iface/Load.hs",
+      "line": 1046
+    },
+    {
+      "title": "default method Name",
+      "qualifier": null,
+      "fromModule": "GHC.Iface.Recomp",
+      "file": "compiler/GHC/Iface/Recomp.hs",
+      "line": 1281
+    },
+    {
+      "title": "Orphans",
+      "qualifier": "GHC.Core.InstEnv",
+      "fromModule": "GHC.Iface.Recomp",
+      "file": "compiler/GHC/Iface/Recomp.hs",
+      "line": 1619,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Orphans",
+      "qualifier": "GHC.Core.InstEnv",
+      "fromModule": "GHC.Iface.Recomp",
+      "file": "compiler/GHC/Iface/Recomp.hs",
+      "line": 1627,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "default method Name",
+      "qualifier": null,
+      "fromModule": "GHC.Iface.Recomp",
+      "file": "compiler/GHC/Iface/Recomp.hs",
+      "line": 1775
+    },
+    {
+      "title": "default method Name",
+      "qualifier": null,
+      "fromModule": "GHC.Iface.Recomp",
+      "file": "compiler/GHC/Iface/Recomp.hs",
+      "line": 1794
+    },
+    {
+      "title": "Orphans",
+      "qualifier": "GHC.Core.InstEnv",
+      "fromModule": "GHC.Iface.Syntax",
+      "file": "compiler/GHC/Iface/Syntax.hs",
+      "line": 384,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Implicit TyThings",
+      "qualifier": "GHC.Driver.Env",
+      "fromModule": "GHC.Iface.Syntax",
+      "file": "compiler/GHC/Iface/Syntax.hs",
+      "line": 583,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Tricky iface loop",
+      "qualifier": "GHC.Types.TyThing",
+      "fromModule": "GHC.Iface.Syntax",
+      "file": "compiler/GHC/Iface/Syntax.hs",
+      "line": 589,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "VarBndrs, ForAllTyBinders, TyConBinders, and visibility",
+      "qualifier": "GHC.Core.TyCo.Rep",
+      "fromModule": "GHC.Iface.Type",
+      "file": "compiler/GHC/Iface/Type.hs",
+      "line": 944,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Messages from GHC.Parser.Header",
+      "qualifier": null,
+      "fromModule": "GHC.Parser.Errors.Types",
+      "file": "compiler/GHC/Parser/Errors/Types.hs",
+      "line": 75
+    },
+    {
+      "title": "Lexing NumericUnderscores extension",
+      "qualifier": null,
+      "fromModule": "GHC.Parser.Lexer",
+      "file": "compiler/GHC/Parser/Lexer.x",
+      "line": 195
+    },
+    {
+      "title": "Lexing NumericUnderscores extension",
+      "qualifier": null,
+      "fromModule": "GHC.Parser.Lexer",
+      "file": "compiler/GHC/Parser/Lexer.x",
+      "line": 534
+    },
+    {
+      "title": "The Naming story",
+      "qualifier": "GHC.Hs.Decls",
+      "fromModule": "GHC.Parser.PostProcess",
+      "file": "compiler/GHC/Parser/PostProcess.hs",
+      "line": 196,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Parsing explicit foralls in Rules",
+      "qualifier": "Parser.y",
+      "fromModule": "GHC.Parser.PostProcess",
+      "file": "compiler/GHC/Parser/PostProcess.hs",
+      "line": 1034,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Unit tuples",
+      "qualifier": "GHC.Hs.Type",
+      "fromModule": "GHC.Parser.PostProcess",
+      "file": "compiler/GHC/Parser/PostProcess.hs",
+      "line": 1153,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Fixity of (->)",
+      "qualifier": "GHC",
+      "fromModule": "GHC.Parser.PostProcess",
+      "file": "compiler/GHC/Parser/PostProcess.hs",
+      "line": 2947,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "ExplicitTuple",
+      "qualifier": "GHC.Hs.Expr",
+      "fromModule": "GHC.Parser",
+      "file": "compiler/GHC/Parser.y",
+      "line": 441,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "forall-or-nothing rule",
+      "qualifier": "GHC.Hs.Type",
+      "fromModule": "GHC.Parser",
+      "file": "compiler/GHC/Parser.y",
+      "line": 2192,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "forall-or-nothing rule",
+      "qualifier": "GHC.Hs.Type",
+      "fromModule": "GHC.Parser",
+      "file": "compiler/GHC/Parser.y",
+      "line": 2199,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Demotion",
+      "qualifier": "GHC.Types.Names.OccName",
+      "fromModule": "GHC.Parser",
+      "file": "compiler/GHC/Parser.y",
+      "line": 2506,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Whitespace-sensitive operator parsing",
+      "qualifier": "GHC.Parsing.Lexer",
+      "fromModule": "GHC.Parser",
+      "file": "compiler/GHC/Parser.y",
+      "line": 3227,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Whitespace-sensitive operator parsing",
+      "qualifier": "Lexer.x",
+      "fromModule": "GHC.Parser",
+      "file": "compiler/GHC/Parser.y",
+      "line": 3715,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "ExplicitTuple",
+      "qualifier": "GHC.Hs.Expr",
+      "fromModule": "GHC.Parser",
+      "file": "compiler/GHC/Parser.y",
+      "line": 3815,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Empty lists",
+      "qualifier": "GHC.Hs.Expr",
+      "fromModule": "GHC.Parser",
+      "file": "compiler/GHC/Parser.y",
+      "line": 3828,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Unit tuples",
+      "qualifier": "GHC.Hs.Type",
+      "fromModule": "GHC.Parser",
+      "file": "compiler/GHC/Parser.y",
+      "line": 3848,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Type-directed record disambiguation",
+      "qualifier": "GHC.Rename.Pat",
+      "fromModule": "GHC.Rename.Env",
+      "file": "compiler/GHC/Rename/Env.hs",
+      "line": 1557,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Empty lists",
+      "qualifier": "GHC.Hs.Expr",
+      "fromModule": "GHC.Rename.Expr",
+      "file": "compiler/GHC/Rename/Expr.hs",
+      "line": 337,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Desugaring operator sections",
+      "qualifier": null,
+      "fromModule": "GHC.Rename.Expr",
+      "file": "compiler/GHC/Rename/Expr.hs",
+      "line": 742
+    },
+    {
+      "title": "Desugaring operator sections",
+      "qualifier": null,
+      "fromModule": "GHC.Rename.Expr",
+      "file": "compiler/GHC/Rename/Expr.hs",
+      "line": 805
+    },
+    {
+      "title": "TransStmt binder map",
+      "qualifier": "GHC.Hs.Expr",
+      "fromModule": "GHC.Rename.Expr",
+      "file": "compiler/GHC/Rename/Expr.hs",
+      "line": 1365,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Pattern signature binders and scoping",
+      "qualifier": "GHC.Hs.Type",
+      "fromModule": "GHC.Rename.HsType",
+      "file": "compiler/GHC/Rename/HsType.hs",
+      "line": 177,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "The wildcard story for types",
+      "qualifier": "GHC.Hs.Type",
+      "fromModule": "GHC.Rename.HsType",
+      "file": "compiler/GHC/Rename/HsType.hs",
+      "line": 319,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "ScopedSort",
+      "qualifier": "GHC.Core.Type",
+      "fromModule": "GHC.Rename.HsType",
+      "file": "compiler/GHC/Rename/HsType.hs",
+      "line": 1749,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Top-level fixity signatures in an HsGroup",
+      "qualifier": "GHC.Hs.Decls",
+      "fromModule": "GHC.Rename.Module",
+      "file": "compiler/GHC/Rename/Module.hs",
+      "line": 121,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "forall-or-nothing rule",
+      "qualifier": "GHC.Hs.Type",
+      "fromModule": "GHC.Rename.Module",
+      "file": "compiler/GHC/Rename/Module.hs",
+      "line": 705,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "CUSKs: complete user-supplied kind signatures",
+      "qualifier": "GHC.Hs.Decls",
+      "fromModule": "GHC.Rename.Module",
+      "file": "compiler/GHC/Rename/Module.hs",
+      "line": 1956,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Interactively-bound Ids in GHCi",
+      "qualifier": "GHC.Driver.Env",
+      "fromModule": "GHC.Rename.Names",
+      "file": "compiler/GHC/Rename/Names.hs",
+      "line": 622,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "The Naming story",
+      "qualifier": "GHC.Hs.Decls",
+      "fromModule": "GHC.Rename.Names",
+      "file": "compiler/GHC/Rename/Names.hs",
+      "line": 780,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "DotDot fields",
+      "qualifier": "GHC.Hs.Pat",
+      "fromModule": "GHC.Rename.Pat",
+      "file": "compiler/GHC/Rename/Pat.hs",
+      "line": 851,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "RunSplice ThLevel",
+      "qualifier": "GHC.Tc.Types",
+      "fromModule": "GHC.Rename.Splice",
+      "file": "compiler/GHC/Rename/Splice.hs",
+      "line": 132,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "RunSplice ThLevel",
+      "qualifier": "GHC.Tc.Types",
+      "fromModule": "GHC.Rename.Splice",
+      "file": "compiler/GHC/Rename/Splice.hs",
+      "line": 160,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "When to show/hide the module-not-imported line",
+      "qualifier": null,
+      "fromModule": "GHC.Rename.Unbound",
+      "file": "compiler/GHC/Rename/Unbound.hs",
+      "line": 392
+    },
+    {
+      "title": "When to show/hide the module-not-imported line",
+      "qualifier": null,
+      "fromModule": "GHC.Rename.Unbound",
+      "file": "compiler/GHC/Rename/Unbound.hs",
+      "line": 493
+    },
+    {
+      "title": "Multiple Home Units aware GHCi",
+      "qualifier": null,
+      "fromModule": "GHC.Runtime.Context",
+      "file": "compiler/GHC/Runtime/Context.hs",
+      "line": 160
+    },
+    {
+      "title": "Setting Breakpoints by Id",
+      "qualifier": null,
+      "fromModule": "GHC.Runtime.Debugger.Breakpoints",
+      "file": "compiler/GHC/Runtime/Debugger/Breakpoints.hs",
+      "line": 112
+    },
+    {
+      "title": "pretendNameIsInScope",
+      "qualifier": "GHC.Builtin.Names",
+      "fromModule": "GHC.Runtime.Eval",
+      "file": "compiler/GHC/Runtime/Eval.hs",
+      "line": 940,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "The Wasm Dynamic Linker",
+      "qualifier": null,
+      "fromModule": "GHC.Runtime.Interpreter.Wasm",
+      "file": "compiler/GHC/Runtime/Interpreter/Wasm.hs",
+      "line": 35
+    },
+    {
+      "title": "Binder-swap during float-out",
+      "qualifier": "SetLevels",
+      "fromModule": "GHC.Stg.EnforceEpt",
+      "file": "compiler/GHC/Stg/EnforceEpt.hs",
+      "line": 234
+    },
+    {
+      "title": "Renaming during unarisation",
+      "qualifier": null,
+      "fromModule": "GHC.Stg.Unarise",
+      "file": "compiler/GHC/Stg/Unarise.hs",
+      "line": 457
+    },
+    {
+      "title": "Bottoming expressions",
+      "qualifier": "GHC.Core.Utils",
+      "fromModule": "GHC.StgToByteCode",
+      "file": "compiler/GHC/StgToByteCode.hs",
+      "line": 2279,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Heap memory barriers",
+      "qualifier": "SMP.h",
+      "fromModule": "GHC.StgToCmm.Bind",
+      "file": "compiler/GHC/StgToCmm/Bind.hs",
+      "line": 733,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "unpack_cstring closures",
+      "qualifier": "StgStdThunks.cmm",
+      "fromModule": "GHC.StgToCmm.Heap",
+      "file": "compiler/GHC/StgToCmm/Heap.hs",
+      "line": 171,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Multiple Home Units aware GHCi",
+      "qualifier": null,
+      "fromModule": "GHC.StgToJS.Linker.Linker",
+      "file": "compiler/GHC/StgToJS/Linker/Linker.hs",
+      "line": 467
+    },
+    {
+      "title": "Base Dir",
+      "qualifier": null,
+      "fromModule": "GHC.SysTools.BaseDir",
+      "file": "compiler/GHC/SysTools/BaseDir.hs",
+      "line": 22
+    },
+    {
+      "title": "Merging object files for GHCi",
+      "qualifier": "GHC.Driver.Pipeline",
+      "fromModule": "GHC.SysTools.Tasks",
+      "file": "compiler/GHC/SysTools/Tasks.hs",
+      "line": 359,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Recursive superclasses",
+      "qualifier": "GHC.TyCl.Instance",
+      "fromModule": "GHC.Tc.Errors.Ppr",
+      "file": "compiler/GHC/Tc/Errors/Ppr.hs",
+      "line": 4221,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "pretendNameIsInScope",
+      "qualifier": "GHC.Builtin.Names",
+      "fromModule": "GHC.Tc.Errors.Ppr",
+      "file": "compiler/GHC/Tc/Errors/Ppr.hs",
+      "line": 4768,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Tracking redundant constraints",
+      "qualifier": "GHC.Tc.Solver",
+      "fromModule": "GHC.Tc.Errors",
+      "file": "compiler/GHC/Tc/Errors.hs",
+      "line": 393,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "The Unsatisfiable constraint",
+      "qualifier": "GHC.TypeError",
+      "fromModule": "GHC.Tc.Errors",
+      "file": "compiler/GHC/Tc/Errors.hs",
+      "line": 857,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "How type-class constraints are defaulted",
+      "qualifier": "GHC.Tc.Solver",
+      "fromModule": "GHC.Tc.Gen.Default",
+      "file": "compiler/GHC/Tc/Gen/Default.hs",
+      "line": 115,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Instance check for default declarations",
+      "qualifier": "GHC.Tc.Solver.Default",
+      "fromModule": "GHC.Tc.Gen.Default",
+      "file": "compiler/GHC/Tc/Gen/Default.hs",
+      "line": 281,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Type-directed record disambiguation",
+      "qualifier": "GHC.Rename.Pat",
+      "fromModule": "GHC.Tc.Gen.Expr",
+      "file": "compiler/GHC/Tc/Gen/Expr.hs",
+      "line": 1573,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Type-directed record disambiguation",
+      "qualifier": "GHC.Rename.Pat",
+      "fromModule": "GHC.Tc.Gen.Expr",
+      "file": "compiler/GHC/Tc/Gen/Expr.hs",
+      "line": 1582,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Converting strings",
+      "qualifier": "Convert.hs",
+      "fromModule": "GHC.Tc.Gen.Head",
+      "file": "compiler/GHC/Tc/Gen/Head.hs",
+      "line": 1082,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "The wildcard story for types",
+      "qualifier": "GHC.Hs.Type",
+      "fromModule": "GHC.Tc.Gen.HsType",
+      "file": "compiler/GHC/Tc/Gen/HsType.hs",
+      "line": 786,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Distinguishing tuple kinds",
+      "qualifier": "GHC.Hs.Type",
+      "fromModule": "GHC.Tc.Gen.HsType",
+      "file": "compiler/GHC/Tc/Gen/HsType.hs",
+      "line": 1325,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "The wildcard story for types",
+      "qualifier": "GHC.Hs.Type",
+      "fromModule": "GHC.Tc.Gen.HsType",
+      "file": "compiler/GHC/Tc/Gen/HsType.hs",
+      "line": 2217,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "The wildcard story for types",
+      "qualifier": "GHC.Hs.Type",
+      "fromModule": "GHC.Tc.Gen.HsType",
+      "file": "compiler/GHC/Tc/Gen/HsType.hs",
+      "line": 2342,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Matching a kind signature with a declaration",
+      "qualifier": null,
+      "fromModule": "GHC.Tc.Gen.HsType",
+      "file": "compiler/GHC/Tc/Gen/HsType.hs",
+      "line": 2727
+    },
+    {
+      "title": "Do not simplify ConstraintHoles",
+      "qualifier": "GHC.Tc.Solver",
+      "fromModule": "GHC.Tc.Gen.HsType",
+      "file": "compiler/GHC/Tc/Gen/HsType.hs",
+      "line": 4416,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Pattern signature binders and scoping",
+      "qualifier": "GHC.Hs.Type",
+      "fromModule": "GHC.Tc.Gen.HsType",
+      "file": "compiler/GHC/Tc/Gen/HsType.hs",
+      "line": 4436,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Pattern signature binders and scoping",
+      "qualifier": "GHC.Hs.Type",
+      "fromModule": "GHC.Tc.Gen.HsType",
+      "file": "compiler/GHC/Tc/Gen/HsType.hs",
+      "line": 4455,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Type variables in the type environment",
+      "qualifier": "GHC.Tc.Utils",
+      "fromModule": "GHC.Tc.Gen.HsType",
+      "file": "compiler/GHC/Tc/Gen/HsType.hs",
+      "line": 4663,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "TransStmt binder map",
+      "qualifier": "GHC.Hs.Expr",
+      "fromModule": "GHC.Tc.Gen.Match",
+      "file": "compiler/GHC/Tc/Gen/Match.hs",
+      "line": 677,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "TransStmt binder map",
+      "qualifier": "GHC.Hs.Expr",
+      "fromModule": "GHC.Tc.Gen.Match",
+      "file": "compiler/GHC/Tc/Gen/Match.hs",
+      "line": 870,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Typing patterns in pattern bindings",
+      "qualifier": null,
+      "fromModule": "GHC.Tc.Gen.Pat",
+      "file": "compiler/GHC/Tc/Gen/Pat.hs",
+      "line": 284
+    },
+    {
+      "title": "Matching polytyped patterns",
+      "qualifier": null,
+      "fromModule": "GHC.Tc.Gen.Pat",
+      "file": "compiler/GHC/Tc/Gen/Pat.hs",
+      "line": 1390
+    },
+    {
+      "title": "Overview of type signatures",
+      "qualifier": null,
+      "fromModule": "GHC.Tc.Gen.Sig",
+      "file": "compiler/GHC/Tc/Gen/Sig.hs",
+      "line": 91
+    },
+    {
+      "title": "How brackets and nested splices are handled",
+      "qualifier": null,
+      "fromModule": "GHC.Tc.Gen.Splice",
+      "file": "compiler/GHC/Tc/Gen/Splice.hs",
+      "line": 374
+    },
+    {
+      "title": "Pending Splices",
+      "qualifier": null,
+      "fromModule": "GHC.Tc.Gen.Splice",
+      "file": "compiler/GHC/Tc/Gen/Splice.hs",
+      "line": 562
+    },
+    {
+      "title": "How brackets and nested splices are handled",
+      "qualifier": null,
+      "fromModule": "GHC.Tc.Gen.Splice",
+      "file": "compiler/GHC/Tc/Gen/Splice.hs",
+      "line": 689
+    },
+    {
+      "title": "The life cycle of a TH quotation",
+      "qualifier": "GHC.Hs.Expr",
+      "fromModule": "GHC.Tc.Gen.Splice",
+      "file": "compiler/GHC/Tc/Gen/Splice.hs",
+      "line": 708,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "The life cycle of a TH quotation",
+      "qualifier": "GHC.Hs.Expr",
+      "fromModule": "GHC.Tc.Gen.Splice",
+      "file": "compiler/GHC/Tc/Gen/Splice.hs",
+      "line": 757,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Constrained family instances",
+      "qualifier": null,
+      "fromModule": "GHC.Tc.Instance.Family",
+      "file": "compiler/GHC/Tc/Instance/Family.hs",
+      "line": 449
+    },
+    {
+      "title": "Interactively-bound Ids in GHCi",
+      "qualifier": "GHC.Driver.Env",
+      "fromModule": "GHC.Tc.Module",
+      "file": "compiler/GHC/Tc/Module.hs",
+      "line": 2246,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Overview of implicit CallStacks",
+      "qualifier": "GHc.Tc.Types.Evidence",
+      "fromModule": "GHC.Tc.Solver.Dict",
+      "file": "compiler/GHC/Tc/Solver/Dict.hs",
+      "line": 220,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Eliminate younger unification variables",
+      "qualifier": null,
+      "fromModule": "GHC.Tc.Solver.Dict",
+      "file": "compiler/GHC/Tc/Solver/Dict.hs",
+      "line": 1516
+    },
+    {
+      "title": "ForAllCo",
+      "qualifier": "GHC.Tc.TyCo.Rep",
+      "fromModule": "GHC.Tc.Solver.Equality",
+      "file": "compiler/GHC/Tc/Solver/Equality.hs",
+      "line": 606,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Skolem abstract data",
+      "qualifier": "GHC.Core.Tycon",
+      "fromModule": "GHC.Tc.Solver.Equality",
+      "file": "compiler/GHC/Tc/Solver/Equality.hs",
+      "line": 898,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "mkSelCo precondition",
+      "qualifier": "Coercion.hs",
+      "fromModule": "GHC.Tc.Solver.Equality",
+      "file": "compiler/GHC/Tc/Solver/Equality.hs",
+      "line": 1413,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "mkSelCo precondition",
+      "qualifier": "Coercion.hs",
+      "fromModule": "GHC.Tc.Solver.Equality",
+      "file": "compiler/GHC/Tc/Solver/Equality.hs",
+      "line": 1471,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Tracking redundant constraints",
+      "qualifier": "GHC.Tc.Solver",
+      "fromModule": "GHC.Tc.Solver.InertSet",
+      "file": "compiler/GHC/Tc/Solver/InertSet.hs",
+      "line": 2108,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Tracking unused binding and imports",
+      "qualifier": "GHC.Tc.Utils",
+      "fromModule": "GHC.Tc.Solver.Monad",
+      "file": "compiler/GHC/Tc/Solver/Monad.hs",
+      "line": 1480,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Work-list ordering",
+      "qualifier": "GHC.Tc.Solved.Equality",
+      "fromModule": "GHC.Tc.Solver.Monad",
+      "file": "compiler/GHC/Tc/Solver/Monad.hs",
+      "line": 2302,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Stability of rewriting",
+      "qualifier": "GHC.Tc.Solver.Monad",
+      "fromModule": "GHC.Tc.Solver.Rewrite",
+      "file": "compiler/GHC/Tc/Solver/Rewrite.hs",
+      "line": 1020
+    },
+    {
+      "title": "Tricky iface loop",
+      "qualifier": "GHC.Iface.Load",
+      "fromModule": "GHC.Tc.TyCl.Build",
+      "file": "compiler/GHC/Tc/TyCl/Build.hs",
+      "line": 94,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "RULEs enabled in InitialPhase",
+      "qualifier": "GHC.Core.Opt.Simplify.Utils",
+      "fromModule": "GHC.Tc.TyCl.Instance",
+      "file": "compiler/GHC/Tc/TyCl/Instance.hs",
+      "line": 189,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Silent superclass arguments",
+      "qualifier": null,
+      "fromModule": "GHC.Tc.TyCl.Instance",
+      "file": "compiler/GHC/Tc/TyCl/Instance.hs",
+      "line": 1739
+    },
+    {
+      "title": "Handling old-form SPECIALISE pragmas",
+      "qualifier": "GHC.Tc.Gen.Bind",
+      "fromModule": "GHC.Tc.TyCl.Instance",
+      "file": "compiler/GHC/Tc/TyCl/Instance.hs",
+      "line": 2240,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Type variables whose kind is captured",
+      "qualifier": null,
+      "fromModule": "GHC.Tc.TyCl.PatSyn",
+      "file": "compiler/GHC/Tc/TyCl/PatSyn.hs",
+      "line": 153
+    },
+    {
+      "title": "Type variables whose kind is captured",
+      "qualifier": null,
+      "fromModule": "GHC.Tc.TyCl.PatSyn",
+      "file": "compiler/GHC/Tc/TyCl/PatSyn.hs",
+      "line": 229
+    },
+    {
+      "title": "The pattern-synonym signature splitting rule",
+      "qualifier": "GHC.Tc.Gen.Sig",
+      "fromModule": "GHC.Tc.TyCl.PatSyn",
+      "file": "compiler/GHC/Tc/TyCl/PatSyn.hs",
+      "line": 383,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "NoFieldSelectors",
+      "qualifier": "GHC.Rename.Env",
+      "fromModule": "GHC.Tc.TyCl.Utils",
+      "file": "compiler/GHC/Tc/TyCl/Utils.hs",
+      "line": 1080,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "TyClGroups and dependency analysis",
+      "qualifier": "GHC.Hs.Decls",
+      "fromModule": "GHC.Tc.TyCl",
+      "file": "compiler/GHC/Tc/TyCl.hs",
+      "line": 528,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "VarBndrs, ForAllTyBinders, TyConBinders, and visibility",
+      "qualifier": "GHC.Core.TyCo.Rep",
+      "fromModule": "GHC.Tc.TyCl",
+      "file": "compiler/GHC/Tc/TyCl.hs",
+      "line": 1527,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Unification variables need fresh Names",
+      "qualifier": null,
+      "fromModule": "GHC.Tc.TyCl",
+      "file": "compiler/GHC/Tc/TyCl.hs",
+      "line": 1662
+    },
+    {
+      "title": "NonCanonical Semantics",
+      "qualifier": "GHC.Tc.Solver.Monad",
+      "fromModule": "GHC.Tc.Types.Constraint",
+      "file": "compiler/GHC/Tc/Types/Constraint.hs",
+      "line": 212
+    },
+    {
+      "title": "Expanding Recursive Superclasses and ExpansionFuel",
+      "qualifier": "GHC.Tc.Solver",
+      "fromModule": "GHC.Tc.Types.Constraint",
+      "file": "compiler/GHC/Tc/Types/Constraint.hs",
+      "line": 226,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Expanding Recursive Superclasses and ExpansionFuel",
+      "qualifier": "GHC.Tc.Solver",
+      "fromModule": "GHC.Tc.Types.Constraint",
+      "file": "compiler/GHC/Tc/Types/Constraint.hs",
+      "line": 366,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Do not simplify ConstraintHoles",
+      "qualifier": "GHC.Tc.Solver",
+      "fromModule": "GHC.Tc.Types.Constraint",
+      "file": "compiler/GHC/Tc/Types/Constraint.hs",
+      "line": 430,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Tracking redundant constraints",
+      "qualifier": "GHC.Tc.Solver",
+      "fromModule": "GHC.Tc.Types.Constraint",
+      "file": "compiler/GHC/Tc/Types/Constraint.hs",
+      "line": 1542,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Evidence field of CtEvidence",
+      "qualifier": null,
+      "fromModule": "GHC.Tc.Types.Constraint",
+      "file": "compiler/GHC/Tc/Types/Constraint.hs",
+      "line": 2174
+    },
+    {
+      "title": "Unify only if the rewriter set is empty",
+      "qualifier": "GHC.Solver.Equality",
+      "fromModule": "GHC.Tc.Types.Constraint",
+      "file": "compiler/GHC/Tc/Types/Constraint.hs",
+      "line": 2547,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Tracking redundant constraints",
+      "qualifier": "GHC.Tc.Solver",
+      "fromModule": "GHC.Tc.Types.Evidence",
+      "file": "compiler/GHC/Tc/Types/Evidence.hs",
+      "line": 388,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Tracking redundant constraints",
+      "qualifier": "GHC.Tc.Solver",
+      "fromModule": "GHC.Tc.Types.Evidence",
+      "file": "compiler/GHC/Tc/Types/Evidence.hs",
+      "line": 496,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Tracking redundant constraints",
+      "qualifier": "GHC.Tc.Solver",
+      "fromModule": "GHC.Tc.Types.Evidence",
+      "file": "compiler/GHC/Tc/Types/Evidence.hs",
+      "line": 983,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Tracking redundant constraints",
+      "qualifier": "GHC.Tc.Solver",
+      "fromModule": "GHC.Tc.Types.Origin",
+      "file": "compiler/GHC/Tc/Types/Origin.hs",
+      "line": 106,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Bindings with closed types: ClosedTypeId",
+      "qualifier": "GHC.Tc.Types",
+      "fromModule": "GHC.Tc.Utils.Env",
+      "file": "compiler/GHC/Tc/Utils/Env.hs",
+      "line": 668,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "forall-or-nothing rule",
+      "qualifier": "GHC.Hs.Type",
+      "fromModule": "GHC.Tc.Utils.TcMType",
+      "file": "compiler/GHC/Tc/Utils/TcMType.hs",
+      "line": 2087,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Unify only if the rewriter set is empty",
+      "qualifier": "GHC.Solver.Equality",
+      "fromModule": "GHC.Tc.Utils.Unify",
+      "file": "compiler/GHC/Tc/Utils/Unify.hs",
+      "line": 2888,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "TyVarTv",
+      "qualifier": "GHC.Tc.Types.TcMType",
+      "fromModule": "GHC.Tc.Utils.Unify",
+      "file": "compiler/GHC/Tc/Utils/Unify.hs",
+      "line": 2899,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Eliminate younger unification variables",
+      "qualifier": null,
+      "fromModule": "GHC.Tc.Utils.Unify",
+      "file": "compiler/GHC/Tc/Utils/Unify.hs",
+      "line": 2983
+    },
+    {
+      "title": "Eliminate younger unification variables",
+      "qualifier": null,
+      "fromModule": "GHC.Tc.Utils.Unify",
+      "file": "compiler/GHC/Tc/Utils/Unify.hs",
+      "line": 3044
+    },
+    {
+      "title": "Occurrence checking: look inside kinds",
+      "qualifier": "GHC.Core.Type",
+      "fromModule": "GHC.Tc.Utils.Unify",
+      "file": "compiler/GHC/Tc/Utils/Unify.hs",
+      "line": 3296,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Defaulting equalities",
+      "qualifier": "GHC.Tc.Solver",
+      "fromModule": "GHC.Tc.Utils.Unify",
+      "file": "compiler/GHC/Tc/Utils/Unify.hs",
+      "line": 3458,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Sections in HsSyn",
+      "qualifier": "GHC.Hs.Expr",
+      "fromModule": "GHC.ThToHs",
+      "file": "compiler/GHC/ThToHs.hs",
+      "line": 1160,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Preserving Boxity of results is rarely a win",
+      "qualifier": null,
+      "fromModule": "GHC.Types.Demand",
+      "file": "compiler/GHC/Types/Demand.hs",
+      "line": 304
+    },
+    {
+      "title": "Diagnostic codes",
+      "qualifier": "GHC.Types.Error",
+      "fromModule": "GHC.Types.Error.Codes",
+      "file": "compiler/GHC/Types/Error/Codes.hs",
+      "line": 211,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "NoFieldSelectors",
+      "qualifier": "GHC.Rename.Env",
+      "fromModule": "GHC.Types.FieldLabel",
+      "file": "compiler/GHC/Types/FieldLabel.hs",
+      "line": 73,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Naughty record selectors",
+      "qualifier": "GHC.Tc.TyCl",
+      "fromModule": "GHC.Types.Id.Info",
+      "file": "compiler/GHC/Types/Id/Info.hs",
+      "line": 156,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "GHC.Prim",
+      "qualifier": null,
+      "fromModule": "GHC.Types.Id.Make",
+      "file": "compiler/GHC/Types/Id/Make.hs",
+      "line": 133
+    },
+    {
+      "title": "Injecting implicit bindings",
+      "qualifier": "GHC.Iface.Tidy",
+      "fromModule": "GHC.Types.Id.Make",
+      "file": "compiler/GHC/Types/Id/Make.hs",
+      "line": 902,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Conlike is interesting",
+      "qualifier": "GHC.Core.Op.Simplify.Utils",
+      "fromModule": "GHC.Types.Id.Make",
+      "file": "compiler/GHC/Types/Id/Make.hs",
+      "line": 1023,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Lone variables",
+      "qualifier": "GHC.Core.Unfold",
+      "fromModule": "GHC.Types.Id.Make",
+      "file": "compiler/GHC/Types/Id/Make.hs",
+      "line": 1024,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "User-defined RULES for seq",
+      "qualifier": "GHC.Core.Opt.Simplify",
+      "fromModule": "GHC.Types.Id.Make",
+      "file": "compiler/GHC/Types/Id/Make.hs",
+      "line": 2169,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Lone variables",
+      "qualifier": "GHC.Core.Unfold",
+      "fromModule": "GHC.Types.Id.Make",
+      "file": "compiler/GHC/Types/Id/Make.hs",
+      "line": 2219,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "pretendNameIsInScope",
+      "qualifier": "GHC.Builtin.Names",
+      "fromModule": "GHC.Types.Name.Ppr",
+      "file": "compiler/GHC/Types/Name/Ppr.hs",
+      "line": 179,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "NoFieldSelectors",
+      "qualifier": "GHC.Rename.Env",
+      "fromModule": "GHC.Types.Name.Reader",
+      "file": "compiler/GHC/Types/Name/Reader.hs",
+      "line": 1512,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "NoFieldSelectors",
+      "qualifier": "GHC.Rename.Env",
+      "fromModule": "GHC.Types.Name.Reader",
+      "file": "compiler/GHC/Types/Name/Reader.hs",
+      "line": 1518,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "The Name Cache",
+      "qualifier": "GHC.Iface.Env",
+      "fromModule": "GHC.Types.Name",
+      "file": "compiler/GHC/Types/Name.hs",
+      "line": 244,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "The Name Cache",
+      "qualifier": "GHC.Iface.Env",
+      "fromModule": "GHC.Types.Name",
+      "file": "compiler/GHC/Types/Name.hs",
+      "line": 534,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Structure of dep_boot_mods",
+      "qualifier": null,
+      "fromModule": "GHC.Unit.Module.Deps",
+      "file": "compiler/GHC/Unit/Module/Deps.hs",
+      "line": 97
+    },
+    {
+      "title": "Fusion for zipN/zipWithN",
+      "qualifier": "GHC",
+      "fromModule": "GHC.Utils.Monad",
+      "file": "compiler/GHC/Utils/Monad.hs",
+      "line": 55,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Inline @unzipN@ functions",
+      "qualifier": "Data",
+      "fromModule": "GHC.Utils.Monad",
+      "file": "compiler/GHC/Utils/Monad.hs",
+      "line": 119,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "multiShotIO",
+      "qualifier": "GHC.Types.Unique.Supply",
+      "fromModule": "GHC.Utils.Monad",
+      "file": "compiler/GHC/Utils/Monad.hs",
+      "line": 415
+    },
+    {
+      "title": "Roles",
+      "qualifier": "GHC.Core.Coercion",
+      "fromModule": "Language.Haskell.Syntax.Basic",
+      "file": "compiler/Language/Haskell/Syntax/Basic.hs",
+      "line": 69,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "fun_id in Match",
+      "qualifier": "GHC.Hs.Expr",
+      "fromModule": "Language.Haskell.Syntax.Binds",
+      "file": "compiler/Language/Haskell/Syntax/Binds.hs",
+      "line": 206
+    },
+    {
+      "title": "Overloaded labels",
+      "qualifier": "GHC.OverloadedLabels",
+      "fromModule": "Language.Haskell.Syntax.Expr",
+      "file": "compiler/Language/Haskell/Syntax/Expr.hs",
+      "line": 338,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Holes in expressions",
+      "qualifier": "GHC.Tc.Types.Constraint",
+      "fromModule": "Language.Haskell.Syntax.Expr",
+      "file": "compiler/Language/Haskell/Syntax/Expr.hs",
+      "line": 519,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Located RdrNames",
+      "qualifier": "GHC.Hs.Expr",
+      "fromModule": "Language.Haskell.Syntax.ImpExp",
+      "file": "compiler/Language/Haskell/Syntax/ImpExp.hs",
+      "line": 100,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Located RdrNames",
+      "qualifier": "GHC.Hs.Expr",
+      "fromModule": "Language.Haskell.Syntax.ImpExp",
+      "file": "compiler/Language/Haskell/Syntax/ImpExp.hs",
+      "line": 111,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Located RdrNames",
+      "qualifier": "GHC.Hs.Expr",
+      "fromModule": "Language.Haskell.Syntax.Pat",
+      "file": "compiler/Language/Haskell/Syntax/Pat.hs",
+      "line": 69,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Parens in HsSyn",
+      "qualifier": "GHC.Hs.Expr",
+      "fromModule": "Language.Haskell.Syntax.Pat",
+      "file": "compiler/Language/Haskell/Syntax/Pat.hs",
+      "line": 81,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Located RdrNames",
+      "qualifier": "GHC.Hs.Expr",
+      "fromModule": "Language.Haskell.Syntax.Type",
+      "file": "compiler/Language/Haskell/Syntax/Type.hs",
+      "line": 831,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Parens in HsSyn",
+      "qualifier": "GHC.Hs.Expr",
+      "fromModule": "Language.Haskell.Syntax.Type",
+      "file": "compiler/Language/Haskell/Syntax/Type.hs",
+      "line": 862,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "ARM outline atomics and the RTS linker",
+      "qualifier": null,
+      "fromModule": null,
+      "file": "rts/ARMOutlineAtomicsSymbols.h",
+      "line": 5
+    },
+    {
+      "title": "Heap memory barriers",
+      "qualifier": "SMP.h",
+      "fromModule": null,
+      "file": "rts/Apply.cmm",
+      "line": 103,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Data race in shouldYieldCapability",
+      "qualifier": "Schedule.c",
+      "fromModule": null,
+      "file": "rts/Capability.c",
+      "line": 219,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Data race in shouldYieldCapability",
+      "qualifier": "Schedule.c",
+      "fromModule": null,
+      "file": "rts/Capability.c",
+      "line": 238,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "GC livelock",
+      "qualifier": "Schedule.c",
+      "fromModule": null,
+      "file": "rts/Capability.c",
+      "line": 963,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "allocation accounting",
+      "qualifier": "Storage.c",
+      "fromModule": null,
+      "file": "rts/Capability.h",
+      "line": 139,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Heap memory barriers",
+      "qualifier": "SMP.h",
+      "fromModule": null,
+      "file": "rts/Compact.cmm",
+      "line": 58,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Continuations overview",
+      "qualifier": "Continuation.c",
+      "fromModule": null,
+      "file": "rts/ContinuationOps.cmm",
+      "line": 63,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Continuations overview",
+      "qualifier": "Continuation.c",
+      "fromModule": null,
+      "file": "rts/ContinuationOps.cmm",
+      "line": 78,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Continuations overview",
+      "qualifier": "Continuation.c",
+      "fromModule": null,
+      "file": "rts/ContinuationOps.cmm",
+      "line": 90,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "When capturing the continuation fails",
+      "qualifier": "Continuation.c",
+      "fromModule": null,
+      "file": "rts/ContinuationOps.cmm",
+      "line": 105,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Continuations overview",
+      "qualifier": "Continuation.c",
+      "fromModule": null,
+      "file": "rts/ContinuationOps.cmm",
+      "line": 173,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Apply the handler directly in raiseAsync",
+      "qualifier": "RaiseAsync.c",
+      "fromModule": null,
+      "file": "rts/Exception.cmm",
+      "line": 595,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Compiler error functions",
+      "qualifier": "GHC.Prim.Panic",
+      "fromModule": null,
+      "file": "rts/Exception.cmm",
+      "line": 672,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Evaluating functions with profiling",
+      "qualifier": "Apply.cmm",
+      "fromModule": null,
+      "file": "rts/Interpreter.c",
+      "line": 487,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Evaluating functions with profiling",
+      "qualifier": "Apply.cmm",
+      "fromModule": null,
+      "file": "rts/Interpreter.c",
+      "line": 504,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "CBV Functions and the interpreter",
+      "qualifier": "Info.hs",
+      "fromModule": null,
+      "file": "rts/Interpreter.c",
+      "line": 1810,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Tracking foreign exports",
+      "qualifier": "ForeignExports.c",
+      "fromModule": null,
+      "file": "rts/Linker.c",
+      "line": 1673,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Heap memory barriers",
+      "qualifier": "SMP.h",
+      "fromModule": null,
+      "file": "rts/Messages.c",
+      "line": 246,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Heap memory barriers",
+      "qualifier": "SMP.h",
+      "fromModule": null,
+      "file": "rts/Messages.c",
+      "line": 304,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Heap memory barriers",
+      "qualifier": "SMP.h",
+      "fromModule": null,
+      "file": "rts/Messages.c",
+      "line": 310,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Concurrent read barrier on deRefWeak#",
+      "qualifier": "NonMovingMark.c",
+      "fromModule": null,
+      "file": "rts/PrimOps.cmm",
+      "line": 935,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Non-moving garbage collector",
+      "qualifier": "NonMoving.c",
+      "fromModule": null,
+      "file": "rts/PrimOps.cmm",
+      "line": 1585,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Heap memory barriers",
+      "qualifier": "SMP.h",
+      "fromModule": null,
+      "file": "rts/PrimOps.cmm",
+      "line": 2115,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "NULL StgStablePtr",
+      "qualifier": "StablePtr.c",
+      "fromModule": null,
+      "file": "rts/PrimOps.cmm",
+      "line": 2137,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Update async masking state on unwind",
+      "qualifier": "Schedule.c",
+      "fromModule": null,
+      "file": "rts/RaiseAsync.c",
+      "line": 1068,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "shutdown",
+      "qualifier": null,
+      "fromModule": null,
+      "file": "rts/Schedule.c",
+      "line": 226
+    },
+    {
+      "title": "avoiding threadPaused",
+      "qualifier": "Interpreter.c",
+      "fromModule": null,
+      "file": "rts/Schedule.c",
+      "line": 1270,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Continuations and async exception masking",
+      "qualifier": "Continuation.c",
+      "fromModule": null,
+      "file": "rts/Schedule.c",
+      "line": 3167,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "shutdown",
+      "qualifier": "Schedule.c",
+      "fromModule": null,
+      "file": "rts/Schedule.h",
+      "line": 65
+    },
+    {
+      "title": "Heap memory barriers",
+      "qualifier": "SMP.h",
+      "fromModule": null,
+      "file": "rts/StgMiscClosures.cmm",
+      "line": 564,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "avoiding threadPaused",
+      "qualifier": "Interpreter.c",
+      "fromModule": null,
+      "file": "rts/StgStartup.cmm",
+      "line": 124,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Heap memory barriers",
+      "qualifier": "SMP.h",
+      "fromModule": null,
+      "file": "rts/Updates.h",
+      "line": 453,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Heap memory barriers",
+      "qualifier": "SMP.h",
+      "fromModule": null,
+      "file": "rts/Updates.h",
+      "line": 483,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Heap memory barriers",
+      "qualifier": "SMP.h",
+      "fromModule": null,
+      "file": "rts/include/Cmm.h",
+      "line": 322,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Heap memory barriers",
+      "qualifier": "SMP.h",
+      "fromModule": null,
+      "file": "rts/include/Cmm.h",
+      "line": 692,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Update remembered set",
+      "qualifier": "NonMovingMark.c",
+      "fromModule": null,
+      "file": "rts/include/Cmm.h",
+      "line": 966,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Stack Alignment on X86",
+      "qualifier": "StgCRun.c",
+      "fromModule": null,
+      "file": "rts/include/rts/Constants.h",
+      "line": 122,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Debugging predicates for pointers",
+      "qualifier": "ClosureMacros.h",
+      "fromModule": null,
+      "file": "rts/include/rts/Constants.h",
+      "line": 223,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "CHARLIKE and INTLIKE closures",
+      "qualifier": "StgMiscClosures.h",
+      "fromModule": null,
+      "file": "rts/include/rts/storage/Closures.h",
+      "line": 349,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "CNFs in compacting GC",
+      "qualifier": "Compact.c",
+      "fromModule": null,
+      "file": "rts/include/rts/storage/Closures.h",
+      "line": 681,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Continuations overview",
+      "qualifier": "Continuation.c",
+      "fromModule": null,
+      "file": "rts/include/rts/storage/Closures.h",
+      "line": 685,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Continuations and async exception masking",
+      "qualifier": "Continuation.c",
+      "fromModule": null,
+      "file": "rts/include/rts/storage/Closures.h",
+      "line": 702,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Continuations and async exception masking",
+      "qualifier": "Continuation.c",
+      "fromModule": null,
+      "file": "rts/include/rts/storage/Closures.h",
+      "line": 706,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "ThreadSanitizer",
+      "qualifier": "TSANUtils.h",
+      "fromModule": null,
+      "file": "rts/include/stg/SMP.h",
+      "line": 424,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "NULL StgStablePtr",
+      "qualifier": "StablePtr.c",
+      "fromModule": null,
+      "file": "rts/include/stg/Types.h",
+      "line": 166,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Black holes in large objects",
+      "qualifier": "Evac.c",
+      "fromModule": null,
+      "file": "rts/sm/Compact.c",
+      "line": 575,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Scavenging the non-moving heap",
+      "qualifier": "NonMovingScav.c",
+      "fromModule": null,
+      "file": "rts/sm/Evac.c",
+      "line": 76,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Aging under the non-moving collector",
+      "qualifier": "NonMoving.c",
+      "fromModule": null,
+      "file": "rts/sm/Evac.c",
+      "line": 221,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Static objects under the nonmoving collector",
+      "qualifier": "Storage.c",
+      "fromModule": null,
+      "file": "rts/sm/Evac.c",
+      "line": 490,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Object unloading",
+      "qualifier": "CheckUnload.c",
+      "fromModule": null,
+      "file": "rts/sm/Evac.c",
+      "line": 706,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "STATIC_LINK fields",
+      "qualifier": "Storage.h",
+      "fromModule": null,
+      "file": "rts/sm/GC.c",
+      "line": 100,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Object unloading",
+      "qualifier": "CheckUnload.c",
+      "fromModule": null,
+      "file": "rts/sm/GC.c",
+      "line": 952,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Statistics for retaining memory",
+      "qualifier": null,
+      "fromModule": null,
+      "file": "rts/sm/GC.c",
+      "line": 1017
+    },
+    {
+      "title": "STATIC_LINK fields",
+      "qualifier": "Storage.h",
+      "fromModule": null,
+      "file": "rts/sm/GC.c",
+      "line": 2217,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Statistics for retaining memory",
+      "qualifier": null,
+      "fromModule": null,
+      "file": "rts/sm/GC.c",
+      "line": 2439
+    },
+    {
+      "title": "Object unloading",
+      "qualifier": "CheckUnload.c",
+      "fromModule": null,
+      "file": "rts/sm/GCAux.c",
+      "line": 160,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Object unloading",
+      "qualifier": "CheckUnload.c",
+      "fromModule": null,
+      "file": "rts/sm/GCAux.c",
+      "line": 170,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "MallocPtr finalizers",
+      "qualifier": "GHC.ForeignPtr",
+      "fromModule": null,
+      "file": "rts/sm/MarkWeak.c",
+      "line": 237,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Static objects under the nonmoving collector",
+      "qualifier": "Storage.c",
+      "fromModule": null,
+      "file": "rts/sm/NonMoving.c",
+      "line": 278,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Unintentional marking in resurrectThreads",
+      "qualifier": "NonMovingMark.c",
+      "fromModule": null,
+      "file": "rts/sm/NonMoving.c",
+      "line": 1260,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "StgStack dirtiness flags and concurrent marking",
+      "qualifier": "TSO.h",
+      "fromModule": null,
+      "file": "rts/sm/NonMovingMark.c",
+      "line": 149,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "SRTs",
+      "qualifier": "CmmBuildInfoTables",
+      "fromModule": null,
+      "file": "rts/sm/NonMovingMark.c",
+      "line": 1319,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Heap memory barriers",
+      "qualifier": "SMP.h",
+      "fromModule": null,
+      "file": "rts/sm/NonMovingMark.c",
+      "line": 1597,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Sync phase marking budget",
+      "qualifier": "NonMoving.c",
+      "fromModule": null,
+      "file": "rts/sm/NonMovingMark.h",
+      "line": 115,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Dirty flags in the non-moving collector",
+      "qualifier": "NonMoving.c",
+      "fromModule": null,
+      "file": "rts/sm/NonMovingScav.c",
+      "line": 108,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Dirty flags in the non-moving collector",
+      "qualifier": "NonMoving.c",
+      "fromModule": null,
+      "file": "rts/sm/NonMovingScav.c",
+      "line": 128,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Dirty flags in the non-moving collector",
+      "qualifier": "NonMoving.c",
+      "fromModule": null,
+      "file": "rts/sm/NonMovingScav.c",
+      "line": 253,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "SRTs",
+      "qualifier": "CmmBuildInfoTables",
+      "fromModule": null,
+      "file": "rts/sm/Scav.c",
+      "line": 1850,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "STATIC_LINK fields",
+      "qualifier": "Storage.h",
+      "fromModule": null,
+      "file": "rts/sm/Storage.c",
+      "line": 492,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Heap memory barriers",
+      "qualifier": "SMP.h",
+      "fromModule": null,
+      "file": "rts/sm/Storage.c",
+      "line": 1426,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Dirty flags in the non-moving collector",
+      "qualifier": "NonMoving.c",
+      "fromModule": null,
+      "file": "rts/sm/Storage.c",
+      "line": 1430,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Heap memory barriers",
+      "qualifier": "SMP.h",
+      "fromModule": null,
+      "file": "rts/sm/Storage.c",
+      "line": 1447,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Dirty flags in the non-moving collector",
+      "qualifier": "NonMoving.c",
+      "fromModule": null,
+      "file": "rts/sm/Storage.c",
+      "line": 1452,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "Dirty flags in the non-moving collector",
+      "qualifier": "NonMoving.c",
+      "fromModule": null,
+      "file": "rts/sm/Storage.c",
+      "line": 1534,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "allocation accounting",
+      "qualifier": "Storage.c",
+      "fromModule": null,
+      "file": "rts/sm/Storage.h",
+      "line": 85,
+      "reason": "qualifier-not-found"
+    },
+    {
+      "title": "WINIO Manager design",
+      "qualifier": null,
+      "fromModule": null,
+      "file": "rts/win32/AsyncWinIO.c",
+      "line": 123
+    }
+  ],
+  "ambiguous": [
+    {
+      "title": "Ordering of implicit variables",
+      "qualifier": null,
+      "fromModule": "GHC.Core.Predicate",
+      "file": "compiler/GHC/Core/Predicate.hs",
+      "line": 702,
+      "candidates": [
+        "GHC.Rename.HsType.ordering-of-implicit-variables",
+        "Language.Haskell.Syntax.Type.ordering-of-implicit-variables"
+      ]
+    },
+    {
+      "title": "Why do we import Prelude here?",
+      "qualifier": null,
+      "fromModule": "GHC.Platform",
+      "file": "compiler/GHC/Platform.hs",
+      "line": 53,
+      "candidates": [
+        "GHC.Prelude.Basic.why-do-we-import-prelude-here",
+        "GHC.Prelude.why-do-we-import-prelude-here"
+      ]
+    },
+    {
+      "title": "Join points",
+      "qualifier": null,
+      "fromModule": "GHC.Stg.BcPrep",
+      "file": "compiler/GHC/Stg/BcPrep.hs",
+      "line": 160,
+      "candidates": [
+        "GHC.Core.Lint.join-points",
+        "GHC.Core.Opt.FloatIn.join-points",
+        "GHC.Core.join-points"
+      ]
+    },
+    {
+      "title": "Quantified variables in partial type signatures",
+      "qualifier": null,
+      "fromModule": "GHC.Tc.TyCl",
+      "file": "compiler/GHC/Tc/TyCl.hs",
+      "line": 1687,
+      "candidates": [
+        "GHC.Tc.Gen.Bind.quantified-variables-in-partial-type-signatures",
+        "GHC.Tc.Types.BasicTypes.quantified-variables-in-partial-type-signatures"
+      ]
+    },
+    {
+      "title": "Quantified variables in partial type signatures",
+      "qualifier": null,
+      "fromModule": "GHC.Tc.Utils.TcMType",
+      "file": "compiler/GHC/Tc/Utils/TcMType.hs",
+      "line": 703,
+      "candidates": [
+        "GHC.Tc.Gen.Bind.quantified-variables-in-partial-type-signatures",
+        "GHC.Tc.Types.BasicTypes.quantified-variables-in-partial-type-signatures"
+      ]
+    },
+    {
+      "title": "Join points",
+      "qualifier": null,
+      "fromModule": "GHC.Types.Id.Info",
+      "file": "compiler/GHC/Types/Id/Info.hs",
+      "line": 213,
+      "candidates": [
+        "GHC.Core.Lint.join-points",
+        "GHC.Core.Opt.FloatIn.join-points",
+        "GHC.Core.join-points"
+      ]
+    }
+  ]
+}

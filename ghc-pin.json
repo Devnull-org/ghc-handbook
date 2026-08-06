@@ -1,0 +1,17 @@
+{
+  "tag": "ghc-9.14.1-release",
+  "ghcVersion": "9.14.1",
+  "canonical": {
+    "host": "gitlab.haskell.org",
+    "blobUrl": "https://gitlab.haskell.org/ghc/ghc/-/blob/{tag}/{path}#L{line}",
+    "issueUrl": "https://gitlab.haskell.org/ghc/ghc/-/issues/{id}"
+  },
+  "mirror": {
+    "host": "github.com",
+    "cloneUrl": "https://github.com/ghc/ghc",
+    "blobUrl": "https://github.com/ghc/ghc/blob/{tag}/{path}#L{line}"
+  },
+  "sourceRoots": ["compiler", "rts", "libraries"],
+  "referenceRoots": ["compiler", "rts"],
+  "checkoutDir": ".ghc-src"
+}

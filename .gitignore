@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.astro/
+
+# GHC source checkout — fetched on demand via scripts/fetch-ghc-src.sh, never
+# committed. No trailing slash: during development this is often a symlink to a
+# checkout elsewhere, and `.ghc-src/` would not match one.
+.ghc-src
+
+# Scratch output from dump generation before it is promoted into data/
+.dump-tmp/
+
+.DS_Store
+*.log

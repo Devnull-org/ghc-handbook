@@ -1,0 +1,71 @@
+---
+import Base from '../layouts/Base.astro';
+import { loadNotes, pin } from '../lib/ghc';
+
+const { stats } = loadNotes();
+---
+
+<Base title="About" description="How this handbook is built, and what it is built from.">
+  <h1>About this handbook</h1>
+
+  <p class="lede">
+    An interactive guide to the Glasgow Haskell Compiler, assembled by reading GHC's own source and
+    the reasoning its authors left behind in it.
+  </p>
+
+  <h2>What it is built from</h2>
+  <p>
+    Everything here is pinned to a single GHC release, <code>{pin.tag}</code>. The prose is written
+    for this handbook; the quoted comments, code, and cross-references are extracted mechanically
+    from that tree, so every claim can be traced to a line of source.
+  </p>
+
+  <table>
+    <tbody>
+      <tr><th>GHC version</th><td><code>{pin.ghcVersion}</code></td></tr>
+      <tr><th>Source tag</th><td><code>{pin.tag}</code></td></tr>
+      <tr><th>Notes extracted</th><td>{stats.notes!.toLocaleString()}</td></tr>
+      <tr><th>Cross-references</th><td>{stats.references!.toLocaleString()}</td></tr>
+      <tr><th>Resolved</th><td>
+        {stats.resolved!.toLocaleString()} ({Math.round((stats.resolved! / stats.references!) * 100)}%)
+      </td></tr>
+      <tr><th>Files scanned</th><td>{stats.files!.toLocaleString()}</td></tr>
+    </tbody>
+  </table>
+
+  <h2>On the unresolved references</h2>
+  <p>
+    Roughly {Math.round(((stats.references! - stats.resolved!) / stats.references!) * 100)}% of
+    <code>Note [...]</code> mentions do not resolve to a Note that still exists. That is not a defect
+    in the extraction — it is GHC's own drift: Notes get renamed, merged, or deleted while the
+    comments pointing at them stay behind. Rather than guess, the extractor records them, and
+    ambiguous titles are left unlinked instead of being resolved to the wrong Note.
+  </p>
+
+  <h2>Reading levels</h2>
+  <p>
+    Chapters are written in two layers. The prose explains what a phase does and why it is shaped the
+    way it is — useful if you write Haskell and want to know what happens to it. Interleaved with it
+    are the primary sources: the actual Notes, the actual data types, and links into the actual
+    source. Follow those if you intend to work on the compiler.
+  </p>
+
+  <h2>Licensing</h2>
+  <p>
+    GHC is licensed under a <a
+      href="https://gitlab.haskell.org/ghc/ghc/-/blob/master/LICENSE"
+      rel="noopener">BSD-3-Clause licence</a
+    >. Quoted comments and code excerpts remain under that licence and belong to their authors. The
+    original prose of this handbook is separate from the GHC project and is not endorsed by it.
+  </p>
+</Base>
+
+<style>
+  .lede {
+    color: var(--ink-muted);
+    font-size: var(--step-1);
+  }
+  th {
+    width: 12rem;
+  }
+</style>

@@ -1,0 +1,312 @@
+---
+import Base from '../layouts/Base.astro';
+import { loadNotes, pin } from '../lib/ghc';
+import { withBase, chapterHref } from '../lib/paths';
+import { pipeline, type Phase } from '../data/pipeline';
+
+const { notes, stats } = loadNotes();
+
+/** Attribute each Note to a phase by module prefix, longest prefix wins. */
+function noteCount(phase: Phase): number {
+  if (phase.id === 'rts') return notes.filter((n) => n.area === 'rts').length;
+  return notes.filter((n) => {
+    if (!n.module) return false;
+    const owner = bestPhaseFor(n.module);
+    return owner === phase.id;
+  }).length;
+}
+
+const prefixOwners = pipeline
+  .flatMap((part) => part.phases.flatMap((ph) => ph.modulePrefixes.map((p) => [p, ph.id] as const)))
+  .sort((a, b) => b[0].length - a[0].length);
+
+function bestPhaseFor(mod: string): string | null {
+  for (const [prefix, id] of prefixOwners) {
+    if (mod === prefix || mod.startsWith(prefix + '.')) return id;
+  }
+  return null;
+}
+
+const counts = new Map(
+  pipeline.flatMap((part) => part.phases.map((ph) => [ph.id, noteCount(ph)] as const)),
+);
+const maxCount = Math.max(...counts.values());
+---
+
+<Base
+  title="GHC Handbook"
+  description={`An interactive guide to the Glasgow Haskell Compiler, built from the source of GHC ${pin.ghcVersion}.`}
+  wide
+>
+  <div class="hero">
+    <h1>How GHC compiles Haskell</h1>
+    <p class="lede">
+      A guided tour of the Glasgow Haskell Compiler, assembled from its own source: the
+      <strong>{stats.notes!.toLocaleString()}</strong>
+      <code>Note&nbsp;[…]</code> comments in which its authors recorded why it is built the way it is.
+      Pinned to <code>{pin.tag}</code>.
+    </p>
+    <p class="start">
+      <a class="cta" href={chapterHref('parser')}>Start with the parser</a>
+      <a class="cta-secondary" href={withBase('/notes/')}>Browse the Notes →</a>
+    </p>
+  </div>
+
+  <section class="map" aria-labelledby="map-heading">
+    <h2 id="map-heading">The pipeline</h2>
+    <p class="map-hint">
+      Each phase is sized by how much design reasoning it carries. Phases with a chapter are live;
+      the rest are mapped but not yet written up.
+    </p>
+
+    {
+      pipeline.map((part, partIndex) => (
+        <div class="part">
+          <div class="part-head">
+            <h3>{part.title}</h3>
+            <p>{part.summary}</p>
+          </div>
+
+          <ol class="phases">
+            {part.phases.map((phase) => {
+              const count = counts.get(phase.id) ?? 0;
+              const weight = maxCount > 0 ? count / maxCount : 0;
+              const isLive = phase.status === 'chapter';
+              const Tag = isLive ? 'a' : 'div';
+              return (
+                <li>
+                  <Tag
+                    class:list={['phase', { 'is-live': isLive, 'is-stub': !isLive }]}
+                    href={isLive ? chapterHref(phase.slug!) : undefined}
+                  >
+                    <span class="phase-name">{phase.name}</span>
+                    <span class="phase-transform">{phase.transform}</span>
+                    <span class="phase-blurb">{phase.blurb}</span>
+                    <span class="phase-foot">
+                      {count > 0 && (
+                        <span class="phase-notes">
+                          <span
+                            class="density"
+                            style={`--weight:${weight}`}
+                            aria-hidden="true"
+                          />
+                          {count.toLocaleString()} notes
+                        </span>
+                      )}
+                      {isLive ? (
+                        <span class="phase-status">Read →</span>
+                      ) : (
+                        <span class="phase-status is-soon">Deep-dive coming</span>
+                      )}
+                    </span>
+                  </Tag>
+                </li>
+              );
+            })}
+          </ol>
+
+          {partIndex < pipeline.length - 1 && <div class="part-arrow" aria-hidden="true" />}
+        </div>
+      ))
+    }
+  </section>
+</Base>
+
+<style>
+  .hero {
+    max-width: var(--measure);
+    margin-bottom: 4rem;
+  }
+  .lede {
+    font-size: var(--step-1);
+    color: var(--ink-muted);
+  }
+  .start {
+    display: flex;
+    gap: 1.5rem;
+    align-items: baseline;
+    flex-wrap: wrap;
+    font-family: var(--font-sans);
+    font-size: var(--step--1);
+    margin-top: 1.8rem;
+  }
+  .cta {
+    background: var(--accent);
+    color: var(--paper);
+    padding: 0.55rem 1.1rem;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  :root[data-theme='dark'] .cta {
+    color: #14140f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) .cta {
+      color: #14140f;
+    }
+  }
+  .cta:hover {
+    filter: brightness(1.1);
+  }
+  .cta-secondary {
+    color: var(--ink-muted);
+    text-decoration: none;
+  }
+  .cta-secondary:hover {
+    color: var(--ink);
+  }
+
+  .map h2 {
+    font-size: var(--step-1);
+    margin-top: 0;
+  }
+  .map-hint {
+    font-family: var(--font-sans);
+    font-size: var(--step--1);
+    color: var(--ink-faint);
+    max-width: var(--measure);
+    margin-bottom: 2.5rem;
+  }
+
+  .part {
+    margin-bottom: 1rem;
+  }
+  .part-head {
+    max-width: var(--measure);
+    margin-bottom: 1.2rem;
+  }
+  .part-head h3 {
+    font-size: var(--step-0);
+    margin: 0 0 0.3rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+  }
+  .part-head p {
+    font-size: var(--step--1);
+    color: var(--ink-muted);
+    margin: 0;
+  }
+
+  .phases {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: 0.75rem;
+  }
+
+  .phase {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    height: 100%;
+    padding: 0.9rem 1rem 0.8rem;
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    background: var(--paper-raised);
+    text-decoration: none;
+    color: inherit;
+  }
+  .phase.is-live {
+    border-color: var(--rule-strong);
+  }
+  .phase.is-live:hover {
+    border-color: var(--accent);
+    box-shadow: 0 1px 0 var(--accent);
+  }
+  .phase.is-stub {
+    background: transparent;
+    border-style: dashed;
+  }
+
+  .phase-name {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: var(--step-0);
+  }
+  .phase-transform {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--accent);
+  }
+  .phase.is-stub .phase-transform {
+    color: var(--ink-faint);
+  }
+  .phase-blurb {
+    font-size: 0.86rem;
+    line-height: 1.45;
+    color: var(--ink-muted);
+    flex: 1;
+    margin-top: 0.15rem;
+  }
+  .phase-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.6rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--rule);
+    font-family: var(--font-sans);
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+  }
+  .phase-notes {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-variant-numeric: tabular-nums;
+  }
+  /* Density bar: proportion of the densest phase, so the map shows where the
+     compiler's complexity actually concentrates. */
+  .density {
+    display: block;
+    width: 2.5rem;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--rule);
+    position: relative;
+    overflow: hidden;
+  }
+  .density::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    width: calc(var(--weight) * 100%);
+    background: var(--accent);
+  }
+  .phase-status {
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .phase.is-live .phase-status {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .is-soon {
+    font-style: italic;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .part-arrow {
+    height: 1.75rem;
+    margin: 0.25rem 0 0.75rem 1.4rem;
+    border-left: 1px solid var(--rule-strong);
+    position: relative;
+  }
+  .part-arrow::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: -3.5px;
+    width: 6px;
+    height: 6px;
+    border-right: 1px solid var(--rule-strong);
+    border-bottom: 1px solid var(--rule-strong);
+    transform: rotate(45deg);
+  }
+</style>
