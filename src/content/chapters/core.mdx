@@ -1,5 +1,5 @@
 ---
-title: Core — the language
+title: "Core: the language"
 summary: >-
   A typed lambda calculus small enough to fit on a page, with a type system
   strong enough to catch the optimiser's mistakes. Why GHC can be aggressive
@@ -10,7 +10,7 @@ sources:
   - file: compiler/GHC/Core.hs
     blurb: the Expr type and its invariants
   - file: compiler/GHC/Core/Lint.hs
-    blurb: the type checker for Core — GHC's executable specification
+    blurb: the type checker for Core, GHC's executable specification
   - file: compiler/GHC/Core/Coercion.hs
     blurb: coercions, the evidence for type equality
   - file: compiler/GHC/Core/Type.hs
@@ -45,8 +45,8 @@ Haskell can grow; Core stays put.
 
 ## It is explicitly typed
 
-Core is not an untyped intermediate form. It is System F<sub>C</sub> — System F
-with coercions — and every expression carries enough information to reconstruct
+Core is not an untyped intermediate form. It is System F<sub>C</sub> (System F
+with coercions), and every expression carries enough information to reconstruct
 its type without inference. Type abstraction is a `Lam` binding a type variable;
 type application is an `App` whose argument is a `Type`.
 
@@ -57,8 +57,8 @@ optimiser's output can be *checked*.
 
 Core Lint is a type checker for Core, run between optimisation passes with
 `-dcore-lint`. If a transformation produces something ill-typed, Lint says so,
-naming the pass. A whole category of optimiser bug — the kind that silently
-miscompiles — becomes a loud failure during development instead.
+naming the pass. A whole category of optimiser bug (the kind that silently
+miscompiles) becomes a loud failure during development instead.
 
 That Note is worth reading as a statement of engineering philosophy: the
 formalism exists so that "is this transformation correct?" has an answer that a
@@ -68,7 +68,7 @@ machine can check, not merely an argument that a person can make.
 
 The `Cast` constructor and the `Coercion` type are what let Core keep its types
 honest across newtypes, GADTs and type families. A coercion is *evidence* that
-two types are equal, and it is a term — you can build one, name one, pass one
+two types are equal, and it is a term: you can build one, name one, pass one
 around.
 
 `Cast e co` says: `e` had one type, `co` proves that type equals another, so this
@@ -77,7 +77,7 @@ before code generation. Newtypes are free precisely because their coercions are.
 
 Two roles of equality matter. *Nominal* equality means the types are the same
 type. *Representational* equality means they have the same runtime
-representation — which is what a newtype gives you, and what `Coercible` exposes
+representation, which is what a newtype gives you, and what `Coercible` exposes
 to programmers.
 
 ## Invariants
@@ -89,7 +89,7 @@ bug even if the result still type-checks.
 <NoteCard id="GHC.Core.case-expression-invariants" clamp={26} />
 
 Join points are the most interesting of these. A join point is a let-bound
-function that is always tail-called — the Core representation of a label you jump
+function that is always tail-called: the Core representation of a label you jump
 to rather than a closure you allocate. Recognising them lets GHC compile a
 `case`-heavy loop into an actual loop:
 
@@ -102,7 +102,7 @@ know how many bits a binder occupies:
 
 ## Reading the source yourself
 
-1. **`GHC/Core.hs`** — the type, then its Notes, which are among the best-written
+1. **`GHC/Core.hs`**: the type, then its Notes, which are among the best-written
    in the compiler. Budget real time for them; they are the specification.
 2. **`GHC/Core/Lint.hs`** next. Reading the checker is the fastest way to learn
    the invariants, because it is the invariants, executable.

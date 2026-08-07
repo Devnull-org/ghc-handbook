@@ -1,5 +1,5 @@
 ---
-title: The typechecker — architecture
+title: "The typechecker: architecture"
 summary: >-
   The largest phase in GHC, and the one shaped most deliberately: it does not
   type-check your program so much as write down everything that must be true
@@ -8,7 +8,7 @@ order: 3
 phases: ['typechecker']
 sources:
   - file: compiler/GHC/Tc/Module.hs
-    blurb: the entry point — tcRnModule and the top-level loop
+    blurb: the entry point (tcRnModule) and the top-level loop
   - file: compiler/GHC/Tc/Types/Constraint.hs
     blurb: Ct, WantedConstraints, Implication, CtEvidence
   - file: compiler/GHC/Tc/Gen/Expr.hs
@@ -21,7 +21,7 @@ import ExampleExplorer from '../../components/ExampleExplorer.astro';
 import NoteCard from '../../components/NoteCard.astro';
 
 The typechecker is the biggest thing in GHC by a wide margin. Around 830 of the
-compiler's Notes live under `GHC.Tc.*` — more than the entire back end — and the
+compiler's Notes live under `GHC.Tc.*` (more than the entire back end), and the
 files are correspondingly large.
 
 The single most useful idea for finding your way around it is this: **GHC does
@@ -35,8 +35,8 @@ This chapter is the first half: how the walk works, and what it produces.
 
 ## Why split at all
 
-The obvious way to write a type checker — unify as you go, fail at the first
-mismatch — works fine for Hindley–Milner. It stops working once you have local
+The obvious way to write a type checker (unify as you go, fail at the first
+mismatch) works fine for Hindley-Milner. It stops working once you have local
 assumptions.
 
 ```haskell
@@ -76,7 +76,7 @@ data Ct
 ```
 
 `Show a` is a `CDictCan`. `a ~ Int` is a `CEqCan`. "Canonical" means the solver
-has already massaged it into a normal form — a distinction that matters
+has already massaged it into a normal form, a distinction that matters
 enormously in the next chapter and not at all here.
 
 Second, the collection the walk produces:
@@ -118,7 +118,7 @@ data CtEvidence
   | CtWanted WantedCtEvidence
 ```
 
-A **Given** is something you may assume — it arrived from a type signature or a
+A **Given** is something you may assume: it arrived from a type signature or a
 GADT pattern match, and it comes with an `EvVar`, a variable naming the evidence
 you already hold. A **Wanted** is something you must prove, and it carries a
 `ctev_dest`: a hole to be filled in with evidence once solved.
@@ -131,7 +131,7 @@ in the business of *constructing programs*, not merely accepting them.
 ## Levels, skolems, and what may be unified
 
 Two kinds of type variable exist during typechecking. A **metavariable** is a
-mutable hole standing for a type not yet known — unifying is filling it in. A
+mutable hole standing for a type not yet known: unifying is filling it in. A
 **skolem** is rigid: it stands for a type the caller chooses, and unifying it
 with anything would be unsound.
 
@@ -144,7 +144,7 @@ to maintain them:
 The payoff is `(GivenInv)` and `(WantedInv)`. Together they make "may I unify
 this metavariable here?" answerable by comparing two integers, rather than by
 searching the implication tree. A metavariable from an outer level is
-*untouchable* inside an inner implication — unifying it there would smuggle a
+*untouchable* inside an inner implication: unifying it there would smuggle a
 local assumption into a scope where it does not hold. This is where GHC's
 "untouchable" error messages come from.
 
@@ -173,7 +173,7 @@ The whole of that is the next chapter.
 <ExampleExplorer
   example="Gadt"
   stages={['renamed', 'typechecked', 'core-desugared']}
-  caption="An evaluator over a GADT. Each branch of `eval` type-checks under a different assumption — which is the whole reason this phase defers solving."
+  caption="An evaluator over a GADT. Each branch of `eval` type-checks under a different assumption, which is the whole reason this phase defers solving."
 />
 
 `eval` is the motivating example from the top of this chapter, made concrete.
@@ -187,7 +187,7 @@ BoolLit co b -> b `cast` (Sub (Sym co) :: Bool ~R# a);
 
 That `co` is the Given. The fact "in this branch, `a` is `Int`" started life as
 an implication constraint here in the typechecker, was discharged by the solver,
-and survives into Core as a coercion — a term, not an annotation. The elaborated
+and survives into Core as a coercion: a term, not an annotation. The elaborated
 program carries its own proof.
 
 `describe` in the same file is the contrast: no refinement, no implication, just
@@ -201,7 +201,7 @@ a flat `Show a` Wanted that becomes a dictionary argument.
    them.
 2. **`GHC/Tc/Utils/TcType.hs`** for `TcLevel` and the metavariable/skolem
    distinction.
-3. **`GHC/Tc/Gen/Expr.hs`** for the walk itself — but only after the above.
+3. **`GHC/Tc/Gen/Expr.hs`** for the walk itself, but only after the above.
 4. **`GHC/Tc/Module.hs`** last, for how it is all driven per module.
 
 Be warned that `GHC/Tc/Errors/Ppr.hs` and `Errors/Types.hs` are the two largest

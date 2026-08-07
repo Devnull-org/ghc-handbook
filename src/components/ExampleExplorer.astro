@@ -10,7 +10,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 interface Props {
-  /** Example basename, e.g. "Syntax" — matches examples/<name>.hs */
+  /** Example basename, e.g. "Syntax". Matches examples/<name>.hs */
   example: string;
   /** Which stages to show, in order. Defaults to the whole pipeline. */
   stages?: string[];
@@ -42,7 +42,7 @@ const HINTS: Record<string, string> = {
   source: 'What you wrote.',
   'parsed-ast':
     'The raw syntax tree, including the annotations that let GHC reprint your source exactly as written.',
-  parsed: 'The same tree, pretty-printed back out as Haskell — note what layout became.',
+  parsed: 'The same tree, pretty-printed back out as Haskell: note what layout became.',
   renamed: 'Every name now resolved to the specific entity it refers to.',
   typechecked: 'Types inferred, and class constraints made explicit.',
   'core-desugared': 'All of Haskell reduced to Core, before any optimisation.',

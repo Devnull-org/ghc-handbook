@@ -31,8 +31,8 @@ const STAGES = [
  * `-dsuppress-uniques` is applied to BOTH variants, not only the readable one.
  * Uniques shift between runs and between GHC builds; without pinning them the
  * committed dumps would churn on every regeneration and every diff would be
- * noise. The readable/full toggle is therefore about the *other* suppressions —
- * type applications, coercions, IdInfo — which is the distinction that actually
+ * noise. The readable/full toggle is therefore about the *other* suppressions
+ * (type applications, coercions, IdInfo), which is the distinction that actually
  * teaches something about Core.
  */
 const COMMON = ['-fforce-recomp', '-O', '-ddump-to-file', '-dsuppress-uniques'];
@@ -48,7 +48,7 @@ const READABLE_ONLY = [
  * Where Hadrian puts each compiler, most preferred first.
  *
  * Hadrian names `_build/stageN/` after the stage that *built* the artifact, not
- * the artifact's own stage — so the stage 2 compiler lives in `_build/stage1/`.
+ * the artifact's own stage, so the stage 2 compiler lives in `_build/stage1/`.
  * See `hadrian/doc/make.md` in the vendored tree: "Your stage 2 GHC would then
  * be at `_build/stage1/bin/ghc` (because it's built by the stage 1 compiler)."
  *
@@ -65,7 +65,7 @@ const BUILD_TREE_COMPILERS = [
  * Locate the compiler to generate dumps with.
  *
  * You build GHC in vendor/ghc, so the compiler that matches the source this
- * handbook documents is the one sitting in that build tree — preferred over
+ * handbook documents is the one sitting in that build tree, preferred over
  * whatever unrelated GHC happens to be on PATH. `$GHC` overrides everything.
  *
  * Returns the path plus which stage it is, since that cannot be recovered
@@ -98,7 +98,7 @@ function resolveGhc() {
     console.error('');
     console.error(`  To build one: cd ${pin.checkoutDir} && ./boot && ./configure && hadrian/build -j`);
     console.error('  Or point $GHC at a compiler you already have.');
-    console.error('  The site build itself needs neither — only dump regeneration does.');
+    console.error('  The site build itself needs neither: only dump regeneration does.');
     process.exit(1);
   }
 }
@@ -107,7 +107,7 @@ function resolveGhc() {
  * A stage 1 compiler is built by the *bootstrap* compiler and links its `base`,
  * so its optimised Core and STG can differ from a stage 2's on exactly the
  * examples this handbook uses to teach optimisation. Same failure mode as a
- * version mismatch — plausible-looking output that is quietly wrong — so it
+ * version mismatch (plausible-looking output that is quietly wrong), so it
  * warns rather than passing silently.
  */
 function checkStage(stage, path) {
@@ -118,7 +118,7 @@ function checkStage(stage, path) {
 }
 
 /**
- * A dump from the wrong compiler is not obviously wrong when you read it — it is
+ * A dump from the wrong compiler is not obviously wrong when you read it: it is
  * subtly wrong, and it would be committed. So a mismatch stops the run unless it
  * is overridden deliberately.
  */
@@ -146,7 +146,7 @@ const ghcVersion = execFileSync(GHC, ['--numeric-version'], { encoding: 'utf8' }
 const stale = ghcVersion !== pin.ghcVersion;
 
 // Every stage reports the same version, so the path alone cannot tell you which
-// compiler produced a dump — and under Hadrian's naming the path actively
+// compiler produced a dump, and under Hadrian's naming the path actively
 // misleads. Record the stage explicitly alongside it. Relativised: an absolute
 // path would leak the generating machine's layout and churn the diff on every
 // contributor.

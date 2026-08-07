@@ -1,5 +1,5 @@
--- | Everything Haskell offers for taking things apart — multi-equation
--- definitions, nested constructor patterns, guards, `where`, `if`, `let` —
+-- | Everything Haskell offers for taking things apart (multi-equation
+-- definitions, nested constructor patterns, guards, `where`, `if`, `let`)
 -- collapses into exactly one Core construct: `case`.
 --
 -- The desugared Core shows the pattern-match compiler's output, including the

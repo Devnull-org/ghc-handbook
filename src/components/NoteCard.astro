@@ -4,7 +4,7 @@
  *
  * The prose around it is ours; this is the primary source. Long Notes are
  * collapsed by default so a chapter stays readable, but nothing is paraphrased
- * away — the full text is always one click from the page you are on.
+ * away: the full text is always one click from the page you are on.
  */
 import { notesById, sourceUrl, shortLocation } from '../lib/ghc';
 import { renderNoteBody } from '../lib/render-note';
@@ -22,8 +22,8 @@ const { id, clamp = 18 } = Astro.props;
 const note = notesById().get(id);
 if (!note) {
   throw new Error(
-    `NoteCard: no Note with id "${id}". Note ids change when GHC is re-pinned — ` +
-      `check data/notes.json for the current id.`,
+    `NoteCard: no Note with id "${id}". Note ids change when GHC is re-pinned. ` +
+      `Check data/notes.json for the current id.`,
   );
 }
 

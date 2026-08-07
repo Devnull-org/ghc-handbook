@@ -1,7 +1,7 @@
 ---
 title: The simplifier
 summary: >-
-  The densest part of GHC — 450 Notes of inlining, case-of-case, strictness and
+  The densest part of GHC: 450 Notes of inlining, case-of-case, strictness and
   rewrite rules, run to a fixed point. Where three list traversals become one
   loop that allocates nothing.
 order: 8
@@ -10,7 +10,7 @@ sources:
   - file: compiler/GHC/Core/Opt/Simplify.hs
     blurb: the simplifier proper
   - file: compiler/GHC/Core/Opt/OccurAnal.hs
-    blurb: occurrence analysis — what may be inlined, and what is a join point
+    blurb: occurrence analysis (what may be inlined, and what is a join point)
   - file: compiler/GHC/Core/Opt/DmdAnal.hs
     blurb: strictness and demand analysis
   - file: compiler/GHC/Core/Opt/WorkWrap.hs
@@ -20,7 +20,7 @@ sources:
 import ExampleExplorer from '../../components/ExampleExplorer.astro';
 import NoteCard from '../../components/NoteCard.astro';
 
-`GHC.Core.Opt.*` holds 450 Notes — more than any other part of the compiler, more
+`GHC.Core.Opt.*` holds 450 Notes: more than any other part of the compiler, more
 than the entire back end. This is where GHC's reputation was earned, and it is
 also where the compiler is least like a textbook.
 
@@ -42,7 +42,7 @@ case (case x of { A -> e1; B -> e2 }) of { ... alts ... }
 ```
 
 the outer `case` can be pushed into both branches of the inner one, duplicating
-`alts`. This looks like it makes the program bigger, and sometimes it does — but
+`alts`. This looks like it makes the program bigger, and sometimes it does. But
 it is what makes short-circuiting boolean operators, `&&` chains, and fused
 pipelines compile to straight-line tests instead of building and immediately
 scrutinising intermediate values.
@@ -56,8 +56,8 @@ it cannot duplicate work.
 
 ## Occurrence analysis
 
-`OccurAnal` runs before each simplifier pass and answers "how is each binder
-used?" — once, many times, under a lambda, in a tail position. That last one is
+`OccurAnal` runs before each simplifier pass and answers how each binder is
+used: once, many times, under a lambda, in a tail position. That last one is
 how join points are found: a let-bound function *only* ever tail-called becomes a
 label rather than a closure.
 
@@ -68,7 +68,7 @@ itself forever.
 ## Strictness, and unboxing
 
 Demand analysis asks: if this function is called, will it definitely evaluate
-this argument? A `yes` is licence to do something valuable — pass the argument
+this argument? A `yes` is licence to do something valuable: pass the argument
 evaluated and unboxed, rather than as a thunk.
 
 Worker/wrapper is the transformation that cashes it in. A function `f` becomes a
@@ -147,7 +147,7 @@ a transformation and follow it.
 1. **`GHC/Core/Opt/OccurAnal.hs`** first, despite being an analysis rather than a
    transformation. Nearly every simplifier decision consults its output.
 2. **`GHC/Core/Opt/Simplify/Iteration.hs`** for the rewrites themselves.
-3. **`GHC/Core/Opt/DmdAnal.hs`** and **`WorkWrap.hs`** as a pair — the analysis
+3. **`GHC/Core/Opt/DmdAnal.hs`** and **`WorkWrap.hs`** as a pair: the analysis
    is only interesting because of what the transformation does with it.
 4. **`GHC/Core/Opt/Pipeline.hs`** to see the order everything runs in, which
    explains a lot about why a given optimisation did or did not fire.

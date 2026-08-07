@@ -5,7 +5,7 @@
 -- Each branch of `eval` type-checks under a *different* assumption: matching on
 -- `IntLit` tells GHC that `a ~ Int`, matching on `BoolLit` that `a ~ Bool`. A
 -- checker that unified eagerly would have nowhere to put a fact that holds only
--- inside one alternative — so GHC records it as an implication constraint with a
+-- inside one alternative, so GHC records it as an implication constraint with a
 -- Given, and solves later.
 --
 -- In the desugared Core the same facts appear as coercions: the evidence that

@@ -11,7 +11,7 @@ interface Props {
 }
 
 const { title, description, width = 'prose' } = Astro.props;
-const fullTitle = title === 'GHC Handbook' ? title : `${title} — GHC Handbook`;
+const fullTitle = title === 'GHC Handbook' ? title : `${title} · GHC Handbook`;
 
 const nav = [
   { href: '/', label: 'Pipeline' },

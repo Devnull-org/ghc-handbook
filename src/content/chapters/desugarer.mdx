@@ -1,7 +1,7 @@
 ---
 title: Desugaring to Core
 summary: >-
-  Where the whole of Haskell collapses into nine constructors — and where GHC
+  Where the whole of Haskell collapses into nine constructors, and where GHC
   works out, on the way past, whether your patterns were exhaustive.
 order: 6
 phases: ['desugarer']
@@ -50,7 +50,7 @@ extension; an optimiser for Core needs six.
 
 ## Everything becomes `case`
 
-Multi-equation definitions, nested patterns, guards, `where`, `if` — all of them
+Multi-equation definitions, nested patterns, guards, `where`, `if`: all of them
 become `case`. The interesting part is that this is not a simple rewrite. Given
 
 ```haskell
@@ -61,7 +61,7 @@ area Point      = 0
 
 a naive translation would test each equation in turn, re-examining the scrutinee
 every time. The pattern-match compiler instead groups patterns by constructor and
-produces a single `case` with one alternative each — the algorithm from
+produces a single `case` with one alternative each. This is the algorithm from
 *The Implementation of Functional Programming Languages*, and the reason
 `GHC/HsToCore/Match.hs` is one of the older and more intricate files in the tree.
 
@@ -73,7 +73,7 @@ Strictness needs care here too, since desugaring decides when things are forced:
 
 While it is here, GHC answers two questions you may have asked for: are these
 patterns exhaustive, and is any of them redundant. That is `GHC/HsToCore/Pmc.hs`,
-and it is much more than a syntactic check — it reasons about what values can
+and it is much more than a syntactic check: it reasons about what values can
 actually reach each equation, using the same constraint machinery as the
 typechecker.
 
@@ -102,7 +102,7 @@ an equation is redundant *because of* the pattern in the equation's head.
 
 The elaboration the typechecker performed becomes concrete here. Class
 constraints turn into lambda-bound dictionary parameters, and evidence bindings
-turn into ordinary `let`s. Coercions — the evidence for type equalities — become
+turn into ordinary `let`s. Coercions, the evidence for type equalities, become
 `Cast` nodes.
 
 By the end, types are still present (Core is explicitly typed) but classes are
@@ -113,7 +113,7 @@ gone entirely.
 <ExampleExplorer
   example="Patterns"
   stages={['typechecked', 'core-desugared']}
-  caption="Three equations for `area`, guards in `classify`, and a nested pattern in `firstTwo` — all reduced to case."
+  caption="Three equations for `area`, guards in `classify`, and a nested pattern in `firstTwo`, all reduced to case."
 />
 
 Look at `classify`. The guards, the `where`-bound `small`, and the fall-through
@@ -125,12 +125,12 @@ left implicit is now explicit.
 
 The desugarer's output is checked by Core Lint (in a debug compiler, or with
 `-dcore-lint`) and then handed to the optimiser. From here on, every phase's
-input and output is Core, and every transformation must preserve its typing —
+input and output is Core, and every transformation must preserve its typing,
 which is the subject of the next chapter.
 
 ## Reading the source yourself
 
-1. **`GHC/Core.hs`** — read the `Expr` type and its Notes before any desugaring
+1. **`GHC/Core.hs`**: read the `Expr` type and its Notes before any desugaring
    code. It is the target; the translation makes little sense without it.
 2. **`GHC/HsToCore/Expr.hs`** for the straightforward cases.
 3. **`GHC/HsToCore/Match.hs`** for the pattern-match compiler, which is where the

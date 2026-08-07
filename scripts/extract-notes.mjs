@@ -29,7 +29,7 @@ function areaOf(relPath) {
  * The commit actually checked out in vendor/ghc.
  *
  * Recorded in the output so a notes.json can always be traced to the exact tree
- * it came from — a tag is not enough once you are building from a checkout you
+ * it came from. A tag is not enough once you are building from a checkout you
  * control and may have patched.
  */
 function checkedOutCommit() {
@@ -61,7 +61,7 @@ function main() {
     console.warn(
       `⚠ ${pin.checkoutDir} is at ${commit.slice(0, 12)}, but ghc-pin.json pins ` +
         `${pin.commit.slice(0, 12)} (${pin.tag}).\n` +
-        `  Extracting anyway — the output records the commit actually read, but the\n` +
+        `  Extracting anyway: the output records the commit actually read, but the\n` +
         `  site's source links are built from the pin, so line numbers may disagree.`,
     );
   }
@@ -78,12 +78,12 @@ function main() {
     allDefs.push(...definitions);
 
     // `libraries/` is scanned for definitions so that compiler Notes pointing
-    // into ghc-internal resolve — but base's own internal cross-talk is not
+    // into ghc-internal resolve, but base's own internal cross-talk is not
     // part of a compiler handbook, and counting it would drown the signal.
     if (referenceRoots.has(area)) allRefs.push(...references);
   }
 
-  // Duplicate ids mean two Notes with the same title in one module — rare, but
+  // Duplicate ids mean two Notes with the same title in one module. Rare, but
   // it would silently collapse two distinct Notes into one page, so suffix them.
   const seen = new Map();
   for (const d of allDefs) {

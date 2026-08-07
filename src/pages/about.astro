@@ -37,7 +37,7 @@ const { stats } = loadNotes();
   <p>
     Roughly {Math.round(((stats.references! - stats.resolved!) / stats.references!) * 100)}% of
     <code>Note [...]</code> mentions do not resolve to a Note that still exists. That is not a defect
-    in the extraction — it is GHC's own drift: Notes get renamed, merged, or deleted while the
+    in the extraction. It is GHC's own drift: Notes get renamed, merged, or deleted while the
     comments pointing at them stay behind. Rather than guess, the extractor records them, and
     ambiguous titles are left unlinked instead of being resolved to the wrong Note.
   </p>
@@ -45,7 +45,7 @@ const { stats } = loadNotes();
   <h2>Reading levels</h2>
   <p>
     Chapters are written in two layers. The prose explains what a phase does and why it is shaped the
-    way it is — useful if you write Haskell and want to know what happens to it. Interleaved with it
+    way it is, useful if you write Haskell and want to know what happens to it. Interleaved with it
     are the primary sources: the actual Notes, the actual data types, and links into the actual
     source. Follow those if you intend to work on the compiler.
   </p>

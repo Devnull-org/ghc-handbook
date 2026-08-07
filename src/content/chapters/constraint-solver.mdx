@@ -1,7 +1,7 @@
 ---
 title: The constraint solver
 summary: >-
-  What happens to the pile of facts the typechecker wrote down — a rewriting
+  What happens to the pile of facts the typechecker wrote down: a rewriting
   engine built around a carefully maintained set of "inert" constraints, and the
   compromises that make it both complete enough and quiet enough to use.
 order: 4
@@ -12,7 +12,7 @@ sources:
   - file: compiler/GHC/Tc/Solver/InertSet.hs
     blurb: the inert set, and what it means to be inert
   - file: compiler/GHC/Tc/Solver/Equality.hs
-    blurb: solving equalities — the hardest part
+    blurb: solving equalities, the hardest part
   - file: compiler/GHC/Tc/Solver/Rewrite.hs
     blurb: rewriting constraints with known equalities
 ---
@@ -33,7 +33,7 @@ design decisions are explicitly compromises between those three goals.
 ## The inert set
 
 The central data structure holds constraints that have been processed and cannot
-currently react with each other — hence *inert*:
+currently react with each other (hence *inert*):
 
 ```haskell
 data InertCans
@@ -63,14 +63,14 @@ not a simple insertion. The basic loop is:
 1. Take a constraint off the work list.
 2. **Rewrite** it using everything in the inert set.
 3. **Canonicalise** it into a normal form (`CEqCan`, `CDictCan`, …).
-4. Try to **solve** it outright — from a Given, from an instance, from a
+4. Try to **solve** it outright: from a Given, from an instance, from a
    top-level axiom.
-5. If it survives, **add it to the inert set** — and *kick out* any existing
+5. If it survives, **add it to the inert set**, and *kick out* any existing
    inert constraint that the newcomer can now rewrite, putting it back on the
    work list.
 
 Kick-out is the step that surprises people. Adding one equality can eject a
-dozen constraints back into the queue, and that is not a failure mode — it is how
+dozen constraints back into the queue, and that is not a failure mode: it is how
 the invariant is restored.
 
 ## Which constraints may rewrite which
@@ -108,7 +108,7 @@ expect:
 <NoteCard id="GHC.Tc.Solver.Equality.type-equality-cycles" clamp={26} />
 
 And second, the case where a locally-available Given and a global instance both
-apply — where picking the instance would be unsound, because the caller may have
+apply, where picking the instance would be unsound because the caller may have
 had a different one in mind:
 
 <NoteCard id="GHC.Tc.Solver.Dict.instance-and-given-overlap" clamp={26} />
@@ -117,7 +117,7 @@ had a different one in mind:
 
 Nothing about the loop above terminates on its own. A type family can expand
 forever; superclass expansion can cycle; instances can chain indefinitely. GHC
-buys termination with explicit budgets — the solver counts, and gives up when the
+buys termination with explicit budgets: the solver counts, and gives up when the
 count runs out. `ExpansionFuel` is exactly what it sounds like:
 
 <NoteCard id="GHC.Tc.Solver.Solve.expanding-recursive-superclasses-and-expansionfuel" clamp={24} />
@@ -131,7 +131,7 @@ condition standing in for a decision procedure nobody has.
 The solver returns a residual `WantedConstraints`. If it is empty, the module
 type-checks and every evidence hole has been filled. If not, the leftovers go to
 `GHC/Tc/Errors.hs`, whose job is to turn unsolved constraints into the message
-you actually see — and which uses the `RewriterSet` from above to decide which of
+you actually see, and which uses the `RewriterSet` from above to decide which of
 several related failures is the real one.
 
 Successfully solved constraints leave behind evidence: dictionaries and
@@ -140,7 +140,7 @@ something concrete to translate.
 
 ## Seeing the evidence
 
-The solver has no dump of its own — `-ddump-tc-trace` shows its working, but that
+The solver has no dump of its own. `-ddump-tc-trace` shows its working, but that
 is a debugging firehose rather than something to read. What you *can* see is its
 output, which is the evidence.
 
@@ -155,7 +155,7 @@ Switch to **Full detail** and read the RHS size line above `eval`:
 solved constraints. Each `Sym`, `Sub` and composition in the body is the solver's
 proof, written down in a form the rest of the compiler can check with Core Lint.
 
-This is the concrete answer to "what does the solver produce?" — not a yes/no,
+The concrete answer to "what does the solver produce?" is not a yes/no,
 but evidence terms.
 
 ## Reading the source yourself
@@ -165,12 +165,12 @@ This is the hardest code in GHC to read cold. A workable order:
 1. **`GHC/Tc/Solver/InertSet.hs`**, and specifically its Notes rather than its
    functions. `Note [inert_eqs: the inert equalities]` and the kick-out Notes
    explain the invariant that everything else preserves.
-2. **`GHC/Tc/Solver/Solve.hs`** — `solveOne` and `solveCt` show the pipeline
+2. **`GHC/Tc/Solver/Solve.hs`**: `solveOne` and `solveCt` show the pipeline
    stages plainly.
 3. **`GHC/Tc/Solver/Rewrite.hs`** next, since rewriting is step two of every
    constraint's life.
 4. **`GHC/Tc/Solver/Equality.hs`** last, and only with a specific question.
 
 `-ddump-tc-trace` prints the solver's every step. It is enormously verbose and
-the fastest way to understand why a particular program was rejected — start from
+the fastest way to understand why a particular program was rejected: start from
 a three-line failing module, never a real one.
