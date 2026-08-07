@@ -4,9 +4,14 @@
 # Finds the compiler in this order, first hit wins:
 #
 #   1. $GHC
-#   2. vendor/ghc/_build/stage2/bin/ghc     (your build)
-#   3. vendor/ghc/_build/stage1/bin/ghc
+#   2. vendor/ghc/_build/stage1/bin/ghc     (the stage 2 compiler — your build)
+#   3. vendor/ghc/_build/stage0/bin/ghc     (the stage 1 compiler — a fallback)
 #   4. ghc on PATH
+#
+# Those paths look off by one because Hadrian names _build/stageN/ after the
+# stage that *built* the artifact. So stage 2 lands in _build/stage1/, and
+# _build/stage2/ would hold stage 3 — which a normal build never produces, and
+# which this script deliberately ignores.
 #
 # Output lands in data/dumps/ and is committed, so the site builds with no GHC
 # and no network. Nothing else in the build touches the Haskell toolchain.

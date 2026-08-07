@@ -58,6 +58,32 @@ To repoint the submodule at a different remote — a fork, or a clone in your ow
 org — edit the `url` in `.gitmodules`, then `git submodule sync vendor/ghc`. No
 data needs regenerating if the commit is unchanged.
 
+### Building it
+
+```sh
+cd vendor/ghc
+git submodule update --init --recursive   # GHC's own 33 submodules
+./boot && ./configure
+hadrian/build -j --flavour=quick
+```
+
+Then, from the handbook root, `scripts/gen-dumps.sh` — no arguments and no `$GHC`
+needed. Build products land in `vendor/ghc/_build/`, which is gitignored, and
+`.gitmodules` sets `ignore = dirty` so they never show up as changes here.
+
+**`--flavour=quick` is the right choice**, and not for the reason it looks like.
+It applies `-O0` to the *compiler itself*, which is what makes the build fast,
+but `hadrian/src/Settings/Flavours/Quick.hs` keeps `hsLibrary = notStage0 ? arg
+"-O"` — so `base` and `ghc-internal` are still built optimised. Their unfoldings
+and `RULES` survive, which is what the fusion and worker/wrapper chapters depend
+on. Same dumps, much less waiting.
+
+GHC 9.14 ships no in-tree Nix expression — there is no `shell.nix` or `flake.nix`
+anywhere in `vendor/ghc`. The Nix route is the separate `ghc.nix` project, linked
+from the [building preparation
+wiki](https://gitlab.haskell.org/ghc/ghc/-/wikis/building/preparation). It
+supplies the toolchain and changes nothing above.
+
 ## Regenerating the data
 
 Two generated artifacts are committed. They only need regenerating when the
@@ -91,9 +117,18 @@ scripts/gen-dumps.sh
 It finds a compiler in this order, first hit wins:
 
 1. `$GHC`
-2. `vendor/ghc/_build/stage2/bin/ghc` — your build
-3. `vendor/ghc/_build/stage1/bin/ghc`
+2. `vendor/ghc/_build/stage1/bin/ghc` — the **stage 2** compiler, i.e. your build
+3. `vendor/ghc/_build/stage0/bin/ghc` — the **stage 1** compiler, a fallback
 4. `ghc` on `PATH`
+
+Those look off by one, and they are not. Hadrian names `_build/stageN/` after the
+stage that *built* the artifact, so the stage 2 compiler lands in
+`_build/stage1/`. `_build/stage2/` would hold stage 3, which a normal build never
+produces — the lookup ignores it rather than picking one up silently.
+
+Preferring stage 2 matters: a stage 1 compiler links the *bootstrap* compiler's
+`base`, so its optimised Core and STG can differ on exactly the examples the
+optimisation chapters teach from. Falling back to it warns.
 
 So after building in `vendor/ghc` it just works, with no configuration. Override
 with `GHC=/path/to/ghc scripts/gen-dumps.sh`.
@@ -107,8 +142,10 @@ override deliberately:
 ALLOW_GHC_MISMATCH=1 scripts/gen-dumps.sh
 ```
 
-Each dump records the compiler version *and* which binary produced it, so a
-stage1 dump is distinguishable from a stage2 one after the fact.
+Each dump records the compiler version, the binary that produced it, and a
+`ghcStage` field (`"2"`, `"1"`, or `"external"`). Every stage reports the same
+`--numeric-version`, so without that field a stage 1 dump is indistinguishable
+from a stage 2 one after the fact.
 
 Dumps generated that way are stamped with the real version, and the site labels
 them as stale.
