@@ -65,7 +65,7 @@ export const pipeline: PipelinePart[] = [
         transform: 'RdrName → Name',
         blurb:
           'Resolves every occurrence to the thing it names, resolves fixities, and reports what is unused or ambiguous.',
-        status: 'stub',
+        status: 'chapter',
         slug: 'renamer',
         modulePrefixes: ['GHC.Rename'],
         entryPoint: { file: 'compiler/GHC/Rename/Module.hs', symbol: 'rnSrcDecls' },
