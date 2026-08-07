@@ -1,0 +1,107 @@
+---
+title: Cmm and code generation
+summary: >-
+  The last target-independent form, and the three different back ends that take
+  it the rest of the way — plus the garbage collector's stake in the layout of
+  every stack frame.
+order: 10
+phases: ['cmm', 'codegen']
+sources:
+  - file: compiler/GHC/StgToCmm.hs
+    blurb: STG to Cmm — where the execution model becomes concrete
+  - file: compiler/GHC/Cmm/Info/Build.hs
+    blurb: info tables and SRTs
+  - file: compiler/GHC/CmmToAsm.hs
+    blurb: the native code generator
+  - file: compiler/GHC/CmmToLlvm.hs
+    blurb: the LLVM back end
+---
+
+import NoteCard from '../../components/NoteCard.astro';
+
+Cmm is C-like: basic blocks, assignments, conditional jumps, calls, explicit
+loads and stores. It is where GHC stops being a functional-language compiler and
+becomes an ordinary one.
+
+It is also the last form that does not know which machine it is for. Below Cmm
+the paths diverge — native code generator, LLVM, or bytecode for GHCi — and above
+it everything is shared.
+
+## What StgToCmm decides
+
+The translation from STG makes the execution model concrete. Heap objects get
+layouts. Closures get entry code. Function calls get a calling convention:
+
+<NoteCard id="GHC.Cmm.Node.register-parameter-passing" clamp={22} />
+
+Stack and heap checks appear here too. Every function that allocates must first
+check there is room, and jump to the garbage collector if not — the checks are
+inserted at Cmm level, hoisted so one check covers a whole block's worth of
+allocation.
+
+## Info tables
+
+Every heap object and every stack frame is preceded by an **info table**: a
+static description of the object's layout, saying which fields are pointers, what
+the entry code is, and what constructor or closure type it is.
+
+The garbage collector needs this. Faced with an arbitrary heap object it must
+determine, precisely, which words are pointers to follow and which are raw data.
+An imprecise answer is not an option — GHC's collector is exact, not
+conservative.
+
+The same requirement applies to the *stack*, which is where SRTs come in:
+
+<NoteCard id="GHC.Cmm.Info.Build.srts" clamp={28} />
+
+A Static Reference Table records which static (CAF) closures a piece of code can
+reach. Without them the collector could not know whether a top-level thunk is
+still live, and CAFs would either leak or be collected while reachable. Building
+SRTs is one of the more intricate things the Cmm pipeline does, because it is a
+reachability problem over the whole module.
+
+## Cmm-to-Cmm optimisation
+
+Between generation and code emission there is a modest optimisation pipeline:
+control-flow simplification, common block elimination, sinking, and a proc-point
+analysis that decides which blocks need to be separately entered.
+
+These are ordinary compiler optimisations. The interesting ones already happened
+in Core; by this point the wins are small and local.
+
+## Three back ends
+
+**The native code generator** (`GHC/CmmToAsm/`) emits assembly directly, with
+register allocation — either a fast linear-scan allocator or a graph-colouring
+one. It is the default because it compiles quickly.
+
+**The LLVM back end** (`GHC/CmmToLlvm/`) emits LLVM IR. It compiles more slowly
+but can produce better code, particularly for numeric work, since LLVM's
+optimiser knows things about instruction selection that GHC's does not.
+
+**The bytecode generator** (`GHC/StgToByteCode.hs`) takes a different route
+entirely, going from STG to bytecode for GHCi. It skips Cmm, because the
+interpreter needs neither register allocation nor machine code.
+
+Determinism matters across all of them — the same source must produce the same
+object file, or builds are not reproducible:
+
+<NoteCard id="GHC.StgToCmm.object-determinism" clamp={22} />
+
+That is harder than it sounds, because the compiler is full of `Unique`s and maps
+keyed by them, whose iteration order can depend on allocation history rather than
+on the program.
+
+## Reading the source yourself
+
+1. **`GHC/Cmm/Syntax`-adjacent modules** — `GHC/Cmm.hs` and `GHC/Cmm/Node.hs`
+   for the language itself.
+2. **`GHC/StgToCmm/`**, starting with the closure layout modules, since object
+   layout is the thing that makes the rest legible.
+3. **`GHC/Cmm/Info/Build.hs`** for info tables and SRTs — read the SRT Note first.
+4. **`GHC/CmmToAsm/Reg/`** only if register allocation is what you came for; it
+   is self-contained and does not require the rest.
+
+`-ddump-cmm` and `-ddump-asm` show the output. For a first look, compile a
+three-line module — the runtime's calling convention means even trivial functions
+produce more Cmm than you expect.

@@ -87,7 +87,7 @@ export const pipeline: PipelinePart[] = [
         transform: 'HsSyn → Core',
         blurb:
           'Collapses the whole of Haskell into Core: a tiny explicitly-typed lambda calculus with just nine constructors.',
-        status: 'stub',
+        status: 'chapter',
         slug: 'desugarer',
         modulePrefixes: ['GHC.HsToCore'],
         entryPoint: { file: 'compiler/GHC/HsToCore.hs', symbol: 'deSugar' },
@@ -106,7 +106,8 @@ export const pipeline: PipelinePart[] = [
         transform: 'the intermediate language',
         blurb:
           'System F-ish, explicitly typed, and small enough to fit on a page — which is exactly what makes the optimiser tractable.',
-        status: 'stub',
+        status: 'chapter',
+        slug: 'core',
         modulePrefixes: ['GHC.Core.Type', 'GHC.Core.TyCo', 'GHC.Core.Utils', 'GHC.Core.Lint'],
         entryPoint: { file: 'compiler/GHC/Core.hs', symbol: 'Expr' },
       },
@@ -116,7 +117,8 @@ export const pipeline: PipelinePart[] = [
         transform: 'Core → Core',
         blurb:
           'Inlining, beta reduction, case-of-case, and rewrite rules, run to a fixed point over several passes.',
-        status: 'stub',
+        status: 'chapter',
+        slug: 'simplifier',
         modulePrefixes: ['GHC.Core.Opt'],
         entryPoint: { file: 'compiler/GHC/Core/Opt/Simplify.hs', symbol: 'simplTopBinds' },
       },
@@ -134,7 +136,8 @@ export const pipeline: PipelinePart[] = [
         transform: 'Core → STG',
         blurb:
           'Makes allocation and evaluation explicit. Every closure and every thunk becomes visible in the syntax.',
-        status: 'stub',
+        status: 'chapter',
+        slug: 'stg',
         modulePrefixes: ['GHC.Stg', 'GHC.CoreToStg'],
         entryPoint: { file: 'compiler/GHC/CoreToStg.hs', symbol: 'coreToStg' },
       },
@@ -144,7 +147,8 @@ export const pipeline: PipelinePart[] = [
         transform: 'STG → Cmm',
         blurb:
           'A C-like portable assembly with explicit stack and heap operations — the last target-independent form.',
-        status: 'stub',
+        status: 'chapter',
+        slug: 'cmm',
         modulePrefixes: ['GHC.Cmm', 'GHC.StgToCmm'],
         entryPoint: { file: 'compiler/GHC/StgToCmm.hs', symbol: 'codeGen' },
       },
@@ -154,7 +158,8 @@ export const pipeline: PipelinePart[] = [
         transform: 'Cmm → machine code',
         blurb:
           'The native code generator, the LLVM backend, or the bytecode generator for GHCi.',
-        status: 'stub',
+        status: 'chapter',
+        slug: 'cmm',
         modulePrefixes: ['GHC.CmmToAsm', 'GHC.CmmToLlvm', 'GHC.ByteCode', 'GHC.StgToByteCode'],
         entryPoint: { file: 'compiler/GHC/CmmToAsm.hs', symbol: 'nativeCodeGen' },
       },
@@ -172,7 +177,8 @@ export const pipeline: PipelinePart[] = [
         transform: 'C, Cmm, and assembly',
         blurb:
           'Garbage collection, the lightweight thread scheduler, STM, and the evaluation machinery itself.',
-        status: 'stub',
+        status: 'chapter',
+        slug: 'rts',
         modulePrefixes: [],
         entryPoint: { file: 'rts/Schedule.c', symbol: 'schedule' },
       },

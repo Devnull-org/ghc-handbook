@@ -1,0 +1,111 @@
+---
+title: STG and CorePrep
+summary: >-
+  Where laziness stops being an abstraction. Every thunk, every closure and every
+  allocation becomes something you can point at in the syntax.
+order: 9
+phases: ['stg']
+sources:
+  - file: compiler/GHC/CoreToStg/Prep.hs
+    blurb: CorePrep — normalising Core before the translation
+  - file: compiler/GHC/CoreToStg.hs
+    blurb: the translation itself
+  - file: compiler/GHC/Stg/Syntax.hs
+    blurb: the STG language
+  - file: compiler/GHC/Stg/Unarise.hs
+    blurb: unarisation — flattening unboxed tuples and sums
+---
+
+import ExampleExplorer from '../../components/ExampleExplorer.astro';
+import NoteCard from '../../components/NoteCard.astro';
+
+Core is a lambda calculus: it says what a program *means*, not how it runs. `let`
+in Core creates a binding; whether that costs an allocation is left open.
+
+STG — Spineless Tagless G-machine — closes that gap. It is still recognisably
+functional, but every construct now corresponds to something the runtime does.
+A `let` in STG *is* an allocation. An application *is* an entry into a closure.
+Reading STG tells you what your program will actually do.
+
+## CorePrep first
+
+Core cannot be translated directly, because it permits shapes the code generator
+has no answer for — arbitrary expressions in argument position, unsaturated
+constructor applications, complex nested lets. `CorePrep` normalises these away,
+producing Core in A-normal form: every argument is a variable or literal, every
+constructor and primop saturated.
+
+It also does a few things that are genuinely semantic rather than cosmetic:
+
+<NoteCard id="GHC.CoreToStg.Prep.speculative-evaluation" clamp={24} />
+
+Speculative evaluation is a small, real optimisation: if a thunk is cheap and
+certain to be demanded, build the value now rather than a thunk that will be
+forced immediately. Saving a thunk saves an allocation, a write, and a later
+indirection.
+
+## What STG makes explicit
+
+Three things become visible that Core left implicit.
+
+**Closures and their free variables.** An STG closure records exactly which
+variables it captures. The size of the heap object is right there.
+
+**Update flags.** A thunk that is updated after evaluation, so it is not
+recomputed, is distinguished from one that is not. This is memoisation made
+syntactic.
+
+**Constructor saturation.** Every constructor application has all its arguments,
+so the code generator knows the size of the heap object without any analysis.
+
+## Unarisation
+
+Unboxed tuples and unboxed sums do not exist at runtime — an unboxed tuple is not
+a heap object, it is several values in registers. Unarisation flattens them away,
+rewriting binders and applications so that one binder of an unboxed tuple type
+becomes several binders of component types.
+
+The invariants afterwards are strict, because everything downstream assumes them:
+
+<NoteCard id="GHC.Stg.Unarise.post-unarisation-invariants" clamp={26} />
+
+## Pointer tagging
+
+The "tagless" in Spineless Tagless G-machine is historical; modern GHC very much
+does tag pointers. The low bits of a heap pointer, which are always zero from
+alignment, carry which constructor the object is — so a `case` on an already-
+evaluated value can branch on the pointer itself rather than dereferencing it and
+reading an info table.
+
+Getting this right requires knowing which pointers are guaranteed already
+evaluated and tagged, which is a property STG must track and preserve:
+
+<NoteCard id="GHC.Stg.EnforceEpt.ept-enforcement" clamp={24} />
+
+## Seeing it happen
+
+<ExampleExplorer
+  example="Fusion"
+  stages={['core-optimised', 'stg']}
+  caption="The optimised Core loop, then the same code in STG. Every let in the STG output is an allocation you can count."
+/>
+
+The `let` bindings in the STG output are the allocations your program performs.
+For `countdown`, after worker/wrapper, there should be very few — the loop runs
+on unboxed values.
+
+## Reading the source yourself
+
+1. **`GHC/Stg/Syntax.hs`** — small, and the closest thing to a description of
+   GHC's execution model in the compiler itself.
+2. **`GHC/CoreToStg/Prep.hs`** for the normalisation, which is where most of the
+   fiddly cases live.
+3. **`GHC/Stg/Unarise.hs`** when you first meet an unboxed tuple in anger.
+4. The **STG paper** — Simon Peyton Jones, *Implementing lazy functional
+   languages on stock hardware* — remains the best explanation of why the
+   machine is shaped this way. `docs/stg-spec/` in the tree has the formal
+   version.
+
+`-ddump-stg-final` shows the result. It is the single most useful dump for
+answering "why is this allocating?", because in STG the allocations are exactly
+the `let`s.

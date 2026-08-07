@@ -1,0 +1,110 @@
+---
+title: The runtime system
+summary: >-
+  Compiled Haskell does not run alone. The RTS provides the garbage collector,
+  the scheduler, and the machinery that makes laziness and lightweight threads
+  work — about 180 Notes, written in C.
+order: 11
+phases: ['rts']
+sources:
+  - file: rts/Schedule.c
+    blurb: the scheduler
+  - file: rts/sm/GC.c
+    blurb: the generational garbage collector
+  - file: rts/sm/NonMoving.c
+    blurb: the concurrent, non-moving collector
+  - file: rts/Interpreter.c
+    blurb: the bytecode interpreter behind GHCi
+---
+
+import NoteCard from '../../components/NoteCard.astro';
+
+Everything so far has been about producing an object file. This chapter is about
+what that object file links against.
+
+The RTS is a substantial C program — garbage collection, thread scheduling,
+software transactional memory, profiling, the bytecode interpreter — and it is
+not optional. Laziness needs something to update thunks; lightweight threads need
+something to schedule them; allocation needs something to collect.
+
+Its Notes are written in C comments, which is why the handbook's extractor learns
+`/* ... */` as well as `{- ... -}`. There are 184 of them.
+
+## The storage manager
+
+GHC's collector is **generational** and **copying**, and it is tuned for a
+language that allocates ferociously. Most Haskell allocations die immediately —
+a thunk is forced once and becomes garbage — so the youngest generation is
+collected often and cheaply, and only survivors are promoted.
+
+Allocation itself is a pointer bump. The heap check emitted at Cmm level confirms
+there is room; if there is, allocating is incrementing a register.
+
+Copying collection has a consequence worth internalising: **objects move**. A
+pointer held in a C library across a garbage collection is not valid unless it
+was pinned. This is why the FFI has pinned allocation, and why `ByteString` uses
+it.
+
+The trade-off with a copying collector is pause time, which is what the
+non-moving collector addresses — a concurrent mark-and-sweep collector for the
+oldest generation, so a large heap does not mean a long pause:
+
+<NoteCard id="non-moving-gc-marking-evacuated-objects" clamp={26} />
+
+Concurrency here means real concurrency: mutator threads run while marking is in
+progress, so the collector needs a write barrier and a story for objects that
+move underneath it.
+
+## The scheduler
+
+Haskell threads are not OS threads. `forkIO` creates a lightweight thread with a
+small, growable stack; the RTS multiplexes many of them onto a few OS threads
+called *capabilities*. Millions of threads is a reasonable thing to do.
+
+Scheduling is cooperative, and the yield points are the heap checks. A thread
+that allocates will periodically reach one, which is where the RTS can take
+control. This has a well-known consequence: a tight non-allocating loop cannot be
+preempted, which is why such a loop can hang a program at `-threaded`.
+
+Blocking on an `MVar` or an STM transaction removes a thread from the run queue
+entirely; the thread is placed on the queue of whatever it is waiting for and
+woken only when that changes. There is no polling.
+
+## Thunks, updates, and blackholes
+
+Laziness lives here. Entering a thunk runs its code and *overwrites* it with the
+result, so the work is not repeated — that is the update.
+
+If two threads enter the same thunk at once, both would compute it. The RTS
+overwrites a thunk under evaluation with a **blackhole**, so a second thread
+entering it blocks rather than duplicating work. Blackholes also make certain
+deadlocks detectable: a thread blocked on a blackhole owned by a thread blocked
+on the first is a cycle the RTS can find.
+
+<NoteCard id="deadlock-detection-under-the-nonmoving-collector" clamp={24} />
+
+## The interpreter
+
+GHCi does not compile to machine code by default. `GHC/StgToByteCode.hs` produces
+bytecode, and `rts/Interpreter.c` runs it, sharing the same heap objects and the
+same garbage collector as compiled code. Interpreted and compiled code interoperate
+directly, which is why you can load a package compiled to machine code and call
+into it from an interpreted expression.
+
+<NoteCard id="stack-layout-when-entering-run-bco" clamp={24} />
+
+## Reading the source yourself
+
+The RTS is a different kind of code from the compiler — C, performance-critical,
+and with a lot of load-bearing macros.
+
+1. **`rts/include/rts/storage/Closures.h`** first. Every heap object layout is
+   here, and nothing else makes sense without it.
+2. **`rts/Schedule.c`** — the main scheduler loop is readable and central.
+3. **`rts/sm/GC.c`** for the collector; **`rts/sm/NonMoving.c`** only afterwards.
+4. **`docs/rts/`** and **`docs/storage-mgt/`** in the tree contain design
+   documents that predate and explain much of the code.
+
+Build with `-debug` and run with `+RTS -Ds` to trace the scheduler. The RTS is
+also the one part of GHC you can meaningfully experiment with in isolation: it is
+a C library, and its behaviour is observable with ordinary C tooling.

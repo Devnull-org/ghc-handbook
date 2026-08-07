@@ -1,0 +1,125 @@
+---
+title: Classes, instances and deriving
+summary: >-
+  Where a class declaration becomes a record of functions, an instance becomes a
+  value of that record, and `deriving` writes code you never see — the machinery
+  that makes overloading disappear before Core.
+order: 5
+phases: []
+sources:
+  - file: compiler/GHC/Tc/TyCl.hs
+    blurb: checking type, class and family declarations
+  - file: compiler/GHC/Tc/TyCl/Instance.hs
+    blurb: instance declarations and superclass evidence
+  - file: compiler/GHC/Tc/Instance/Class.hs
+    blurb: matching a wanted dictionary against instances
+  - file: compiler/GHC/Tc/Deriv.hs
+    blurb: the deriving mechanisms and strategy selection
+---
+
+import ExampleExplorer from '../../components/ExampleExplorer.astro';
+import NoteCard from '../../components/NoteCard.astro';
+
+Type classes are the feature that most distinguishes Haskell, and the one whose
+implementation is least visible from the outside. By the time your program
+reaches Core there are no classes at all — only records, ordinary functions, and
+ordinary arguments.
+
+This chapter is how that erasure happens.
+
+## Dictionaries
+
+A class becomes a data type; its methods become fields. `Show a` is, after
+elaboration, a record holding `showsPrec`, `show` and `showList`. An instance
+becomes a *value* of that record. A constraint `Show a =>` becomes a function
+argument carrying it.
+
+You saw the result in the parser chapter without comment:
+
+```
+describe :: forall a. Show a => a -> String
+describe
+  = \ (@a) ($dShow :: Show a) (x :: a) ->
+      ++ (unpackCString# "value: "#) (show $dShow x)
+```
+
+`$dShow` is the dictionary. `show $dShow x` is a field selection followed by an
+application. Nothing about that is class-specific any more — which is precisely
+the point, because it means the whole optimiser downstream needs to know nothing
+about classes.
+
+Single-method classes get a further simplification: rather than a one-field
+record, the dictionary *is* the method, via a newtype. It is why a single-method
+class often costs nothing at runtime.
+
+## Solving a dictionary constraint
+
+When the solver meets a Wanted `Show Int`, it consults the instance environment
+for a match. Success produces evidence — the dictionary — and fills the hole.
+
+Superclasses complicate this pleasantly. If you have `Ord a`, you also have
+`Eq a`, because `Ord` declares `Eq` as a superclass, and the `Ord` dictionary
+physically contains the `Eq` one. Extracting it is a field selection:
+
+<NoteCard id="GHC.Tc.TyCl.Instance.solving-superclass-constraints" clamp={26} />
+
+The uncomfortable case is when a local Given and a global instance both match.
+The chapter on the solver quoted `Instance and Given overlap` for this reason:
+picking the instance would be wrong, because the caller may be passing a
+different dictionary for the same type.
+
+## Deriving
+
+`deriving` is code generation. GHC writes out an instance declaration and
+typechecks it as though you had written it, which is why derived instances can
+fail with ordinary type errors.
+
+There is more than one way to derive, and choosing between them is explicit:
+
+<NoteCard id="GHC.Tc.Deriv.deriving-strategies" clamp={30} />
+
+The four strategies do genuinely different things. `stock` generates real code
+per class, known to the compiler. `newtype` coerces an existing instance through
+a newtype — zero cost, since the representations are identical. `anyclass` takes
+the class's default methods. `via` coerces through a type you nominate.
+
+For inferred contexts there is a further problem: what constraints should the
+generated instance require? `deriving Show` for `data T a = MkT a` needs
+`Show a`, but working that out in general means running the solver over the
+generated code:
+
+<NoteCard id="GHC.Tc.Deriv.Infer.inferring-the-instance-context" clamp={26} />
+
+Stock deriving also needs helper bindings — comparison tags, enumeration
+indices — that must not collide with anything the user wrote:
+
+<NoteCard id="GHC.Tc.Deriv.Generate.auxiliary-binders" clamp={22} />
+
+## Seeing it happen
+
+<ExampleExplorer
+  example="Classes"
+  stages={['typechecked', 'core-desugared', 'core-optimised']}
+  caption="The Container class and its Stack instance. In Core, the class is a record and the instance is a value — $fContainerStack — passed explicitly wherever it is needed."
+/>
+
+Look for `$dContainer` in `twice`. The constraint `Container f =>` in the source
+has become a value parameter, and the two `insert` calls select from it.
+
+Then compare **Core (optimised)**: for a known concrete type the simplifier can
+often see which dictionary arrives, inline the selection, and leave a direct
+call. That is the specialiser's doing, and the reason class-heavy Haskell is not
+automatically slow.
+
+## Reading the source yourself
+
+1. **`GHC/Core/Class.hs`** — small, and shows exactly what a class *is* once
+   elaborated. Start here; everything else is easier afterwards.
+2. **`GHC/Tc/Instance/Class.hs`** for matching a Wanted against instances.
+3. **`GHC/Tc/TyCl/Instance.hs`** for what an instance declaration turns into,
+   superclass evidence included.
+4. **`GHC/Tc/Deriv/*`** last. `Deriv.hs` chooses the strategy,
+   `Deriv/Generate.hs` writes the code, `Deriv/Infer.hs` works out the context.
+
+`-ddump-deriv` shows exactly what `deriving` generated, which is the quickest way
+to understand a confusing error in code you did not write.

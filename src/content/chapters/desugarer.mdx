@@ -1,0 +1,142 @@
+---
+title: Desugaring to Core
+summary: >-
+  Where the whole of Haskell collapses into nine constructors — and where GHC
+  works out, on the way past, whether your patterns were exhaustive.
+order: 6
+phases: ['desugarer']
+sources:
+  - file: compiler/GHC/HsToCore.hs
+    blurb: the entry point
+  - file: compiler/GHC/HsToCore/Expr.hs
+    blurb: expressions
+  - file: compiler/GHC/HsToCore/Match.hs
+    blurb: the pattern-match compiler
+  - file: compiler/GHC/HsToCore/Pmc.hs
+    blurb: the pattern-match coverage checker
+---
+
+import ExampleExplorer from '../../components/ExampleExplorer.astro';
+import NoteCard from '../../components/NoteCard.astro';
+
+Everything so far has operated on `HsSyn`, a syntax tree that mirrors Haskell's
+surface language: `if`, `where`, guards, `do`, list comprehensions, sections,
+multi-equation definitions, record syntax. The desugarer's job is to delete all
+of it.
+
+What comes out is Core, whose expression type fits on one screen:
+
+```haskell
+data Expr b
+  = Var   Id
+  | Lit   Literal
+  | App   (Expr b) (Arg b)
+  | Lam   b (Expr b)
+  | Let   (Bind b) (Expr b)
+  | Case  (Expr b) b Type [Alt b]
+  | Cast  (Expr b) CoercionR
+  | Tick  CoreTickish (Expr b)
+  | Type  Type
+  | Coercion Coercion
+```
+
+Nine constructors, and three of them (`Tick`, `Type`, `Coercion`) are
+bookkeeping. Everything you can write in Haskell arrives here as variables,
+literals, application, lambda, let and case.
+
+That collapse is what makes the rest of the compiler possible. An optimiser for
+the surface language would need a case for every syntactic form and every
+extension; an optimiser for Core needs six.
+
+## Everything becomes `case`
+
+Multi-equation definitions, nested patterns, guards, `where`, `if` — all of them
+become `case`. The interesting part is that this is not a simple rewrite. Given
+
+```haskell
+area (Circle r) = pi * r * r
+area (Rect w h) = w * h
+area Point      = 0
+```
+
+a naive translation would test each equation in turn, re-examining the scrutinee
+every time. The pattern-match compiler instead groups patterns by constructor and
+produces a single `case` with one alternative each — the algorithm from
+*The Implementation of Functional Programming Languages*, and the reason
+`GHC/HsToCore/Match.hs` is one of the older and more intricate files in the tree.
+
+Strictness needs care here too, since desugaring decides when things are forced:
+
+<NoteCard id="GHC.HsToCore.Binds.desugar-strict-binds" clamp={26} />
+
+## The coverage checker
+
+While it is here, GHC answers two questions you may have asked for: are these
+patterns exhaustive, and is any of them redundant. That is `GHC/HsToCore/Pmc.hs`,
+and it is much more than a syntactic check — it reasons about what values can
+actually reach each equation, using the same constraint machinery as the
+typechecker.
+
+This is why GADTs get precise warnings. In
+
+```haskell
+data T a where
+  TInt  :: T Int
+  TBool :: T Bool
+
+h :: T Int -> Int
+h TInt = 42
+```
+
+there is no missing `TBool` case, because `TBool :: T Bool` cannot have type
+`T Int`. The checker knows because it asks the solver.
+
+It also propagates what earlier matches have already ruled out:
+
+<NoteCard id="GHC.HsToCore.Pmc.long-distance-information" clamp={24} />
+
+That "long-distance information" is why GHC can tell you a `case` in the body of
+an equation is redundant *because of* the pattern in the equation's head.
+
+## Dictionaries become arguments
+
+The elaboration the typechecker performed becomes concrete here. Class
+constraints turn into lambda-bound dictionary parameters, and evidence bindings
+turn into ordinary `let`s. Coercions — the evidence for type equalities — become
+`Cast` nodes.
+
+By the end, types are still present (Core is explicitly typed) but classes are
+gone entirely.
+
+## Seeing it happen
+
+<ExampleExplorer
+  example="Patterns"
+  stages={['typechecked', 'core-desugared']}
+  caption="Three equations for `area`, guards in `classify`, and a nested pattern in `firstTwo` — all reduced to case."
+/>
+
+Look at `classify`. The guards, the `where`-bound `small`, and the fall-through
+to `otherwise` have all become nested `case`. Note also the default alternatives
+the compiler inserted: Core `case` must be exhaustive, so anything the source
+left implicit is now explicit.
+
+## What comes next
+
+The desugarer's output is checked by Core Lint (in a debug compiler, or with
+`-dcore-lint`) and then handed to the optimiser. From here on, every phase's
+input and output is Core, and every transformation must preserve its typing —
+which is the subject of the next chapter.
+
+## Reading the source yourself
+
+1. **`GHC/Core.hs`** — read the `Expr` type and its Notes before any desugaring
+   code. It is the target; the translation makes little sense without it.
+2. **`GHC/HsToCore/Expr.hs`** for the straightforward cases.
+3. **`GHC/HsToCore/Match.hs`** for the pattern-match compiler, which is where the
+   real work is.
+4. **`GHC/HsToCore/Pmc.hs`** separately, when you care about warnings rather than
+   code generation. It is nearly independent of the rest.
+
+`-ddump-ds` shows the output directly, and comparing it with `-ddump-ds-preopt`
+reveals how much tidying happens even before the simplifier runs.

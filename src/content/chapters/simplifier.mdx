@@ -1,0 +1,133 @@
+---
+title: The simplifier
+summary: >-
+  The densest part of GHC — 450 Notes of inlining, case-of-case, strictness and
+  rewrite rules, run to a fixed point. Where three list traversals become one
+  loop that allocates nothing.
+order: 8
+phases: ['simplifier']
+sources:
+  - file: compiler/GHC/Core/Opt/Simplify.hs
+    blurb: the simplifier proper
+  - file: compiler/GHC/Core/Opt/OccurAnal.hs
+    blurb: occurrence analysis — what may be inlined, and what is a join point
+  - file: compiler/GHC/Core/Opt/DmdAnal.hs
+    blurb: strictness and demand analysis
+  - file: compiler/GHC/Core/Opt/WorkWrap.hs
+    blurb: turning demand information into unboxed workers
+---
+
+import ExampleExplorer from '../../components/ExampleExplorer.astro';
+import NoteCard from '../../components/NoteCard.astro';
+
+`GHC.Core.Opt.*` holds 450 Notes — more than any other part of the compiler, more
+than the entire back end. This is where GHC's reputation was earned, and it is
+also where the compiler is least like a textbook.
+
+The middle end is not one pass. It is a sequence, configured by optimisation
+level, in which the simplifier runs several times with analyses interleaved
+between its runs. Each analysis annotates the program; the simplifier exploits
+the annotations; the result enables the next analysis.
+
+## The simplifier
+
+At its heart is a set of local rewrites applied everywhere, repeatedly, until
+nothing changes: beta reduction, `let` floating, inlining, case-of-known-constructor,
+dead code elimination.
+
+The most consequential is **case-of-case**. Given
+
+```haskell
+case (case x of { A -> e1; B -> e2 }) of { ... alts ... }
+```
+
+the outer `case` can be pushed into both branches of the inner one, duplicating
+`alts`. This looks like it makes the program bigger, and sometimes it does — but
+it is what makes short-circuiting boolean operators, `&&` chains, and fused
+pipelines compile to straight-line tests instead of building and immediately
+scrutinising intermediate values.
+
+Deciding *when* to inline is the hardest judgement in the compiler. Inline too
+little and nothing else fires; inline too much and code size explodes, and
+because inlining enables further inlining, the feedback is nonlinear. GHC's
+answer is a mass of heuristics informed by occurrence analysis: a binder used
+exactly once in a non-recursive position is nearly always worth inlining, because
+it cannot duplicate work.
+
+## Occurrence analysis
+
+`OccurAnal` runs before each simplifier pass and answers "how is each binder
+used?" — once, many times, under a lambda, in a tail position. That last one is
+how join points are found: a let-bound function *only* ever tail-called becomes a
+label rather than a closure.
+
+It also breaks recursive groups into strongly-connected components and picks loop
+breakers, without which the simplifier would inline a recursive function into
+itself forever.
+
+## Strictness, and unboxing
+
+Demand analysis asks: if this function is called, will it definitely evaluate
+this argument? A `yes` is licence to do something valuable — pass the argument
+evaluated and unboxed, rather than as a thunk.
+
+Worker/wrapper is the transformation that cashes it in. A function `f` becomes a
+small *wrapper* with the original type that unpacks its arguments, plus a
+*worker* taking unboxed values. The wrapper is inlined at every call site, so the
+boxing usually disappears entirely.
+
+<NoteCard id="GHC.Core.Opt.WorkWrap.worker-wrapper-for-inlinable-functions" clamp={24} />
+
+This is why a strict accumulator loop over `Int` in Haskell can run with no
+allocation at all: after worker/wrapper the accumulator is an `Int#` in a
+register, and the `I#` box never exists.
+
+## Rewrite rules and fusion
+
+`RULES` pragmas let library authors state equations that GHC applies as
+left-to-right rewrites. This is how fusion works, and it lives in libraries
+rather than in the compiler.
+
+The canonical example is `map f (map g xs) = map (f . g) xs`. Modern `base` uses
+a more general scheme built on `build`/`foldr`, but the principle is the same:
+the library says which rewrites are valid, and the simplifier applies them.
+
+Specialisation is the same idea applied to dictionaries. A polymorphic function
+called at a known type can be cloned with the dictionary inlined, turning
+indirect calls into direct ones:
+
+<NoteCard id="GHC.Core.Opt.Specialise.specialising-polymorphic-dictionaries" clamp={24} />
+
+## Seeing it happen
+
+This is what the `Fusion.hs` example exists for.
+
+<ExampleExplorer
+  example="Fusion"
+  stages={['core-desugared', 'core-optimised', 'stg']}
+  caption="`pipeline = sum . map (*2) . filter even` reads as three traversals building two intermediate lists. Compare desugared with optimised Core."
+/>
+
+In **Core (desugared)** you can see the composition and the intermediate lists.
+In **Core (optimised)** they are gone: fusion has collapsed the pipeline into a
+single recursive worker over the input list, with no intermediate list allocated.
+
+`countdown` shows the other half — worker/wrapper turning the accumulator into an
+unboxed `Int#` loop.
+
+## Reading the source yourself
+
+The middle end is large enough that reading it front to back is not a plan. Pick
+a transformation and follow it.
+
+1. **`GHC/Core/Opt/OccurAnal.hs`** first, despite being an analysis rather than a
+   transformation. Nearly every simplifier decision consults its output.
+2. **`GHC/Core/Opt/Simplify/Iteration.hs`** for the rewrites themselves.
+3. **`GHC/Core/Opt/DmdAnal.hs`** and **`WorkWrap.hs`** as a pair — the analysis
+   is only interesting because of what the transformation does with it.
+4. **`GHC/Core/Opt/Pipeline.hs`** to see the order everything runs in, which
+   explains a lot about why a given optimisation did or did not fire.
+
+`-ddump-simpl-iterations` shows the program after each pass, and
+`-ddump-rule-firings` names every rule that fired. When an expected optimisation
+does not happen, those two flags usually explain it faster than reading the code.
