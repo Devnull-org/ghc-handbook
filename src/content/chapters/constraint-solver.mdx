@@ -1,0 +1,155 @@
+---
+title: The constraint solver
+summary: >-
+  What happens to the pile of facts the typechecker wrote down — a rewriting
+  engine built around a carefully maintained set of "inert" constraints, and the
+  compromises that make it both complete enough and quiet enough to use.
+order: 4
+phases: []
+sources:
+  - file: compiler/GHC/Tc/Solver/Solve.hs
+    blurb: the solver loop and the per-constraint pipeline
+  - file: compiler/GHC/Tc/Solver/InertSet.hs
+    blurb: the inert set, and what it means to be inert
+  - file: compiler/GHC/Tc/Solver/Equality.hs
+    blurb: solving equalities — the hardest part
+  - file: compiler/GHC/Tc/Solver/Rewrite.hs
+    blurb: rewriting constraints with known equalities
+---
+
+import NoteCard from '../../components/NoteCard.astro';
+
+The previous chapter ended with a `WantedConstraints` tree and no attempt to
+solve any of it. This chapter is that attempt.
+
+The solver is the part of GHC that most resembles a theorem prover, and it is
+worth saying up front that it is not a complete one. Haskell's type system with
+its extensions is undecidable; the solver is a carefully-tuned incomplete
+procedure that accepts the programs people write, terminates on the ones they
+don't, and produces errors a human can act on. Several of its most important
+design decisions are explicitly compromises between those three goals.
+
+## The inert set
+
+The central data structure holds constraints that have been processed and cannot
+currently react with each other — hence *inert*:
+
+```haskell
+data InertCans
+  = IC { inert_eqs :: InertEqs
+              -- All EqCt with a TyVarLHS; index is the LHS tyvar
+              -- Domain = skolems and untouchables; a touchable would be unified
+
+       , inert_funeqs :: InertFunEqs
+              -- All EqCt with a TyFamLHS; index is the whole family head type.
+              -- LHS is fully rewritten wrt inert_eqs
+
+       , inert_dicts :: DictMap DictCt
+              -- Dictionaries only
+              -- All fully rewritten wrt inert_eqs
+
+       , inert_qcis :: [QCInst]
+       , ... }
+```
+
+The comments carry the invariant that makes the whole thing work: everything in
+the set is *fully rewritten with respect to `inert_eqs`*. If the set knows
+`a ~ Int`, then nothing anywhere else in the set still mentions `a`.
+
+Maintaining that is the solver's main job, and it is why adding a constraint is
+not a simple insertion. The basic loop is:
+
+1. Take a constraint off the work list.
+2. **Rewrite** it using everything in the inert set.
+3. **Canonicalise** it into a normal form (`CEqCan`, `CDictCan`, …).
+4. Try to **solve** it outright — from a Given, from an instance, from a
+   top-level axiom.
+5. If it survives, **add it to the inert set** — and *kick out* any existing
+   inert constraint that the newcomer can now rewrite, putting it back on the
+   work list.
+
+Kick-out is the step that surprises people. Adding one equality can eject a
+dozen constraints back into the queue, and that is not a failure mode — it is how
+the invariant is restored.
+
+## Which constraints may rewrite which
+
+Givens may rewrite anything: they are facts. Wanteds rewriting Wanteds is the
+genuinely hard question, and GHC's answer is the most-referenced Note in the
+whole solver:
+
+<NoteCard id="GHC.Tc.Types.Constraint.wanteds-rewrite-wanteds" clamp={34} />
+
+The structure of that Note is worth admiring, because it is how a good design
+decision gets recorded. Two examples, pulling in opposite directions: one where
+letting Wanteds rewrite Wanteds produces an absurd error (`Bool ~ Char`, from a
+program that mentions neither together), one where refusing means a perfectly
+good program is rejected. "TL;DR we want equality saturation." Then the
+resolution: allow it, but have every Wanted carry a `RewriterSet` recording which
+other Wanteds touched it, so that error reporting can suppress the ones whose
+"error" is really just a consequence of another failure.
+
+That `ctev_rewriters` field in the previous chapter's `WantedCtEvidence` exists
+solely for this. Its only purpose is error quality.
+
+## Equalities are the hard part
+
+`GHC/Tc/Solver/Equality.hs` is 3,300 lines, and it is where the subtlety lives.
+Dictionary constraints are comparatively easy: look for a matching instance,
+produce evidence. Equalities have to contend with type families (which do not
+decompose), newtypes (which decompose only sometimes), representational vs
+nominal equality, and kinds that may themselves not yet be equal.
+
+Two Notes give the flavour. First, the one that comes up whenever you write a
+recursive type family and get a "cannot construct infinite type" you did not
+expect:
+
+<NoteCard id="GHC.Tc.Solver.Equality.type-equality-cycles" clamp={26} />
+
+And second, the case where a locally-available Given and a global instance both
+apply — where picking the instance would be unsound, because the caller may have
+had a different one in mind:
+
+<NoteCard id="GHC.Tc.Solver.Dict.instance-and-given-overlap" clamp={26} />
+
+## Termination is bought, not given
+
+Nothing about the loop above terminates on its own. A type family can expand
+forever; superclass expansion can cycle; instances can chain indefinitely. GHC
+buys termination with explicit budgets — the solver counts, and gives up when the
+count runs out. `ExpansionFuel` is exactly what it sounds like:
+
+<NoteCard id="GHC.Tc.Solver.Solve.expanding-recursive-superclasses-and-expansionfuel" clamp={24} />
+
+This is why `-freduction-depth` exists, and why raising it sometimes makes a
+program compile. The limit is not a soundness boundary; it is a stopping
+condition standing in for a decision procedure nobody has.
+
+## When it finishes
+
+The solver returns a residual `WantedConstraints`. If it is empty, the module
+type-checks and every evidence hole has been filled. If not, the leftovers go to
+`GHC/Tc/Errors.hs`, whose job is to turn unsolved constraints into the message
+you actually see — and which uses the `RewriterSet` from above to decide which of
+several related failures is the real one.
+
+Successfully solved constraints leave behind evidence: dictionaries and
+coercions, bound in the elaborated program. They are why the desugarer has
+something concrete to translate.
+
+## Reading the source yourself
+
+This is the hardest code in GHC to read cold. A workable order:
+
+1. **`GHC/Tc/Solver/InertSet.hs`**, and specifically its Notes rather than its
+   functions. `Note [inert_eqs: the inert equalities]` and the kick-out Notes
+   explain the invariant that everything else preserves.
+2. **`GHC/Tc/Solver/Solve.hs`** — `solveOne` and `solveCt` show the pipeline
+   stages plainly.
+3. **`GHC/Tc/Solver/Rewrite.hs`** next, since rewriting is step two of every
+   constraint's life.
+4. **`GHC/Tc/Solver/Equality.hs`** last, and only with a specific question.
+
+`-ddump-tc-trace` prints the solver's every step. It is enormously verbose and
+the fastest way to understand why a particular program was rejected — start from
+a three-line failing module, never a real one.

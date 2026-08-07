@@ -1,0 +1,195 @@
+---
+title: The typechecker — architecture
+summary: >-
+  The largest phase in GHC, and the one shaped most deliberately: it does not
+  type-check your program so much as write down everything that must be true
+  about it, and hand that to a separate solver.
+order: 3
+phases: ['typechecker']
+sources:
+  - file: compiler/GHC/Tc/Module.hs
+    blurb: the entry point — tcRnModule and the top-level loop
+  - file: compiler/GHC/Tc/Types/Constraint.hs
+    blurb: Ct, WantedConstraints, Implication, CtEvidence
+  - file: compiler/GHC/Tc/Gen/Expr.hs
+    blurb: constraint generation for expressions
+  - file: compiler/GHC/Tc/Utils/TcType.hs
+    blurb: TcLevel, metavariables, skolems
+---
+
+import ExampleExplorer from '../../components/ExampleExplorer.astro';
+import NoteCard from '../../components/NoteCard.astro';
+
+The typechecker is the biggest thing in GHC by a wide margin. Around 830 of the
+compiler's Notes live under `GHC.Tc.*` — more than the entire back end — and the
+files are correspondingly large.
+
+The single most useful idea for finding your way around it is this: **GHC does
+not check types and solve constraints at the same time**. It walks your program
+once, writing down every fact that would have to hold for the program to be well
+typed, and only then hands that pile of facts to a solver. Almost every design
+decision in the phase follows from that split, and the next chapter is about the
+solver alone.
+
+This chapter is the first half: how the walk works, and what it produces.
+
+## Why split at all
+
+The obvious way to write a type checker — unify as you go, fail at the first
+mismatch — works fine for Hindley–Milner. It stops working once you have local
+assumptions.
+
+```haskell
+f :: (a ~ Int) => a -> Int
+f x = x + 1
+```
+
+Inside `f`'s body, `a` *is* `Int`, but only because of a constraint that arrived
+with the signature. And with GADTs, the assumptions available depend on which
+branch you are in:
+
+```haskell
+data T a where
+  TInt  :: T Int
+  TBool :: T Bool
+
+g :: T a -> a
+g TInt  = 42       -- here, and only here, a ~ Int
+g TBool = True     -- here, a ~ Bool
+```
+
+A checker that unifies eagerly has nowhere to put "`a ~ Int`, but only in this
+branch". So GHC generates constraints with their context attached, and defers
+solving until it has the whole picture.
+
+## What gets generated
+
+Two types carry it all. First, individual constraints:
+
+```haskell
+data Ct
+  = CDictCan      DictCt    -- ^ A dictionary constraint (canonical)
+  | CIrredCan     IrredCt   -- ^ An irreducible constraint
+  | CEqCan        EqCt      -- ^ An equality constraint (canonical)
+  | CQuantCan     QCInst    -- ^ A quantified constraint
+  | CNonCanonical CtEvidence
+```
+
+`Show a` is a `CDictCan`. `a ~ Int` is a `CEqCan`. "Canonical" means the solver
+has already massaged it into a normal form — a distinction that matters
+enormously in the next chapter and not at all here.
+
+Second, the collection the walk produces:
+
+```haskell
+data WantedConstraints
+  = WC { wc_simple :: Cts              -- Unsolved constraints, all wanted
+       , wc_impl   :: Bag Implication
+       , wc_errors :: Bag DelayedError
+       }
+```
+
+Note that it is a *tree*, not a list. `wc_simple` holds constraints at this
+level; `wc_impl` holds nested ones, each wrapped in an `Implication` that records
+what may be assumed locally:
+
+```haskell
+data Implication
+  = Implic {
+      ic_tclvl :: TcLevel,        -- TcLevel of unification variables
+                                  -- allocated /inside/ this implication
+      ic_skols :: [TcTyVar],      -- Introduced skolems
+      ic_given :: [EvVar],        -- Given evidence variables
+      ic_wanted :: WantedConstraints,
+      ... }
+```
+
+Read that as a logical implication, because that is exactly what it is: *given*
+`ic_given`, and with `ic_skols` held rigid, *prove* `ic_wanted`. The `g TInt`
+branch above becomes an implication whose given is `a ~ Int`.
+
+## Given and Wanted
+
+The distinction runs through the entire phase:
+
+```haskell
+data CtEvidence
+  = CtGiven  GivenCtEvidence
+  | CtWanted WantedCtEvidence
+```
+
+A **Given** is something you may assume — it arrived from a type signature or a
+GADT pattern match, and it comes with an `EvVar`, a variable naming the evidence
+you already hold. A **Wanted** is something you must prove, and it carries a
+`ctev_dest`: a hole to be filled in with evidence once solved.
+
+That "evidence" is not bookkeeping. It is a real term that survives into the
+output: a `Show a` Wanted, once solved, becomes the dictionary argument you saw
+appear in the Core in the parser chapter's example explorer. The typechecker is
+in the business of *constructing programs*, not merely accepting them.
+
+## Levels, skolems, and what may be unified
+
+Two kinds of type variable exist during typechecking. A **metavariable** is a
+mutable hole standing for a type not yet known — unifying is filling it in. A
+**skolem** is rigid: it stands for a type the caller chooses, and unifying it
+with anything would be unsound.
+
+Keeping this straight under nesting is what `TcLevel` is for, and its invariants
+are worth reading in full, because a startling amount of the typechecker exists
+to maintain them:
+
+<NoteCard id="GHC.Tc.Utils.TcType.tclevel-invariants" clamp={26} />
+
+The payoff is `(GivenInv)` and `(WantedInv)`. Together they make "may I unify
+this metavariable here?" answerable by comparing two integers, rather than by
+searching the implication tree. A metavariable from an outer level is
+*untouchable* inside an inner implication — unifying it there would smuggle a
+local assumption into a scope where it does not hold. This is where GHC's
+"untouchable" error messages come from.
+
+## Checking and inferring
+
+The walk itself is bidirectional. Rather than one function that infers a type,
+there are two modes, chosen by whether an expected type is already known:
+
+<NoteCard id="GHC.Tc.Gen.HsType.bidirectional-type-checking" />
+
+That Note is about kinds, but the same `ExpType` machinery is used for terms.
+The distinction matters for higher-rank types: `Check` can push a polymorphic
+type inward, where `Infer` would have to guess it. It is also why moving a type
+signature can make a program compile.
+
+## Then it stops
+
+At the end of the walk GHC has a `WantedConstraints` tree and a partially
+elaborated program full of evidence holes. Nothing has been *solved*. No
+`Show Int` has been looked up; no equality has been decomposed.
+
+The whole of that is the next chapter.
+
+## Seeing it happen
+
+<ExampleExplorer
+  example="Classes"
+  stages={['renamed', 'typechecked', 'core-desugared']}
+  caption="The Typechecked tab shows the elaborated program: types resolved, and class constraints turned into explicit dictionary arguments that carry through into Core."
+/>
+
+Between **Renamed** and **Typechecked**, `describe` gains its `Show a` dictionary
+— that is a solved Wanted, with its evidence filled in.
+
+## Reading the source yourself
+
+1. **`GHC/Tc/Types/Constraint.hs`** before anything else. `Ct`,
+   `WantedConstraints`, `Implication` and `CtEvidence` are the vocabulary; the
+   rest of the phase is unreadable without them and mostly straightforward with
+   them.
+2. **`GHC/Tc/Utils/TcType.hs`** for `TcLevel` and the metavariable/skolem
+   distinction.
+3. **`GHC/Tc/Gen/Expr.hs`** for the walk itself — but only after the above.
+4. **`GHC/Tc/Module.hs`** last, for how it is all driven per module.
+
+Be warned that `GHC/Tc/Errors/Ppr.hs` and `Errors/Types.hs` are the two largest
+files in the directory at around 7,000 lines each. They are error *rendering*,
+not type theory; skip them until you need to change a message.

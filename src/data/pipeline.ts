@@ -76,7 +76,7 @@ export const pipeline: PipelinePart[] = [
         transform: 'Name → Id',
         blurb:
           'Generates constraints from the syntax tree and solves them. By far the largest phase, and the one that carries the most design reasoning.',
-        status: 'stub',
+        status: 'chapter',
         slug: 'typechecker',
         modulePrefixes: ['GHC.Tc'],
         entryPoint: { file: 'compiler/GHC/Tc/Module.hs', symbol: 'tcRnModule' },
