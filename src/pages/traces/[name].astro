@@ -1,0 +1,187 @@
+---
+import { readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+import Base from '../../layouts/Base.astro';
+import TraceExplorer from '../../components/TraceExplorer.astro';
+import { withBase, chapterHref } from '../../lib/paths';
+
+export function getStaticPaths() {
+  const manifestPath = join(process.cwd(), 'data', 'traces', 'manifest.json');
+  if (!existsSync(manifestPath)) return [];
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+  return manifest.examples.map((name: string) => ({
+    params: { name: name.toLowerCase() },
+    props: { example: name },
+  }));
+}
+
+const { example } = Astro.props;
+
+/**
+ * The prose lives here rather than in MDX because each page is one explorer
+ * plus a reading guide, and the guide needs to point at concrete markers in
+ * this exact trace.
+ */
+const PAGES: Record<
+  string,
+  { title: string; summary: string; traces?: string[]; lookFor: { where: string; what: string }[]; chapters: { slug: string; label: string }[] }
+> = {
+  Dict: {
+    title: 'Solving a dictionary',
+    summary:
+      'describe has a Show a constraint; use calls it at Int. That is the entire program — so every line the solver prints is about one Wanted, and none of it is noise.',
+    lookFor: [
+      {
+        where: 'Typechecker trace → solveWanteds',
+        what: 'The work list with one Wanted on it: [W] Show a. This is the pile of facts the typechecker chapter ends with, at its smallest.',
+      },
+      {
+        where: 'Typechecker trace → matchClassInst',
+        what: 'The instance lookup itself, and the dictionary it produces as evidence. This is step four of the solver loop: solve outright from a top-level instance.',
+      },
+      {
+        where: 'Typechecker trace → addInertCan',
+        what: 'A constraint entering the inert set — with everything already rewritten with respect to it, per the invariant the solver chapter is built around.',
+      },
+    ],
+    chapters: [
+      { slug: 'typechecker', label: 'The typechecker — architecture' },
+      { slug: 'constraint-solver', label: 'The constraint solver' },
+    ],
+  },
+  Refine: {
+    title: 'Refining a GADT match',
+    summary:
+      'get matches on a GADT, so each branch may assume a different equality. The typechecker chapter argues this one program shape is why constraint solving is deferred at all — here is the solver actually doing it.',
+    lookFor: [
+      {
+        where: 'Typechecker trace → solveImplication',
+        what: 'One implication per branch. Inside each: an Implic { ... } with its own TcLevel, its own skolems, and its own Given.',
+      },
+      {
+        where: 'Typechecker trace → solveSimpleGivens',
+        what: 'The branch assumption — the equality from the constructor — being installed as a fact before the branch body is checked against it.',
+      },
+      {
+        where: 'Typechecker trace → the Inerts printouts',
+        what: 'Innermost given equalities = 2 while a branch body is being solved, and = 0 outside it. Local assumptions are local, and the inert set says so in one line.',
+      },
+    ],
+    chapters: [
+      { slug: 'typechecker', label: 'The typechecker — architecture' },
+      { slug: 'constraint-solver', label: 'The constraint solver' },
+    ],
+  },
+  Fuse: {
+    title: 'Fusing a pipeline',
+    summary:
+      'total xs = sum (map (*2) xs) names two traversals; the compiled code contains one loop and no intermediate list. These two traces are the transformation happening, rule by rule and pass by pass.',
+    traces: ['rule-firings', 'simpl-iterations', 'tc-trace'],
+    lookFor: [
+      {
+        where: 'Rule firings',
+        what: 'Seven lines, and the story is complete: map rewritten to build form, then fold/build — the fusion rule itself — collapsing producer into consumer.',
+      },
+      {
+        where: 'Simplifier iterations, first vs last',
+        what: 'The first listing still mentions list machinery; by the last, the loop runs on unboxed values. The iteration count restarting at 1 marks a new pass; a pass reaching iteration=2 needed a second round to converge.',
+      },
+      {
+        where: 'Simplifier iterations → the final worker',
+        what: 'A recursive function over Int# with no cons cells anywhere in it. That is the "no intermediate list" claim from the simplifier chapter, checkable by reading.',
+      },
+    ],
+    chapters: [{ slug: 'simplifier', label: 'The simplifier' }],
+  },
+};
+
+const page = PAGES[example] ?? {
+  title: example,
+  summary: '',
+  lookFor: [],
+  chapters: [],
+};
+---
+
+<Base title={`${page.title} — trace`} description={page.summary} width="page">
+  <p class="crumb"><a href={withBase('/traces/')}>← All traces</a></p>
+
+  <h1>{page.title}</h1>
+
+  <p class="lede">{page.summary}</p>
+
+  <TraceExplorer example={example} traces={page.traces} />
+
+  {
+    page.lookFor.length > 0 && (
+      <>
+        <h2>What to look for</h2>
+        <dl class="lookfor">
+          {page.lookFor.map((item) => (
+            <>
+              <dt>{item.where}</dt>
+              <dd>{item.what}</dd>
+            </>
+          ))}
+        </dl>
+      </>
+    )
+  }
+
+  {
+    page.chapters.length > 0 && (
+      <p class="related">
+        Background:{' '}
+        {page.chapters.map((c, i) => (
+          <>
+            {i > 0 && ' · '}
+            <a href={chapterHref(c.slug)}>{c.label}</a>
+          </>
+        ))}
+      </p>
+    )
+  }
+</Base>
+
+<style>
+  .crumb {
+    font-family: var(--font-sans);
+    font-size: var(--step--1);
+    margin-bottom: 0.4rem;
+  }
+  .crumb a {
+    color: var(--ink-muted);
+    text-decoration: none;
+  }
+  .crumb a:hover {
+    color: var(--accent);
+  }
+
+  .lede {
+    font-size: var(--step-1);
+    color: var(--ink-muted);
+    max-width: 46rem;
+  }
+
+  .lookfor {
+    max-width: 46rem;
+  }
+  .lookfor dt {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: var(--step--1);
+    margin-top: 1rem;
+  }
+  .lookfor dd {
+    margin: 0.25rem 0 0;
+    color: var(--ink-muted);
+    font-size: var(--step--1);
+  }
+
+  .related {
+    margin-top: 2.2rem;
+    font-family: var(--font-sans);
+    font-size: var(--step--1);
+    color: var(--ink-muted);
+  }
+</style>

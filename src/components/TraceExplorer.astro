@@ -1,0 +1,409 @@
+---
+/**
+ * Shows GHC's own working on one tiny module: the traces it prints *during*
+ * a phase, parsed into fold-out trees.
+ *
+ * The companion to ExampleExplorer, which shows the program between stages.
+ * The tree is plain <details> elements, so it works — collapse and all — as a
+ * document, with no JavaScript required; the script only adds tabs and the
+ * expand/collapse-all conveniences.
+ */
+import { Code } from 'astro:components';
+import { readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+
+interface Props {
+  /** Traced module basename, e.g. "Dict" — matches examples/traces/<name>.hs */
+  example: string;
+  /** Which traces to show, in order. Defaults to all four. */
+  traces?: string[];
+  caption?: string;
+}
+
+interface TraceNode {
+  label: string;
+  body?: string;
+  end?: string;
+  children: TraceNode[];
+}
+
+const ALL_TRACES = ['rn-trace', 'tc-trace', 'simpl-iterations', 'rule-firings'] as const;
+
+const LABELS: Record<string, string> = {
+  source: 'Source',
+  'rn-trace': 'Renamer trace',
+  'tc-trace': 'Typechecker trace',
+  'simpl-iterations': 'Simplifier iterations',
+  'rule-firings': 'Rule firings',
+};
+
+const HINTS: Record<string, string> = {
+  source: 'What you wrote.',
+  'rn-trace': 'The renamer thinking out loud: environments extended, names resolved.',
+  'tc-trace':
+    'The typechecker and constraint solver, step by step — unifications, the work list, the inert set. Open a section to descend.',
+  'simpl-iterations':
+    'The whole program after each simplifier iteration. The same banner repeating means separate passes, each running to its own fixed point.',
+  'rule-firings': 'Every rewrite rule that fired, in order.',
+};
+
+const { example, traces = [...ALL_TRACES], caption } = Astro.props;
+
+const tracePath = join(process.cwd(), 'data', 'traces', `${example}.json`);
+const available = existsSync(tracePath);
+const data = available ? JSON.parse(readFileSync(tracePath, 'utf8')) : null;
+
+const shown = traces.filter((t) => data?.traces?.[t]?.lines > 0);
+const tabs = ['source', ...shown];
+const uid = `tr-${example}-${Math.random().toString(36).slice(2, 8)}`;
+
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function nodeLines(node: TraceNode): number {
+  const own = 1 + (node.body ? node.body.split('\n').length : 0) + (node.end ? 1 : 0);
+  return node.children.reduce((n, c) => n + nodeLines(c), own);
+}
+
+/**
+ * Rendered in the frontmatter as an HTML string because the tree recurses and
+ * is large; a component per node would be both slower and no clearer.
+ */
+function renderNode(node: TraceNode): string {
+  const hasInside = node.children.length > 0 || node.body != null || node.end != null;
+  if (!hasInside) return `<div class="t-line">${escapeHtml(node.label)}</div>`;
+
+  const lines = nodeLines(node);
+  const parts: string[] = [];
+  if (node.body != null) parts.push(`<pre class="t-body">${escapeHtml(node.body)}</pre>`);
+  for (const child of node.children) parts.push(renderNode(child));
+  if (node.end != null) parts.push(`<div class="t-line t-end">${escapeHtml(node.end)}</div>`);
+
+  return (
+    `<details class="t-node">` +
+    `<summary><span class="t-label">${escapeHtml(node.label)}</span>` +
+    `<span class="t-count">${lines} lines</span></summary>` +
+    `<div class="t-region">${parts.join('')}</div>` +
+    `</details>`
+  );
+}
+
+const rendered: Record<string, string> = {};
+for (const t of shown) {
+  rendered[t] = data.traces[t].tree.map((n: TraceNode) => renderNode(n)).join('');
+}
+---
+
+{
+  !available ? (
+    <div class="missing">
+      <strong>Traces not generated yet.</strong>
+      <p>
+        Run <code>scripts/gen-traces.sh</code> from a shell with the pinned GHC on <code>PATH</code>{' '}
+        to populate <code>data/traces/</code>.
+      </p>
+    </div>
+  ) : (
+    <figure class="explorer" id={uid}>
+      <div class="bar">
+        <div class="tabs" role="tablist" aria-label={`Compiler traces for ${example}.hs`}>
+          {tabs.map((t, i) => (
+            <button
+              type="button"
+              role="tab"
+              class="tab"
+              data-trace={t}
+              id={`${uid}-tab-${t}`}
+              aria-controls={`${uid}-panel-${t}`}
+              aria-selected={i === 0 ? 'true' : 'false'}
+              tabindex={i === 0 ? 0 : -1}
+            >
+              {LABELS[t] ?? t}
+            </button>
+          ))}
+        </div>
+        <div class="fold-controls">
+          <button type="button" class="fold" data-fold="open">
+            Expand all
+          </button>
+          <button type="button" class="fold" data-fold="close">
+            Collapse all
+          </button>
+        </div>
+      </div>
+
+      {data.stale && (
+        <p class="stale">
+          Generated with GHC {data.ghcVersion}, but this handbook documents {data.pinnedVersion}.
+          Re-run <code>scripts/gen-traces.sh</code> under the pinned compiler to refresh.
+        </p>
+      )}
+
+      <div
+        class="panel"
+        role="tabpanel"
+        id={`${uid}-panel-source`}
+        aria-labelledby={`${uid}-tab-source`}
+      >
+        <p class="hint">{HINTS.source}</p>
+        <div class="scroll-x">
+          <Code
+            code={data.source.trimEnd()}
+            lang="haskell"
+            themes={{ light: 'github-light', dark: 'github-dark' }}
+          />
+        </div>
+      </div>
+
+      {shown.map((t) => (
+        <div
+          class="panel"
+          role="tabpanel"
+          hidden
+          id={`${uid}-panel-${t}`}
+          aria-labelledby={`${uid}-tab-${t}`}
+        >
+          <p class="hint">
+            {HINTS[t]} <span class="flag">{data.traces[t].flag}</span>
+          </p>
+          <div class="tree" set:html={rendered[t]} />
+        </div>
+      ))}
+
+      {caption && <figcaption>{caption}</figcaption>}
+    </figure>
+  )
+}
+
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>('.explorer')) {
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('.tab')];
+    if (tabs.length === 0) continue;
+
+    function select(trace: string | undefined) {
+      if (!trace) return;
+      for (const tab of tabs) {
+        const active = tab.dataset.trace === trace;
+        tab.setAttribute('aria-selected', String(active));
+        tab.tabIndex = active ? 0 : -1;
+        const controls = tab.getAttribute('aria-controls');
+        if (!controls) continue;
+        const panel = root.querySelector<HTMLElement>(`#${CSS.escape(controls)}`);
+        if (panel) panel.hidden = !active;
+      }
+    }
+
+    for (const tab of tabs) {
+      tab.addEventListener('click', () => select(tab.dataset.trace));
+    }
+
+    root.querySelector('.tabs')?.addEventListener('keydown', (event) => {
+      const key = (event as KeyboardEvent).key;
+      const i = tabs.findIndex((t) => t.getAttribute('aria-selected') === 'true');
+      let next: number | null = null;
+      if (key === 'ArrowRight') next = (i + 1) % tabs.length;
+      else if (key === 'ArrowLeft') next = (i - 1 + tabs.length) % tabs.length;
+      else if (key === 'Home') next = 0;
+      else if (key === 'End') next = tabs.length - 1;
+      if (next === null) return;
+      event.preventDefault();
+      select(tabs[next]!.dataset.trace);
+      tabs[next]!.focus();
+    });
+
+    for (const button of root.querySelectorAll<HTMLButtonElement>('.fold')) {
+      button.addEventListener('click', () => {
+        const open = button.dataset.fold === 'open';
+        const panel = root.querySelector<HTMLElement>('.panel:not([hidden])');
+        for (const d of panel?.querySelectorAll('details') ?? []) d.open = open;
+      });
+    }
+  }
+</script>
+
+<style>
+  .explorer {
+    margin: 2rem 0;
+    border: 1px solid var(--rule-strong);
+    border-radius: 5px;
+    background: var(--paper-raised);
+    overflow: hidden;
+  }
+
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-bottom: 1px solid var(--rule);
+    background: var(--paper-sunken);
+    padding: 0 0.5rem;
+  }
+
+  .tabs {
+    display: flex;
+    overflow-x: auto;
+    flex: 1;
+    scrollbar-width: thin;
+  }
+
+  .tab {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    font-family: var(--font-sans);
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+    padding: 0.6rem 0.7rem;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .tab:hover {
+    color: var(--ink);
+  }
+  .tab[aria-selected='true'] {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    font-weight: 600;
+  }
+
+  .fold-controls {
+    display: flex;
+    gap: 0.4rem;
+    flex-shrink: 0;
+    padding-right: 0.4rem;
+  }
+
+  .fold {
+    background: none;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    font-family: var(--font-sans);
+    font-size: 0.68rem;
+    color: var(--ink-muted);
+    padding: 0.2rem 0.5rem;
+    cursor: pointer;
+  }
+  .fold:hover {
+    color: var(--ink);
+    border-color: var(--rule-strong);
+  }
+
+  .stale {
+    margin: 0;
+    padding: 0.5rem 1rem;
+    font-family: var(--font-sans);
+    font-size: 0.74rem;
+    color: var(--ink-muted);
+    background: var(--accent-soft);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .panel {
+    padding: 0.9rem 1rem 1rem;
+  }
+
+  .hint {
+    font-family: var(--font-sans);
+    font-size: 0.78rem;
+    color: var(--ink-faint);
+    margin: 0 0 0.7rem;
+  }
+
+  .flag {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--ink-faint);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 0.05rem 0.3rem;
+    margin-left: 0.3rem;
+  }
+
+  .panel :global(pre) {
+    margin: 0;
+    background: transparent;
+  }
+
+  .tree {
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    line-height: 1.55;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 0.6rem 0.8rem;
+    max-height: 36rem;
+    overflow: auto;
+    color: var(--ink);
+  }
+
+  .tree :global(details) {
+    margin: 0;
+  }
+
+  .tree :global(summary) {
+    cursor: pointer;
+    white-space: nowrap;
+    list-style-position: outside;
+    color: var(--ink);
+  }
+  .tree :global(summary:hover .t-label) {
+    color: var(--accent);
+  }
+
+  .tree :global(.t-count) {
+    color: var(--ink-faint);
+    font-size: 0.66rem;
+    margin-left: 0.55rem;
+    font-family: var(--font-sans);
+  }
+  .tree :global(details[open] > summary .t-count) {
+    visibility: hidden;
+  }
+
+  .tree :global(.t-region) {
+    border-left: 1px solid var(--rule);
+    margin-left: 0.32rem;
+    padding-left: 0.85rem;
+  }
+
+  .tree :global(.t-line) {
+    white-space: pre;
+    color: var(--ink-muted);
+  }
+
+  .tree :global(.t-end) {
+    color: var(--ink-faint);
+  }
+
+  .tree :global(.t-body) {
+    white-space: pre;
+    color: var(--ink-muted);
+    border: none;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+  }
+
+  figcaption {
+    padding: 0.7rem 1rem;
+    border-top: 1px solid var(--rule);
+    font-family: var(--font-sans);
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+  }
+
+  .missing {
+    border: 1px dashed var(--rule-strong);
+    border-radius: 5px;
+    padding: 1rem 1.2rem;
+    margin: 2rem 0;
+    font-family: var(--font-sans);
+    font-size: var(--step--1);
+    color: var(--ink-muted);
+  }
+  .missing p {
+    margin: 0.3rem 0 0;
+  }
+</style>

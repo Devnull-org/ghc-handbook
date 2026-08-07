@@ -26,9 +26,13 @@ scripts/
   fetch-ghc-src.sh      sync vendor/ghc to the pinned commit
   extract-notes.mjs     vendor/ghc -> data/notes.json
   gen-dumps.sh          runs your built GHC over examples/ -> data/dumps/
+  gen-traces.sh         runs it with -ddump-*-trace over examples/traces/ -> data/traces/
   lib/notes.mjs         the Note parser (unit-tested)
+  lib/trace.mjs         the trace-to-tree parser (unit-tested)
+  lib/toolchain.mjs     compiler lookup + version/stage guards, shared by both generators
   lib/walk.mjs          source discovery + the build-output exclusions
 examples/               small .hs programs the site shows compiler output for
+examples/traces/        even smaller ones the site shows compiler *traces* for
 data/                   committed generated artifacts
 src/content/chapters/   the prose, as MDX
 src/components/         ExampleExplorer, NoteCard, ...
@@ -153,13 +157,37 @@ them as stale.
 Output is normalised — timestamps and absolute paths stripped — so regenerating
 without changing anything produces a byte-identical result and an empty diff.
 
+### Compiler traces — needs a built GHC
+
+`data/traces/` holds GHC's own working — `-ddump-rn-trace`, `-ddump-tc-trace`,
+`-ddump-simpl-iterations`, `-ddump-rule-firings` — for the deliberately tiny
+modules in `examples/traces/`, parsed into the fold-out trees the site's trace
+pages render.
+
+```sh
+scripts/gen-traces.sh
+```
+
+Compiler lookup, the version guard, `ALLOW_GHC_MISMATCH=1` and the
+byte-identical-regeneration property all work exactly as for `gen-dumps.sh`;
+both scripts share `scripts/lib/toolchain.mjs`. Regenerate both together when
+the pin moves:
+
+```sh
+scripts/gen-dumps.sh && scripts/gen-traces.sh
+```
+
+The modules in `examples/traces/` are separate from `examples/` and should stay
+tiny: `tc-trace` output grows brutally with program size, and the whole point of
+the trace pages is that every printed step is legible.
+
 ## Re-pinning to a new GHC release
 
 1. Move the submodule: `git -C vendor/ghc fetch origin --tags && git -C vendor/ghc checkout <tag>`
 2. Update `tag`, `commit` (`git -C vendor/ghc rev-parse HEAD`) and `ghcVersion`
    in `ghc-pin.json`.
 3. `npm run regen`
-4. Rebuild GHC, then `scripts/gen-dumps.sh`.
+4. Rebuild GHC, then `scripts/gen-dumps.sh && scripts/gen-traces.sh`.
 5. Commit the moved submodule pointer along with the regenerated `data/`.
 6. Check the chapters: `NoteCard` throws at build time if a Note id no longer
    exists, which is deliberate — a renamed Note should break the build rather
@@ -168,7 +196,7 @@ without changing anything produces a byte-identical result and an empty diff.
 ## Testing
 
 ```sh
-npm test       # Note parser unit tests
+npm test       # Note parser + trace parser unit tests
 npm run build  # full static build; also the check that no GHC is needed
 ```
 

@@ -1,0 +1,12 @@
+{
+  "ghcVersion": "9.4.7",
+  "ghcPath": "ghc",
+  "ghcStage": "external",
+  "pinnedVersion": "9.14.1",
+  "stale": true,
+  "examples": [
+    "Dict",
+    "Fuse",
+    "Refine"
+  ]
+}

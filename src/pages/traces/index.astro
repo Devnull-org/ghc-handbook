@@ -1,0 +1,124 @@
+---
+import { readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+import Base from '../../layouts/Base.astro';
+import { withBase } from '../../lib/paths';
+
+const manifestPath = join(process.cwd(), 'data', 'traces', 'manifest.json');
+const manifest = existsSync(manifestPath) ? JSON.parse(readFileSync(manifestPath, 'utf8')) : null;
+
+const BLURBS: Record<string, { title: string; blurb: string }> = {
+  Dict: {
+    title: 'Solving a dictionary',
+    blurb:
+      'One Show constraint from a signature, one instance found by search. The smallest possible run of the constraint solver.',
+  },
+  Refine: {
+    title: 'Refining a GADT match',
+    blurb:
+      'Two branches, two different Givens. Watch each branch become its own implication constraint, solved under its own assumption.',
+  },
+  Fuse: {
+    title: 'Fusing a pipeline',
+    blurb:
+      'sum (map (*2) xs). Watch fold/build fire in the rule log, then the iterations that clean up what it left behind.',
+  },
+};
+---
+
+<Base
+  title="Traces"
+  description="Watch GHC compile a module: the compiler's own trace output, parsed into fold-out trees."
+>
+  <h1>Watching GHC think</h1>
+
+  <p class="lede">
+    The chapters show the program <em>between</em> stages. These pages show the compiler
+    <em>during</em> them — its own trace output, the working it prints when asked to explain
+    itself, parsed into trees you can fold open.
+  </p>
+
+  <p>
+    Each page traces one deliberately tiny module through four instruments:
+    <code>-ddump-rn-trace</code>, <code>-ddump-tc-trace</code>,
+    <code>-ddump-simpl-iterations</code> and <code>-ddump-rule-firings</code>. Tiny is the point —
+    the constraint-solver chapter's advice for reading <code>tc-trace</code> is "start from a
+    three-line module, never a real one", and these are those modules.
+  </p>
+
+  {
+    manifest ? (
+      <ul class="cards">
+        {manifest.examples.map((name: string) => (
+          <li>
+            <a href={withBase(`/traces/${name.toLowerCase()}/`)}>
+              <strong>{BLURBS[name]?.title ?? name}</strong>
+              <code>{name}.hs</code>
+              <p>{BLURBS[name]?.blurb}</p>
+            </a>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p>
+        <em>
+          No traces generated yet — run <code>scripts/gen-traces.sh</code>.
+        </em>
+      </p>
+    )
+  }
+
+  <p>
+    These flags work on your own code too. The traces here exist because the output is
+    overwhelming precisely when you most need it — on a program you already do not understand —
+    so it is worth first seeing what it says about a program with no mysteries in it.
+  </p>
+</Base>
+
+<style>
+  .lede {
+    font-size: var(--step-1);
+    color: var(--ink-muted);
+  }
+
+  .cards {
+    list-style: none;
+    padding: 0;
+    margin: 2rem 0;
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .cards a {
+    display: block;
+    border: 1px solid var(--rule-strong);
+    border-radius: 5px;
+    padding: 0.9rem 1.1rem;
+    text-decoration: none;
+    color: inherit;
+    background: var(--paper-raised);
+  }
+  .cards a:hover {
+    border-color: var(--accent);
+  }
+  .cards a:hover strong {
+    color: var(--accent);
+  }
+
+  .cards strong {
+    display: inline-block;
+    font-family: var(--font-sans);
+  }
+
+  .cards code {
+    float: right;
+    font-size: 0.74rem;
+    color: var(--ink-faint);
+  }
+
+  .cards p {
+    margin: 0.35rem 0 0;
+    font-size: var(--step--1);
+    color: var(--ink-muted);
+  }
+</style>

@@ -19,6 +19,7 @@ sources:
 
 import ExampleExplorer from '../../components/ExampleExplorer.astro';
 import NoteCard from '../../components/NoteCard.astro';
+import { withBase } from '../../lib/paths';
 
 The typechecker is the biggest thing in GHC by a wide margin. Around 830 of the
 compiler's Notes live under `GHC.Tc.*` — more than the entire back end — and the
@@ -192,6 +193,11 @@ program carries its own proof.
 
 `describe` in the same file is the contrast: no refinement, no implication, just
 a flat `Show a` Wanted that becomes a dictionary argument.
+
+To see the walk itself rather than its result — the constraints being written
+down, level by level — the trace explorer runs `-ddump-tc-trace` on a
+three-line version of exactly this program: <a
+href={withBase('/traces/refine/')}>watch a GADT match become an implication</a>.
 
 ## Reading the source yourself
 

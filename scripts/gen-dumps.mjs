@@ -7,8 +7,9 @@
  */
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync, mkdirSync, rmSync, readdirSync, existsSync } from 'node:fs';
-import { join, dirname, basename, relative } from 'node:path';
+import { join, dirname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { setupGhc } from './lib/toolchain.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const pin = JSON.parse(readFileSync(join(ROOT, 'ghc-pin.json'), 'utf8'));
@@ -44,116 +45,7 @@ const READABLE_ONLY = [
   '-dsuppress-var-kinds',
 ];
 
-/**
- * Where Hadrian puts each compiler, most preferred first.
- *
- * Hadrian names `_build/stageN/` after the stage that *built* the artifact, not
- * the artifact's own stage — so the stage 2 compiler lives in `_build/stage1/`.
- * See `hadrian/doc/make.md` in the vendored tree: "Your stage 2 GHC would then
- * be at `_build/stage1/bin/ghc` (because it's built by the stage 1 compiler)."
- *
- * `_build/stage2/bin/ghc` is therefore *stage 3*, which only exists if you asked
- * for it as a smoke test. It is deliberately absent from this list: picking one
- * up silently is worse than not finding a compiler at all.
- */
-const BUILD_TREE_COMPILERS = [
-  { dir: 'stage1', stage: '2' },
-  { dir: 'stage0', stage: '1' },
-];
-
-/**
- * Locate the compiler to generate dumps with.
- *
- * You build GHC in vendor/ghc, so the compiler that matches the source this
- * handbook documents is the one sitting in that build tree — preferred over
- * whatever unrelated GHC happens to be on PATH. `$GHC` overrides everything.
- *
- * Returns the path plus which stage it is, since that cannot be recovered
- * afterwards: every stage reports the same `--numeric-version`.
- */
-function resolveGhc() {
-  if (process.env.GHC) {
-    if (!existsSync(process.env.GHC)) {
-      console.error(`✗ $GHC is set to ${process.env.GHC}, which does not exist.`);
-      process.exit(1);
-    }
-    return { path: process.env.GHC, stage: 'external' };
-  }
-
-  for (const { dir, stage } of BUILD_TREE_COMPILERS) {
-    const candidate = join(ROOT, pin.checkoutDir, '_build', dir, 'bin', 'ghc');
-    if (existsSync(candidate)) return { path: candidate, stage };
-  }
-
-  try {
-    execFileSync('ghc', ['--numeric-version'], { stdio: 'ignore' });
-    return { path: 'ghc', stage: 'external' };
-  } catch {
-    console.error('✗ no GHC found.');
-    console.error(`    looked for : $GHC`);
-    for (const { dir, stage } of BUILD_TREE_COMPILERS) {
-      console.error(`                 ${pin.checkoutDir}/_build/${dir}/bin/ghc  (stage ${stage})`);
-    }
-    console.error(`                 ghc on PATH`);
-    console.error('');
-    console.error(`  To build one: cd ${pin.checkoutDir} && ./boot && ./configure && hadrian/build -j`);
-    console.error('  Or point $GHC at a compiler you already have.');
-    console.error('  The site build itself needs neither — only dump regeneration does.');
-    process.exit(1);
-  }
-}
-
-/**
- * A stage 1 compiler is built by the *bootstrap* compiler and links its `base`,
- * so its optimised Core and STG can differ from a stage 2's on exactly the
- * examples this handbook uses to teach optimisation. Same failure mode as a
- * version mismatch — plausible-looking output that is quietly wrong — so it
- * warns rather than passing silently.
- */
-function checkStage(stage, path) {
-  if (stage !== '1') return;
-  console.warn(`⚠ ${path} is a stage 1 compiler (Hadrian builds it into _build/stage0/).`);
-  console.warn('  It links the bootstrap compiler\'s libraries, so its optimised Core may');
-  console.warn('  differ from a stage 2\'s. Run a full `hadrian/build -j` for dumps you commit.');
-}
-
-/**
- * A dump from the wrong compiler is not obviously wrong when you read it — it is
- * subtly wrong, and it would be committed. So a mismatch stops the run unless it
- * is overridden deliberately.
- */
-function checkVersion(version, path) {
-  if (version === pin.ghcVersion) return;
-
-  if (process.env.ALLOW_GHC_MISMATCH !== '1') {
-    console.error('✗ GHC version mismatch');
-    console.error(`    compiler : ${version}  (${path})`);
-    console.error(`    pinned   : ${pin.ghcVersion}  (from ghc-pin.json, tag ${pin.tag})`);
-    console.error('');
-    console.error(`  The handbook documents ${pin.tag}, so dumps should come from that`);
-    console.error('  compiler. To generate anyway (they are stamped with the real version');
-    console.error('  and the site labels them as stale):');
-    console.error('    ALLOW_GHC_MISMATCH=1 scripts/gen-dumps.sh');
-    process.exit(1);
-  }
-
-  console.warn(`⚠ generating with GHC ${version}, but the handbook is pinned to ${pin.ghcVersion}.`);
-  console.warn('  Dumps will be stamped with the real version and labelled stale.');
-}
-
-const { path: GHC, stage: ghcStage } = resolveGhc();
-const ghcVersion = execFileSync(GHC, ['--numeric-version'], { encoding: 'utf8' }).trim();
-const stale = ghcVersion !== pin.ghcVersion;
-
-// Every stage reports the same version, so the path alone cannot tell you which
-// compiler produced a dump — and under Hadrian's naming the path actively
-// misleads. Record the stage explicitly alongside it. Relativised: an absolute
-// path would leak the generating machine's layout and churn the diff on every
-// contributor.
-const ghcPath = GHC.startsWith(ROOT + '/') ? relative(ROOT, GHC) : GHC;
-
-checkVersion(ghcVersion, ghcPath);
-checkStage(ghcStage, ghcPath);
+const { GHC, ghcVersion, ghcPath, ghcStage, stale } = setupGhc(pin, ROOT, 'scripts/gen-dumps.sh');
 
 function compile(src, outDir, variant) {
   mkdirSync(outDir, { recursive: true });

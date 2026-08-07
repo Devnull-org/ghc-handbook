@@ -19,6 +19,7 @@ sources:
 
 import ExampleExplorer from '../../components/ExampleExplorer.astro';
 import NoteCard from '../../components/NoteCard.astro';
+import { withBase } from '../../lib/paths';
 
 The previous chapter ended with a `WantedConstraints` tree and no attempt to
 solve any of it. This chapter is that attempt.
@@ -141,8 +142,12 @@ something concrete to translate.
 ## Seeing the evidence
 
 The solver has no dump of its own — `-ddump-tc-trace` shows its working, but that
-is a debugging firehose rather than something to read. What you *can* see is its
-output, which is the evidence.
+is a debugging firehose rather than something to read. Unless, that is, the module
+is tiny by design: the <a href={withBase('/traces/')}>trace explorer</a> runs it
+on three-line modules and folds the output into a navigable tree — <a
+href={withBase('/traces/dict/')}>watch it solve a dictionary</a>, or <a
+href={withBase('/traces/refine/')}>an implication with a Given</a>. What you can
+see *here* is its output, which is the evidence.
 
 <ExampleExplorer
   example="Gadt"
@@ -173,4 +178,7 @@ This is the hardest code in GHC to read cold. A workable order:
 
 `-ddump-tc-trace` prints the solver's every step. It is enormously verbose and
 the fastest way to understand why a particular program was rejected — start from
-a three-line failing module, never a real one.
+a three-line failing module, never a real one. The <a
+href={withBase('/traces/')}>trace pages</a> are exactly that, pre-run: the full
+trace of modules with no mysteries in them, so the markers are familiar before
+you need them on a program with one.

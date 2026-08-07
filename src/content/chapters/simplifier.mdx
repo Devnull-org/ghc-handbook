@@ -19,6 +19,7 @@ sources:
 
 import ExampleExplorer from '../../components/ExampleExplorer.astro';
 import NoteCard from '../../components/NoteCard.astro';
+import { withBase } from '../../lib/paths';
 
 `GHC.Core.Opt.*` holds 450 Notes — more than any other part of the compiler, more
 than the entire back end. This is where GHC's reputation was earned, and it is
@@ -155,3 +156,5 @@ a transformation and follow it.
 `-ddump-simpl-iterations` shows the program after each pass, and
 `-ddump-rule-firings` names every rule that fired. When an expected optimisation
 does not happen, those two flags usually explain it faster than reading the code.
+Both are pre-run on a minimal fusion pipeline in the trace explorer: <a
+href={withBase('/traces/fuse/')}>watch fold/build fire</a>, pass by pass.
