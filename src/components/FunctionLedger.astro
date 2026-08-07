@@ -1,0 +1,90 @@
+---
+/**
+ * The "functions to know" table on the journey page: for one phase, the
+ * real GHC functions a reader should meet, each deep-linked to its
+ * definition in the pinned tree (resolved by gen-journey.mjs).
+ */
+interface Row {
+  name: string;
+  file: string;
+  line: number;
+  role: string;
+  url: string;
+}
+
+interface Props {
+  rows: Row[];
+}
+
+const { rows } = Astro.props;
+---
+
+<div class="ledger">
+  <div class="ledger-title">Functions to know</div>
+  <ul>
+    {
+      rows.map((fn) => (
+        <li>
+          <span class="fn">
+            <a href={fn.url}>
+              <code>{fn.name}</code>
+            </a>
+            <span class="loc">
+              {fn.file.replace('compiler/GHC/', '')}:{fn.line}
+            </span>
+          </span>
+          <span class="role">{fn.role}</span>
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<style>
+  .ledger {
+    margin: 1.5rem 0;
+    border: 1px solid var(--border, #ddd);
+    border-radius: 6px;
+    padding: 0.9rem 1.1rem;
+    font-size: 0.9rem;
+  }
+  .ledger-title {
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    opacity: 0.7;
+    margin-bottom: 0.6rem;
+  }
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.55rem;
+  }
+  li {
+    display: grid;
+    grid-template-columns: minmax(14rem, 20rem) 1fr;
+    gap: 0.35rem 1rem;
+    align-items: baseline;
+  }
+  @media (max-width: 40rem) {
+    li {
+      grid-template-columns: 1fr;
+    }
+  }
+  .fn {
+    display: flex;
+    flex-direction: column;
+  }
+  .loc {
+    font-family: var(--font-mono, monospace);
+    font-size: 0.72rem;
+    opacity: 0.6;
+    overflow-wrap: anywhere;
+  }
+  .role {
+    opacity: 0.9;
+  }
+</style>

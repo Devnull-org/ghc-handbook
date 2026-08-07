@@ -7,7 +7,7 @@
   "scripts": {
     "fetch-src": "bash scripts/fetch-ghc-src.sh",
     "extract": "node scripts/extract-notes.mjs",
-    "regen": "npm run fetch-src && npm run extract",
+    "regen": "npm run fetch-src && npm run extract && node scripts/gen-journey.mjs",
     "dev": "astro dev",
     "build": "astro build && pagefind --site dist",
     "preview": "astro preview",

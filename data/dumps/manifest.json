@@ -1,13 +1,14 @@
 {
-  "ghcVersion": "9.4.7",
-  "ghcPath": "ghc",
-  "ghcStage": "external",
+  "ghcVersion": "9.14.1",
+  "ghcPath": "vendor/ghc/_build/stage1/bin/ghc",
+  "ghcStage": "2",
   "pinnedVersion": "9.14.1",
-  "stale": true,
+  "stale": false,
   "examples": [
     "Classes",
     "Fusion",
     "Gadt",
+    "Journey",
     "Patterns",
     "Strict",
     "Syntax"

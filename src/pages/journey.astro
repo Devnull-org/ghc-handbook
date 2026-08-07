@@ -1,0 +1,210 @@
+---
+/**
+ * Follow one small module through every phase of GHC, with the real
+ * compiler functions named at each step. The ledger of functions comes from
+ * data/journey.json, resolved against the pinned tree by gen-journey.mjs,
+ * so every deep link is checked at generation time.
+ */
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { Code } from 'astro:components';
+import Base from '../layouts/Base.astro';
+import ExampleExplorer from '../components/ExampleExplorer.astro';
+import FunctionLedger from '../components/FunctionLedger.astro';
+import NoteCard from '../components/NoteCard.astro';
+import { chapterHref, withBase } from '../lib/paths';
+
+const journey = JSON.parse(readFileSync(join(process.cwd(), 'data', 'journey.json'), 'utf8'));
+const source = readFileSync(join(process.cwd(), 'examples', 'Journey.hs'), 'utf8');
+
+const byId = Object.fromEntries(journey.phases.map((p: any) => [p.id, p]));
+
+/** Ledger rows for one phase. */
+const ledger = (id: string) => byId[id]?.functions ?? [];
+---
+
+<Base
+  title="Follow one module"
+  description="One ten-line module, traced through every phase of GHC, with the real compiler functions named at each step."
+>
+  <h1>Follow one module through GHC</h1>
+
+  <p class="lede">
+    This page takes one small module and walks it through the compiler, phase by phase. Each
+    section shows what the phase actually produced for this module, and names the functions in
+    GHC that did the work, linked to their definitions in <code>{journey.generatedFrom.tag}</code>.
+    Read it once and you will know where each phase lives in the source.
+  </p>
+
+  <p>
+    The module is ten lines, chosen so that every phase has something visible to do.
+    <code>describe</code> carries a class constraint, which will become a dictionary you can watch
+    travel through the pipeline. <code>classify</code> has a <code>case</code>, a
+    <code>where</code>, and an <code>if</code>, which between them exercise the pattern-match
+    compiler and the optimiser.
+  </p>
+
+  <Code code={source.trim()} lang="haskell" themes={{ light: 'github-light', dark: 'github-dark' }} />
+
+  <section>
+    <h2>1. Parsing</h2>
+    <p>
+      The lexer turns characters into tokens, applying the layout algorithm: the indentation
+      under <code>where</code> becomes virtual braces and semicolons before the parser ever runs.
+      The grammar then builds the tree you can see in the <strong>Parsed AST</strong> tab, with
+      every node wrapped in the annotations that let GHC reprint your source byte for byte.
+      Nothing is resolved yet: <code>show</code> and <code>positive</code> are just names.
+    </p>
+    <ExampleExplorer
+      example="Journey"
+      stages={['parsed-ast', 'parsed']}
+      caption="The raw tree, and the same tree printed back as Haskell. Note what layout became."
+    />
+    <FunctionLedger rows={ledger('parse')} />
+    <NoteCard id="GHC.Parser.PostProcess.ambiguous-syntactic-categories" clamp={20} />
+    <p class="onward">Depth: <a href={chapterHref('parser')}>the parser chapter</a>.</p>
+  </section>
+
+  <section>
+    <h2>2. Renaming</h2>
+    <p>
+      The renamer decides what every name refers to. In the readable view the program looks almost
+      untouched; the change is invisible because it is in the names themselves, not their
+      spelling. Switch on <strong>Full detail</strong> and the qualification appears:
+      <code>++</code> is <code>GHC.Internal.Base.++</code>, <code>compare</code> is the class
+      method from <code>GHC.Internal.Classes</code>. This is also where <code>positive</code> is
+      connected to its <code>where</code> binding, and where an unbound name would have died with
+      an error.
+    </p>
+    <ExampleExplorer
+      example="Journey"
+      stages={['renamed']}
+      caption="Same program, but every occurrence now points at one specific entity."
+    />
+    <FunctionLedger rows={ledger('rename')} />
+    <p class="onward">Depth: <a href={chapterHref('renamer')}>the renamer chapter</a>.</p>
+  </section>
+
+  <section>
+    <h2>3. Typechecking</h2>
+    <p>
+      The typechecker walks the module writing down what must be true: <code>show x</code> needs
+      <code>Show a</code>, <code>compare n 0</code> and <code>n &gt; 100</code> need
+      <code>Ord Int</code>, and the literals need <code>Num Int</code>. The solver then discharges
+      the pile: <code>Ord Int</code> from the instance, <code>Show a</code> from
+      <code>describe</code>'s own signature. Its own dump looks quiet, still printed at source
+      level, because the interesting output is <em>evidence</em>, and evidence only becomes
+      visible syntax in the next tab.
+    </p>
+    <ExampleExplorer
+      example="Journey"
+      stages={['typechecked']}
+      caption="The elaborated program. The solved constraints are here, but you will see them in Core."
+    />
+    <FunctionLedger rows={ledger('typecheck')} />
+    <NoteCard id="GHC.Tc.Gen.HsType.bidirectional-type-checking" clamp={18} />
+    <p class="onward">
+      Depth: <a href={chapterHref('typechecker')}>the typechecker</a> and
+      <a href={chapterHref('constraint-solver')}>the constraint solver</a>.
+    </p>
+  </section>
+
+  <section>
+    <h2>4. Desugaring</h2>
+    <p>
+      Now the evidence is a term you can point at. <code>describe</code> has grown a second
+      argument, <code>$dShow :: Show a</code>: the dictionary. <code>show $dShow x</code> is a
+      record selection from it. In <code>classify</code>, <code>compare $fOrdInt n (I# 0#)</code>
+      names the concrete <code>Ord Int</code> instance the solver chose. The <code>if</code> is
+      gone, compiled to a <code>case</code>; and <code>positive</code> has already vanished,
+      inlined by the desugarer's simple optimiser before the real one has even started.
+    </p>
+    <ExampleExplorer
+      example="Journey"
+      stages={['core-desugared']}
+      caption="All of Haskell reduced to Core. The dictionary argument $dShow is the typechecker's work made visible."
+    />
+    <FunctionLedger rows={ledger('desugar')} />
+    <NoteCard id="GHC.HsToCore.Pmc.long-distance-information" clamp={18} />
+    <p class="onward">Depth: <a href={chapterHref('desugarer')}>the desugarer chapter</a>.</p>
+  </section>
+
+  <section>
+    <h2>5. The simplifier</h2>
+    <p>
+      Compare the two functions now, because the optimiser treats them completely differently.
+      <code>classify</code> works at the known type <code>Int</code>, so its dictionary is gone:
+      the comparisons are the raw primops <code>&lt;#</code> and <code>&gt;#</code> on an unboxed
+      <code>Int#</code>, unboxed once at entry, and the string results have floated out as
+      top-level constants. <code>describe</code> still carries <code>$dShow</code>, because
+      <code>a</code> is whatever the caller chooses; polymorphism has a runtime cost you can see.
+    </p>
+    <ExampleExplorer
+      example="Journey"
+      stages={['core-optimised']}
+      caption="One function specialised to bare primops; the other keeps its dictionary. That difference is the cost of polymorphism."
+    />
+    <FunctionLedger rows={ledger('optimise')} />
+    <NoteCard id="GHC.Core.Opt.Specialise.specialising-polymorphic-dictionaries" clamp={18} />
+    <p class="onward">Depth: <a href={chapterHref('simplifier')}>the simplifier chapter</a>.</p>
+  </section>
+
+  <section>
+    <h2>6. STG</h2>
+    <p>
+      In STG the memory behaviour is syntax. <code>describe</code> contains
+      <code>let describe_sat = &lbrace;$dShow, x&rbrace; \s [] show $dShow x</code>: a closure,
+      with its free variables printed in the braces, allocated on every call. That binding did not
+      exist in your source; CorePrep introduced it to put the program in A-normal form, where
+      every argument is a variable. The <code>\u</code> bindings are updatable thunks, evaluated
+      at most once; <code>\r</code> marks re-entrant functions.
+    </p>
+    <ExampleExplorer
+      example="Journey"
+      stages={['stg']}
+      caption="Count the lets and you have counted the allocations."
+    />
+    <FunctionLedger rows={ledger('stg')} />
+    <NoteCard id="GHC.CoreToStg.Prep.speculative-evaluation" clamp={18} />
+    <p class="onward">Depth: <a href={chapterHref('stg')}>the STG chapter</a>.</p>
+  </section>
+
+  <section>
+    <h2>7. Code generation</h2>
+    <p>
+      From here each STG closure becomes a C-- procedure with explicit stack and heap
+      manipulation, then real machine code. The handbook's dumps stop at STG, where the
+      interesting decisions have all been made; the chapters below follow the story into the
+      runtime.
+    </p>
+    <FunctionLedger rows={ledger('codegen')} />
+    <p class="onward">
+      Depth: <a href={chapterHref('cmm')}>the Cmm chapter</a> and
+      <a href={chapterHref('rts')}>the RTS chapter</a>.
+    </p>
+  </section>
+
+  <section>
+    <h2>Where to go next</h2>
+    <p>
+      Every function named above is a place you can start reading GHC. Pick the phase that
+      interested you, open its chapter for the ideas, and use the
+      <a href={withBase('/notes/')}>Note index</a> when a comment refers to reasoning recorded elsewhere.
+      The compiler is large, but it is a pipeline of comprehensible steps, and you have now
+      watched all of them handle the same ten lines.
+    </p>
+  </section>
+</Base>
+
+<style>
+  .lede {
+    font-size: 1.1rem;
+    color: var(--fg-muted, inherit);
+  }
+  section {
+    margin-top: 3rem;
+  }
+  .onward {
+    font-size: 0.9rem;
+  }
+</style>

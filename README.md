@@ -26,7 +26,9 @@ scripts/
   fetch-ghc-src.sh      sync vendor/ghc to the pinned commit
   extract-notes.mjs     vendor/ghc -> data/notes.json
   gen-dumps.sh          runs your built GHC over examples/ -> data/dumps/
+  gen-journey.mjs       resolves the function ledger -> data/journey.json
   lib/notes.mjs         the Note parser (unit-tested)
+  lib/journey.mjs       the journey page's function ledger (unit-tested)
   lib/walk.mjs          source discovery + the build-output exclusions
 examples/               small .hs programs the site shows compiler output for
 data/                   committed generated artifacts
@@ -98,6 +100,12 @@ npm run regen        # fetch-ghc-src.sh && extract-notes.mjs
 Output goes to `data/notes.json`, plus `data/notes-diagnostics.json` listing
 references that could not be resolved. Most of those are GHC's own drift, where a
 Note was renamed or removed and the comments pointing at it were left behind.
+
+`npm run regen` also runs `gen-journey.mjs`, which resolves the "follow one
+module" page's function ledger (`scripts/lib/journey.mjs`) to exact line numbers
+in the checkout and writes `data/journey.json`. It refuses to write anything if
+a ledger pattern no longer matches, so a re-pin that moves a function breaks
+regeneration loudly instead of publishing a dead link.
 
 `fetch-ghc-src.sh` refuses to proceed if `vendor/ghc` is not at the commit in
 `ghc-pin.json`, since extracting from a different tree would produce line numbers
