@@ -17,6 +17,7 @@ sources:
     blurb: rewriting constraints with known equalities
 ---
 
+import ExampleExplorer from '../../components/ExampleExplorer.astro';
 import NoteCard from '../../components/NoteCard.astro';
 
 The previous chapter ended with a `WantedConstraints` tree and no attempt to
@@ -136,6 +137,26 @@ several related failures is the real one.
 Successfully solved constraints leave behind evidence: dictionaries and
 coercions, bound in the elaborated program. They are why the desugarer has
 something concrete to translate.
+
+## Seeing the evidence
+
+The solver has no dump of its own — `-ddump-tc-trace` shows its working, but that
+is a debugging firehose rather than something to read. What you *can* see is its
+output, which is the evidence.
+
+<ExampleExplorer
+  example="Gadt"
+  stages={['typechecked', 'core-desugared']}
+  caption="Every coercion in the desugared Core is a solved equality constraint. The `coercions:` count in the RHS size header is a direct measure of how much work the solver did."
+/>
+
+Switch to **Full detail** and read the RHS size line above `eval`:
+`{terms: 32, types: 51, coercions: 18, ...}`. Those eighteen coercions are
+solved constraints. Each `Sym`, `Sub` and composition in the body is the solver's
+proof, written down in a form the rest of the compiler can check with Core Lint.
+
+This is the concrete answer to "what does the solver produce?" — not a yes/no,
+but evidence terms.
 
 ## Reading the source yourself
 

@@ -112,8 +112,32 @@ In **Core (desugared)** you can see the composition and the intermediate lists.
 In **Core (optimised)** they are gone: fusion has collapsed the pipeline into a
 single recursive worker over the input list, with no intermediate list allocated.
 
-`countdown` shows the other half — worker/wrapper turning the accumulator into an
-unboxed `Int#` loop.
+Worker/wrapper has a demonstration of its own:
+
+<ExampleExplorer
+  example="Strict"
+  stages={['core-desugared', 'core-optimised', 'stg']}
+  caption="`sumStrict` and `sumLazy` are the same fold, one with a bang pattern. Compare what the optimiser does to each."
+/>
+
+In **Core (optimised)**, `sumStrict`'s inner loop has become:
+
+```
+$wgo1 :: Int# -> [Int] -> Int#
+$wgo1
+  = \ (ww :: Int#) (ds :: [Int]) ->
+      case ds of {
+        [] -> ww;
+        : x xs -> case x of { I# y -> $wgo1 (+# ww y) xs }
+      }
+```
+
+The accumulator is an unboxed `Int#`, the addition is the primop `+#`, and no
+`I#` box is ever allocated for it. That is demand analysis proving the
+accumulator is forced, and worker/wrapper cashing the proof in.
+
+`sumLazy` is the same source without the bang, and the difference in what the
+optimiser can do is the point of the example.
 
 ## Reading the source yourself
 

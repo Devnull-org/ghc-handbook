@@ -171,13 +171,27 @@ The whole of that is the next chapter.
 ## Seeing it happen
 
 <ExampleExplorer
-  example="Classes"
+  example="Gadt"
   stages={['renamed', 'typechecked', 'core-desugared']}
-  caption="The Typechecked tab shows the elaborated program: types resolved, and class constraints turned into explicit dictionary arguments that carry through into Core."
+  caption="An evaluator over a GADT. Each branch of `eval` type-checks under a different assumption — which is the whole reason this phase defers solving."
 />
 
-Between **Renamed** and **Typechecked**, `describe` gains its `Show a` dictionary
-— that is a solved Wanted, with its evidence filled in.
+`eval` is the motivating example from the top of this chapter, made concrete.
+Turn on **Full detail** and look at **Core (desugared)**: each alternative binds
+a `co`, and uses it to cast.
+
+```
+IntLit  co n -> n `cast` (Sub (Sym co) :: Int  ~R# a);
+BoolLit co b -> b `cast` (Sub (Sym co) :: Bool ~R# a);
+```
+
+That `co` is the Given. The fact "in this branch, `a` is `Int`" started life as
+an implication constraint here in the typechecker, was discharged by the solver,
+and survives into Core as a coercion — a term, not an annotation. The elaborated
+program carries its own proof.
+
+`describe` in the same file is the contrast: no refinement, no implication, just
+a flat `Show a` Wanted that becomes a dictionary argument.
 
 ## Reading the source yourself
 

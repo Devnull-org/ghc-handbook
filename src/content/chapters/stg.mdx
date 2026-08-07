@@ -85,14 +85,22 @@ evaluated and tagged, which is a property STG must track and preserve:
 ## Seeing it happen
 
 <ExampleExplorer
-  example="Fusion"
+  example="Strict"
   stages={['core-optimised', 'stg']}
-  caption="The optimised Core loop, then the same code in STG. Every let in the STG output is an allocation you can count."
+  caption="Two folds that differ only by a bang pattern. In STG the consequence is countable: every let is an allocation."
 />
 
-The `let` bindings in the STG output are the allocations your program performs.
-For `countdown`, after worker/wrapper, there should be very few — the loop runs
-on unboxed values.
+This is the most practical skill the dump offers. `let` in STG means *allocate a
+closure*, so counting `let`s inside a loop tells you what it costs per iteration
+— no profiling required.
+
+Compare `sumStrict` with `sumLazy` here. The strict version's loop runs on
+unboxed values with nothing allocated per iteration. The lazy one accumulates a
+chain of thunks, and each one is a `let` you can see.
+
+`Point`, with its strict fields, shows the other half: the unpacked
+representation means `shift` builds one heap object rather than one plus two
+boxed `Int`s.
 
 ## Reading the source yourself
 
