@@ -26,7 +26,7 @@ test('---- dressing is stripped from labels', () => {
 });
 
 test('named closer heals over an opener that never closes', () => {
-  // tcInferTyApps opens and never closes — a real GHC habit. The named closer
+  // tcInferTyApps opens and never closes, a real GHC habit. The named closer
   // for the outer region must pop through it instead of leaving the rest of
   // the trace nested underneath.
   const tree = parseTrace(

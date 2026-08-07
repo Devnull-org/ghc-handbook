@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Generate the compiler traces the site's trace explorer renders — GHC's own
+# Generate the compiler traces the site's trace explorer renders: GHC's own
 # working (-ddump-tc-trace and friends), parsed into fold-out trees.
 #
 # Compiler lookup, version guard and stage guard are shared with gen-dumps.sh:

@@ -15,7 +15,7 @@ const index = notes.map((n) => ({
   r: n.refsIn.length,
 }));
 
-// Group by top-level subsystem (GHC.Tc.*, GHC.Core.*) — the useful granularity.
+// Group by top-level subsystem (GHC.Tc.*, GHC.Core.*), the useful granularity.
 // Count *notes*, not modules: the number next to a chip is read as "how much is
 // written about this", and a module count answers a different question.
 const subsystems = new Map<string, number>();
@@ -38,7 +38,7 @@ const topSubsystems = [...subsystems.entries()].sort((a, b) => b[1] - a[1]).slic
     GHC records its design reasoning in <code>Note [...]</code> comments scattered through the
     source. There are <strong>{stats.notes!.toLocaleString()}</strong> of them in
     <code>{pin.tag}</code>, joined by <strong>{stats.resolved!.toLocaleString()}</strong> resolved
-    cross-references. This index makes that graph navigable — something the source itself cannot
+    cross-references. This index makes that graph navigable, something the source itself cannot
     offer.
   </p>
 
@@ -137,7 +137,7 @@ const topSubsystems = [...subsystems.entries()].sort((a, b) => b[1] - a[1]).slic
         rows.length === index.length
           ? `${rows.length.toLocaleString()} notes`
           : `${rows.length.toLocaleString()} of ${index.length.toLocaleString()} notes` +
-            (rows.length > RENDER_LIMIT ? ` — showing first ${RENDER_LIMIT}` : '');
+            (rows.length > RENDER_LIMIT ? ` (showing first ${RENDER_LIMIT})` : '');
     }
 
     filterInput.addEventListener('input', render);

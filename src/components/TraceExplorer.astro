@@ -4,7 +4,7 @@
  * a phase, parsed into fold-out trees.
  *
  * The companion to ExampleExplorer, which shows the program between stages.
- * The tree is plain <details> elements, so it works — collapse and all — as a
+ * The tree is plain <details> elements, so it works, collapse and all, as a
  * document, with no JavaScript required; the script only adds tabs and the
  * expand/collapse-all conveniences.
  */
@@ -13,7 +13,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 interface Props {
-  /** Traced module basename, e.g. "Dict" — matches examples/traces/<name>.hs */
+  /** Traced module basename, e.g. "Dict"; matches examples/traces/<name>.hs */
   example: string;
   /** Which traces to show, in order. Defaults to all four. */
   traces?: string[];
@@ -41,7 +41,7 @@ const HINTS: Record<string, string> = {
   source: 'What you wrote.',
   'rn-trace': 'The renamer thinking out loud: environments extended, names resolved.',
   'tc-trace':
-    'The typechecker and constraint solver, step by step — unifications, the work list, the inert set. Open a section to descend.',
+    'The typechecker and constraint solver, step by step: unifications, the work list, the inert set. Open a section to descend.',
   'simpl-iterations':
     'The whole program after each simplifier iteration. The same banner repeating means separate passes, each running to its own fixed point.',
   'rule-firings': 'Every rewrite rule that fired, in order.',

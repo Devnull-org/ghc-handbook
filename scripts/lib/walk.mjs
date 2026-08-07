@@ -12,12 +12,12 @@ import { join } from 'node:path';
  * Directories never descended into.
  *
  * Build output is the point. Hadrian keeps its output in a top-level `_build`,
- * which is outside the scanned roots — but cabal and older build systems leave
+ * which is outside the scanned roots. But cabal and older build systems leave
  * `dist-newstyle`, `dist` and `_build` directories *inside* `compiler/` and
  * `libraries/`, and those are scanned. A generated module carries the same
  * `Note [...]` text as the real one, so without this the extractor mints
- * duplicate Notes that collide in the id namespace — silently, and only after
- * the first build.
+ * duplicate Notes that collide in the id namespace (silently, and only after
+ * the first build).
  *
  * `testsuite` is excluded for a different reason: its .hs files are test inputs,
  * often deliberately malformed, and are not part of the compiler's design record.

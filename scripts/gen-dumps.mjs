@@ -32,8 +32,8 @@ const STAGES = [
  * `-dsuppress-uniques` is applied to BOTH variants, not only the readable one.
  * Uniques shift between runs and between GHC builds; without pinning them the
  * committed dumps would churn on every regeneration and every diff would be
- * noise. The readable/full toggle is therefore about the *other* suppressions —
- * type applications, coercions, IdInfo — which is the distinction that actually
+ * noise. The readable/full toggle is therefore about the *other* suppressions
+ * (type applications, coercions, IdInfo), which is the distinction that actually
  * teaches something about Core.
  */
 const COMMON = ['-fforce-recomp', '-O', '-ddump-to-file', '-dsuppress-uniques'];

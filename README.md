@@ -4,7 +4,7 @@ An interactive handbook for the Glasgow Haskell Compiler, built by reading GHC's
 own source: its `Note [...]` comments, its data types, and the reasoning its
 authors left behind in the tree.
 
-Pinned to a single GHC release — see [`ghc-pin.json`](./ghc-pin.json).
+Pinned to a single GHC release: see [`ghc-pin.json`](./ghc-pin.json).
 
 ## Quick start
 
@@ -21,14 +21,16 @@ you do not need the GHC submodule checked out**: the extracted data lives in
 
 ```
 ghc-pin.json            single source of truth: GHC tag, commit, version, links
-vendor/ghc              GHC itself, as a submodule — the tree you build in
+vendor/ghc              GHC itself, as a submodule: the tree you build in
 scripts/
   fetch-ghc-src.sh      sync vendor/ghc to the pinned commit
   extract-notes.mjs     vendor/ghc -> data/notes.json
   gen-dumps.sh          runs your built GHC over examples/ -> data/dumps/
   gen-traces.sh         runs it with -ddump-*-trace over examples/traces/ -> data/traces/
+  gen-journey.mjs       resolves the function ledger -> data/journey.json
   lib/notes.mjs         the Note parser (unit-tested)
   lib/trace.mjs         the trace-to-tree parser (unit-tested)
+  lib/journey.mjs       the journey page's function ledger (unit-tested)
   lib/toolchain.mjs     compiler lookup + version/stage guards, shared by both generators
   lib/walk.mjs          source discovery + the build-output exclusions
 examples/               small .hs programs the site shows compiler output for
@@ -42,7 +44,7 @@ src/components/         ExampleExplorer, NoteCard, ...
 
 `vendor/ghc` is a submodule pinned to an exact commit, and it serves two
 purposes: the extractor reads Notes out of it, and it is the tree you build GHC
-in. Building in it is expected — `.gitmodules` sets `ignore = dirty` so the
+in. Building in it is expected: `.gitmodules` sets `ignore = dirty` so the
 resulting `_build/` does not show up as changes in this repo.
 
 ```sh
@@ -58,8 +60,8 @@ own (`Cabal`, `containers`, `bytestring`, …) which the build needs but the
 extractor does not: every Note under `libraries/` comes from a package that
 lives in GHC's main repo (`ghc-internal`, `ghci`, `ghc-boot`, `base`).
 
-To repoint the submodule at a different remote — a fork, or a clone in your own
-org — edit the `url` in `.gitmodules`, then `git submodule sync vendor/ghc`. No
+To repoint the submodule at a different remote (a fork, or a clone in your own
+org), edit the `url` in `.gitmodules`, then `git submodule sync vendor/ghc`. No
 data needs regenerating if the commit is unchanged.
 
 ### Building it
@@ -71,18 +73,18 @@ git submodule update --init --recursive   # GHC's own 33 submodules
 hadrian/build -j --flavour=quick
 ```
 
-Then, from the handbook root, `scripts/gen-dumps.sh` — no arguments and no `$GHC`
-needed. Build products land in `vendor/ghc/_build/`, which is gitignored, and
+Then, from the handbook root, `scripts/gen-dumps.sh`. No arguments and no `$GHC`
+are needed. Build products land in `vendor/ghc/_build/`, which is gitignored, and
 `.gitmodules` sets `ignore = dirty` so they never show up as changes here.
 
 **`--flavour=quick` is the right choice**, and not for the reason it looks like.
 It applies `-O0` to the *compiler itself*, which is what makes the build fast,
 but `hadrian/src/Settings/Flavours/Quick.hs` keeps `hsLibrary = notStage0 ? arg
-"-O"` — so `base` and `ghc-internal` are still built optimised. Their unfoldings
+"-O"`, so `base` and `ghc-internal` are still built optimised. Their unfoldings
 and `RULES` survive, which is what the fusion and worker/wrapper chapters depend
 on. Same dumps, much less waiting.
 
-GHC 9.14 ships no in-tree Nix expression — there is no `shell.nix` or `flake.nix`
+GHC 9.14 ships no in-tree Nix expression: there is no `shell.nix` or `flake.nix`
 anywhere in `vendor/ghc`. The Nix route is the separate `ghc.nix` project, linked
 from the [building preparation
 wiki](https://gitlab.haskell.org/ghc/ghc/-/wikis/building/preparation). It
@@ -93,22 +95,28 @@ supplies the toolchain and changes nothing above.
 Two generated artifacts are committed. They only need regenerating when the
 pinned GHC version changes, or when you add an example.
 
-### Notes — no compiler needed, just the checkout
+### Notes: no compiler needed, just the checkout
 
 ```sh
 npm run regen        # fetch-ghc-src.sh && extract-notes.mjs
 ```
 
 Output goes to `data/notes.json`, plus `data/notes-diagnostics.json` listing
-references that could not be resolved — mostly GHC's own drift, where a Note was
-renamed or removed and the comments pointing at it were left behind.
+references that could not be resolved. Most of those are GHC's own drift, where a
+Note was renamed or removed and the comments pointing at it were left behind.
+
+`npm run regen` also runs `gen-journey.mjs`, which resolves the "follow one
+module" page's function ledger (`scripts/lib/journey.mjs`) to exact line numbers
+in the checkout and writes `data/journey.json`. It refuses to write anything if
+a ledger pattern no longer matches, so a re-pin that moves a function breaks
+regeneration loudly instead of publishing a dead link.
 
 `fetch-ghc-src.sh` refuses to proceed if `vendor/ghc` is not at the commit in
 `ghc-pin.json`, since extracting from a different tree would produce line numbers
 that disagree with the site's source links. If you have deliberately moved the
 checkout, update `commit` in `ghc-pin.json` and regenerate.
 
-### Compiler dumps — needs a built GHC
+### Compiler dumps: needs a built GHC
 
 `data/dumps/` holds what GHC prints for each example at each stage
 (`-ddump-parsed-ast`, `-ddump-rn`, `-ddump-tc`, `-ddump-ds`, `-ddump-simpl`,
@@ -121,14 +129,14 @@ scripts/gen-dumps.sh
 It finds a compiler in this order, first hit wins:
 
 1. `$GHC`
-2. `vendor/ghc/_build/stage1/bin/ghc` — the **stage 2** compiler, i.e. your build
-3. `vendor/ghc/_build/stage0/bin/ghc` — the **stage 1** compiler, a fallback
+2. `vendor/ghc/_build/stage1/bin/ghc` (the **stage 2** compiler, i.e. your build)
+3. `vendor/ghc/_build/stage0/bin/ghc` (the **stage 1** compiler, a fallback)
 4. `ghc` on `PATH`
 
 Those look off by one, and they are not. Hadrian names `_build/stageN/` after the
 stage that *built* the artifact, so the stage 2 compiler lands in
 `_build/stage1/`. `_build/stage2/` would hold stage 3, which a normal build never
-produces — the lookup ignores it rather than picking one up silently.
+produces. The lookup ignores it rather than picking one up silently.
 
 Preferring stage 2 matters: a stage 1 compiler links the *bootstrap* compiler's
 `base`, so its optimised Core and STG can differ on exactly the examples the
@@ -139,7 +147,7 @@ with `GHC=/path/to/ghc scripts/gen-dumps.sh`.
 
 The script compares the compiler's version against `ghc-pin.json` and **refuses
 to run on a mismatch**, because a dump from the wrong compiler is not obviously
-wrong when you read it — it is subtly wrong, and it would be committed. To
+wrong when you read it: it is subtly wrong, and it would be committed. To
 override deliberately:
 
 ```sh
@@ -154,13 +162,13 @@ from a stage 2 one after the fact.
 Dumps generated that way are stamped with the real version, and the site labels
 them as stale.
 
-Output is normalised — timestamps and absolute paths stripped — so regenerating
+Output is normalised (timestamps and absolute paths stripped), so regenerating
 without changing anything produces a byte-identical result and an empty diff.
 
-### Compiler traces — needs a built GHC
+### Compiler traces: needs a built GHC
 
-`data/traces/` holds GHC's own working — `-ddump-rn-trace`, `-ddump-tc-trace`,
-`-ddump-simpl-iterations`, `-ddump-rule-firings` — for the deliberately tiny
+`data/traces/` holds GHC's own working (`-ddump-rn-trace`, `-ddump-tc-trace`,
+`-ddump-simpl-iterations`, `-ddump-rule-firings`) for the deliberately tiny
 modules in `examples/traces/`, parsed into the fold-out trees the site's trace
 pages render.
 
@@ -190,7 +198,7 @@ the trace pages is that every printed step is legible.
 4. Rebuild GHC, then `scripts/gen-dumps.sh && scripts/gen-traces.sh`.
 5. Commit the moved submodule pointer along with the regenerated `data/`.
 6. Check the chapters: `NoteCard` throws at build time if a Note id no longer
-   exists, which is deliberate — a renamed Note should break the build rather
+   exists, which is deliberate: a renamed Note should break the build rather
    than silently vanish from a chapter.
 
 ## Testing

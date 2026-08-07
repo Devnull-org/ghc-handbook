@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * Capture GHC's own working — its `-ddump-*-trace` output — for each module in
+ * Capture GHC's own working (its `-ddump-*-trace` output) for each module in
  * examples/traces/, and parse it into the trees the site's trace explorer
  * renders.
  *
  * These are different artifacts from data/dumps/: a dump shows the program
  * *after* a stage, a trace shows the compiler *during* one. The modules here
- * are deliberately tiny and separate from examples/ — the solver chapter's own
+ * are deliberately tiny and separate from examples/: the solver chapter's own
  * advice is "start from a three-line module, never a real one", because
  * tc-trace output grows brutally with program size.
  */
@@ -59,7 +59,7 @@ function runTrace(srcRel, flag) {
     console.error(res.stderr || res.error?.message || '');
     process.exit(1);
   }
-  // This GHC writes traces to stdout; older ones used stderr. Take both —
+  // This GHC writes traces to stdout; older ones used stderr. Take both:
   // whichever stream is unused carries nothing but warnings.
   return tidy((res.stdout ?? '') + (res.stderr ?? ''));
 }

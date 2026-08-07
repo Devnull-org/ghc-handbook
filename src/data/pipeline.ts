@@ -105,7 +105,7 @@ export const pipeline: PipelinePart[] = [
         name: 'Core',
         transform: 'the intermediate language',
         blurb:
-          'System F-ish, explicitly typed, and small enough to fit on a page — which is exactly what makes the optimiser tractable.',
+          'System F-ish, explicitly typed, and small enough to fit on a page, which is exactly what makes the optimiser tractable.',
         status: 'chapter',
         slug: 'core',
         modulePrefixes: ['GHC.Core.Type', 'GHC.Core.TyCo', 'GHC.Core.Utils', 'GHC.Core.Lint'],
@@ -146,7 +146,7 @@ export const pipeline: PipelinePart[] = [
         name: 'Cmm',
         transform: 'STG → Cmm',
         blurb:
-          'A C-like portable assembly with explicit stack and heap operations — the last target-independent form.',
+          'A C-like portable assembly with explicit stack and heap operations: the last target-independent form.',
         status: 'chapter',
         slug: 'cmm',
         modulePrefixes: ['GHC.Cmm', 'GHC.StgToCmm'],

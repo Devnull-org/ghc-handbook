@@ -3,7 +3,7 @@ title: The runtime system
 summary: >-
   Compiled Haskell does not run alone. The RTS provides the garbage collector,
   the scheduler, and the machinery that makes laziness and lightweight threads
-  work — about 180 Notes, written in C.
+  work: about 180 Notes, written in C.
 order: 11
 phases: ['rts']
 sources:
@@ -22,8 +22,8 @@ import NoteCard from '../../components/NoteCard.astro';
 Everything so far has been about producing an object file. This chapter is about
 what that object file links against.
 
-The RTS is a substantial C program — garbage collection, thread scheduling,
-software transactional memory, profiling, the bytecode interpreter — and it is
+The RTS is a substantial C program (garbage collection, thread scheduling,
+software transactional memory, profiling, the bytecode interpreter), and it is
 not optional. Laziness needs something to update thunks; lightweight threads need
 something to schedule them; allocation needs something to collect.
 
@@ -33,8 +33,8 @@ Its Notes are written in C comments, which is why the handbook's extractor learn
 ## The storage manager
 
 GHC's collector is **generational** and **copying**, and it is tuned for a
-language that allocates ferociously. Most Haskell allocations die immediately —
-a thunk is forced once and becomes garbage — so the youngest generation is
+language that allocates ferociously. Most Haskell allocations die immediately
+(a thunk is forced once and becomes garbage), so the youngest generation is
 collected often and cheaply, and only survivors are promoted.
 
 Allocation itself is a pointer bump. The heap check emitted at Cmm level confirms
@@ -46,7 +46,7 @@ was pinned. This is why the FFI has pinned allocation, and why `ByteString` uses
 it.
 
 The trade-off with a copying collector is pause time, which is what the
-non-moving collector addresses — a concurrent mark-and-sweep collector for the
+non-moving collector addresses: a concurrent mark-and-sweep collector for the
 oldest generation, so a large heap does not mean a long pause:
 
 <NoteCard id="non-moving-gc-marking-evacuated-objects" clamp={26} />
@@ -73,7 +73,7 @@ woken only when that changes. There is no polling.
 ## Thunks, updates, and blackholes
 
 Laziness lives here. Entering a thunk runs its code and *overwrites* it with the
-result, so the work is not repeated — that is the update.
+result, so the work is not repeated. That is the update.
 
 If two threads enter the same thunk at once, both would compute it. The RTS
 overwrites a thunk under evaluation with a **blackhole**, so a second thread
@@ -95,12 +95,12 @@ into it from an interpreted expression.
 
 ## Reading the source yourself
 
-The RTS is a different kind of code from the compiler — C, performance-critical,
+The RTS is a different kind of code from the compiler: C, performance-critical,
 and with a lot of load-bearing macros.
 
 1. **`rts/include/rts/storage/Closures.h`** first. Every heap object layout is
    here, and nothing else makes sense without it.
-2. **`rts/Schedule.c`** — the main scheduler loop is readable and central.
+2. **`rts/Schedule.c`**: the main scheduler loop is readable and central.
 3. **`rts/sm/GC.c`** for the collector; **`rts/sm/NonMoving.c`** only afterwards.
 4. **`docs/rts/`** and **`docs/storage-mgt/`** in the tree contain design
    documents that predate and explain much of the code.

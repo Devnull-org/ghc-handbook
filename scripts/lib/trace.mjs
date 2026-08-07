@@ -1,7 +1,7 @@
 /**
  * Parse GHC's `-ddump-*-trace` style output into a tree.
  *
- * GHC's traces mark regions with braces — `solveWanteds {` ... `}` — which is
+ * GHC's traces mark regions with braces (`solveWanteds {` ... `}`), which is
  * what makes an 8,000-line trace navigable as a fold-out tree instead of a
  * wall. But the convention is applied by hand at every trace site, and it is
  * sloppy: some functions (`tcInferTyApps` for one) open a brace and never emit
@@ -16,8 +16,8 @@
  *     over any abandoned opens in between. A closer naming no open frame is
  *     demoted to an ordinary line rather than closing the wrong region.
  *
- * `-ddump-simpl-iterations` is a different animal — no braces, just Core
- * listings under `==== ... ====` banner lines — so banner-delimited input gets
+ * `-ddump-simpl-iterations` is a different animal, no braces, just Core
+ * listings under `==== ... ====` banner lines, so banner-delimited input gets
  * flat sections instead of a brace tree.
  */
 
@@ -40,8 +40,8 @@ function closerNamesFrame(closer, frameLabel) {
 /**
  * A structural opener is an unindented line ending in a standalone `{`, or
  * carrying one mid-line with payload after it (`checkInitialKinds { []`).
- * The standalone requirement is what keeps `Sym {co}` — a printed coercion
- * hole — from opening a region.
+ * The standalone requirement is what keeps `Sym {co}` (a printed coercion
+ * hole) from opening a region.
  */
 function openerOf(line) {
   if (line === '{') return { label: '', payload: '' };
@@ -164,7 +164,7 @@ function parseBanners(lines) {
   return sections;
 }
 
-/** Total line count of a subtree — what a collapsed summary advertises. */
+/** Total line count of a subtree: what a collapsed summary advertises. */
 export function nodeLines(node) {
   const own = 1 + (node.body ? node.body.split('\n').length : 0) + (node.end ? 1 : 0);
   return node.children.reduce((n, c) => n + nodeLines(c), own);

@@ -29,7 +29,7 @@ const PAGES: Record<
   Dict: {
     title: 'Solving a dictionary',
     summary:
-      'describe has a Show a constraint; use calls it at Int. That is the entire program — so every line the solver prints is about one Wanted, and none of it is noise.',
+      'describe has a Show a constraint; use calls it at Int. That is the entire program, so every line the solver prints is about one Wanted, and none of it is noise.',
     lookFor: [
       {
         where: 'Typechecker trace → solveWanteds',
@@ -41,18 +41,18 @@ const PAGES: Record<
       },
       {
         where: 'Typechecker trace → addInertCan',
-        what: 'A constraint entering the inert set — with everything already rewritten with respect to it, per the invariant the solver chapter is built around.',
+        what: 'A constraint entering the inert set, with everything already rewritten with respect to it, per the invariant the solver chapter is built around.',
       },
     ],
     chapters: [
-      { slug: 'typechecker', label: 'The typechecker — architecture' },
+      { slug: 'typechecker', label: 'The typechecker: architecture' },
       { slug: 'constraint-solver', label: 'The constraint solver' },
     ],
   },
   Refine: {
     title: 'Refining a GADT match',
     summary:
-      'get matches on a GADT, so each branch may assume a different equality. The typechecker chapter argues this one program shape is why constraint solving is deferred at all — here is the solver actually doing it.',
+      'get matches on a GADT, so each branch may assume a different equality. The typechecker chapter argues this one program shape is why constraint solving is deferred at all. Here is the solver actually doing it.',
     lookFor: [
       {
         where: 'Typechecker trace → solveImplication',
@@ -60,7 +60,7 @@ const PAGES: Record<
       },
       {
         where: 'Typechecker trace → solveSimpleGivens',
-        what: 'The branch assumption — the equality from the constructor — being installed as a fact before the branch body is checked against it.',
+        what: 'The branch assumption (the equality from the constructor) being installed as a fact before the branch body is checked against it.',
       },
       {
         where: 'Typechecker trace → the Inerts printouts',
@@ -68,7 +68,7 @@ const PAGES: Record<
       },
     ],
     chapters: [
-      { slug: 'typechecker', label: 'The typechecker — architecture' },
+      { slug: 'typechecker', label: 'The typechecker: architecture' },
       { slug: 'constraint-solver', label: 'The constraint solver' },
     ],
   },
@@ -80,7 +80,7 @@ const PAGES: Record<
     lookFor: [
       {
         where: 'Rule firings',
-        what: 'Seven lines, and the story is complete: map rewritten to build form, then fold/build — the fusion rule itself — collapsing producer into consumer.',
+        what: 'Seven lines, and the story is complete: map rewritten to build form, then fold/build, the fusion rule itself, collapsing producer into consumer.',
       },
       {
         where: 'Simplifier iterations, first vs last',
@@ -103,7 +103,7 @@ const page = PAGES[example] ?? {
 };
 ---
 
-<Base title={`${page.title} — trace`} description={page.summary} width="page">
+<Base title={`${page.title} (trace)`} description={page.summary} width="page">
   <p class="crumb"><a href={withBase('/traces/')}>← All traces</a></p>
 
   <h1>{page.title}</h1>

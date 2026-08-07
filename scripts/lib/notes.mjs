@@ -6,7 +6,7 @@
  * about which shapes it accepts and reports anything it cannot resolve rather
  * than dropping it silently.
  *
- * A *definition* is a line whose content — after stripping comment syntax — is
+ * A *definition* is a line whose content, after stripping comment syntax, is
  * exactly `Note [Title]`, immediately followed by a line of `~~~~`. Three
  * comment shapes carry them:
  *
@@ -40,8 +40,8 @@ function stripCommentSyntax(line) {
  * Strip the comment prefix from a body line, preserving relative indentation.
  *
  * `cStyle` matters: in a C block comment a leading `*` is the continuation
- * marker and must go, but in a Haskell `{- -}` comment it is a bullet — GHC's
- * Notes are full of `* (Efficiency) ...` lists — and must stay.
+ * marker and must go, but in a Haskell `{- -}` comment it is a bullet (GHC's
+ * Notes are full of `* (Efficiency) ...` lists) and must stay.
  */
 function stripBodyPrefix(line, cStyle) {
   if (cStyle) return line.replace(/^(\s*)(?:--+|\/\/+|\*(?!\/))\s?/, '$1');
@@ -185,7 +185,7 @@ export function parseSource(text, path = '') {
     if (definitionLines.has(i)) continue;
     const line = lines[i];
     for (const m of line.matchAll(/Note \[([^\]]+)\]((?:\s+in\s+)([A-Z][A-Za-z0-9_.']*))?/g)) {
-      // `... in GHC.Builtin.Types.` — the final dot is sentence punctuation, not
+      // In `... in GHC.Builtin.Types.` the final dot is sentence punctuation, not
       // part of the module name. Trailing dots are never valid in a module name.
       const qualifier = m[3] ? m[3].replace(/\.+$/, '') : null;
       references.push({

@@ -12,7 +12,7 @@ import { join, relative } from 'node:path';
  * Where Hadrian puts each compiler, most preferred first.
  *
  * Hadrian names `_build/stageN/` after the stage that *built* the artifact, not
- * the artifact's own stage — so the stage 2 compiler lives in `_build/stage1/`.
+ * the artifact's own stage, so the stage 2 compiler lives in `_build/stage1/`.
  * See `hadrian/doc/make.md` in the vendored tree: "Your stage 2 GHC would then
  * be at `_build/stage1/bin/ghc` (because it's built by the stage 1 compiler)."
  *
@@ -29,7 +29,7 @@ export const BUILD_TREE_COMPILERS = [
  * Locate the compiler to generate with.
  *
  * You build GHC in vendor/ghc, so the compiler that matches the source this
- * handbook documents is the one sitting in that build tree — preferred over
+ * handbook documents is the one sitting in that build tree, preferred over
  * whatever unrelated GHC happens to be on PATH. `$GHC` overrides everything.
  *
  * Returns the path plus which stage it is, since that cannot be recovered
@@ -62,13 +62,13 @@ export function resolveGhc(pin, root) {
     console.error('');
     console.error(`  To build one: cd ${pin.checkoutDir} && ./boot && ./configure && hadrian/build -j`);
     console.error('  Or point $GHC at a compiler you already have.');
-    console.error('  The site build itself needs neither — only regeneration does.');
+    console.error('  The site build itself needs neither: only regeneration does.');
     process.exit(1);
   }
 }
 
 /**
- * A dump from the wrong compiler is not obviously wrong when you read it — it is
+ * A dump from the wrong compiler is not obviously wrong when you read it: it is
  * subtly wrong, and it would be committed. So a mismatch stops the run unless it
  * is overridden deliberately.
  */
@@ -95,7 +95,7 @@ export function checkVersion(version, path, pin, script) {
  * A stage 1 compiler is built by the *bootstrap* compiler and links its `base`,
  * so its optimised Core and STG can differ from a stage 2's on exactly the
  * examples this handbook uses to teach optimisation. Same failure mode as a
- * version mismatch — plausible-looking output that is quietly wrong — so it
+ * version mismatch (plausible-looking output that is quietly wrong), so it
  * warns rather than passing silently.
  */
 export function checkStage(stage, path) {
@@ -115,7 +115,7 @@ export function setupGhc(pin, root, script) {
   const stale = ghcVersion !== pin.ghcVersion;
 
   // Every stage reports the same version, so the path alone cannot tell you
-  // which compiler produced the output — and under Hadrian's naming the path
+  // which compiler produced the output, and under Hadrian's naming the path
   // actively misleads. Record the stage explicitly alongside it. Relativised:
   // an absolute path would leak the generating machine's layout and churn the
   // diff on every contributor.

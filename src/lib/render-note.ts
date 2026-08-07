@@ -35,8 +35,8 @@ function byTitle(): Map<string, Note[]> {
 /**
  * Resolve a `Note [...]` mention to a specific Note.
  *
- * Mirrors the extractor's ordering exactly — explicit qualifier, then same
- * module, then a globally unique title — so what the site links to is what the
+ * Mirrors the extractor's ordering exactly (explicit qualifier, then same
+ * module, then a globally unique title), so what the site links to is what the
  * extractor counted. Ambiguous mentions stay unlinked rather than guessing.
  */
 export function resolveRef(

@@ -11,10 +11,11 @@ interface Props {
 }
 
 const { title, description, width = 'prose' } = Astro.props;
-const fullTitle = title === 'GHC Handbook' ? title : `${title} — GHC Handbook`;
+const fullTitle = title === 'GHC Handbook' ? title : `${title} · GHC Handbook`;
 
 const nav = [
   { href: '/', label: 'Pipeline' },
+  { href: '/journey/', label: 'One module' },
   { href: '/handbook/', label: 'Chapters' },
   { href: '/traces/', label: 'Traces' },
   { href: '/notes/', label: 'Notes' },

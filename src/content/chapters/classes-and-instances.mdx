@@ -2,7 +2,7 @@
 title: Classes, instances and deriving
 summary: >-
   Where a class declaration becomes a record of functions, an instance becomes a
-  value of that record, and `deriving` writes code you never see — the machinery
+  value of that record, and `deriving` writes code you never see: the machinery
   that makes overloading disappear before Core.
 order: 5
 phases: []
@@ -22,7 +22,7 @@ import NoteCard from '../../components/NoteCard.astro';
 
 Type classes are the feature that most distinguishes Haskell, and the one whose
 implementation is least visible from the outside. By the time your program
-reaches Core there are no classes at all — only records, ordinary functions, and
+reaches Core there are no classes at all: only records, ordinary functions, and
 ordinary arguments.
 
 This chapter is how that erasure happens.
@@ -44,7 +44,7 @@ describe
 ```
 
 `$dShow` is the dictionary. `show $dShow x` is a field selection followed by an
-application. Nothing about that is class-specific any more — which is precisely
+application. Nothing about that is class-specific any more, which is precisely
 the point, because it means the whole optimiser downstream needs to know nothing
 about classes.
 
@@ -55,7 +55,7 @@ class often costs nothing at runtime.
 ## Solving a dictionary constraint
 
 When the solver meets a Wanted `Show Int`, it consults the instance environment
-for a match. Success produces evidence — the dictionary — and fills the hole.
+for a match. Success produces evidence (the dictionary) and fills the hole.
 
 Superclasses complicate this pleasantly. If you have `Ord a`, you also have
 `Eq a`, because `Ord` declares `Eq` as a superclass, and the `Ord` dictionary
@@ -80,7 +80,7 @@ There is more than one way to derive, and choosing between them is explicit:
 
 The four strategies do genuinely different things. `stock` generates real code
 per class, known to the compiler. `newtype` coerces an existing instance through
-a newtype — zero cost, since the representations are identical. `anyclass` takes
+a newtype (zero cost, since the representations are identical). `anyclass` takes
 the class's default methods. `via` coerces through a type you nominate.
 
 For inferred contexts there is a further problem: what constraints should the
@@ -90,8 +90,8 @@ generated code:
 
 <NoteCard id="GHC.Tc.Deriv.Infer.inferring-the-instance-context" clamp={26} />
 
-Stock deriving also needs helper bindings — comparison tags, enumeration
-indices — that must not collide with anything the user wrote:
+Stock deriving also needs helper bindings (comparison tags, enumeration
+indices) that must not collide with anything the user wrote:
 
 <NoteCard id="GHC.Tc.Deriv.Generate.auxiliary-binders" clamp={22} />
 
@@ -100,7 +100,7 @@ indices — that must not collide with anything the user wrote:
 <ExampleExplorer
   example="Classes"
   stages={['typechecked', 'core-desugared', 'core-optimised']}
-  caption="The Container class and its Stack instance. In Core, the class is a record and the instance is a value — $fContainerStack — passed explicitly wherever it is needed."
+  caption="The Container class and its Stack instance. In Core, the class is a record and the instance is a value, $fContainerStack, passed explicitly wherever it is needed."
 />
 
 Look for `$dContainer` in `twice`. The constraint `Container f =>` in the source
@@ -113,7 +113,7 @@ automatically slow.
 
 ## Reading the source yourself
 
-1. **`GHC/Core/Class.hs`** — small, and shows exactly what a class *is* once
+1. **`GHC/Core/Class.hs`**: small, and shows exactly what a class *is* once
    elaborated. Start here; everything else is easier afterwards.
 2. **`GHC/Tc/Instance/Class.hs`** for matching a Wanted against instances.
 3. **`GHC/Tc/TyCl/Instance.hs`** for what an instance declaration turns into,

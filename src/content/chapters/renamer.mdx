@@ -1,7 +1,7 @@
 ---
 title: The renamer
 summary: >-
-  How every occurrence gets tied to the thing it names — and how the phase that
+  How every occurrence gets tied to the thing it names, and how the phase that
   is supposedly "just name resolution" ends up re-associating your operators and
   quietly desugaring half of Haskell's syntactic sugar.
 order: 2
@@ -10,7 +10,7 @@ sources:
   - file: compiler/GHC/Rename/Module.hs
     blurb: the entry point, and dependency analysis of declarations
   - file: compiler/GHC/Rename/Env.hs
-    blurb: lookup — the heart of name resolution
+    blurb: lookup, the heart of name resolution
   - file: compiler/GHC/Rename/Expr.hs
     blurb: renaming expressions, and expanding rebindable syntax
   - file: compiler/GHC/Types/Name/Reader.hs
@@ -26,7 +26,7 @@ nothing at all is an open question. The renamer answers it, for every occurrence
 in the module.
 
 That sounds mechanical, and the first half of it is. The interesting part is what
-else GHC decided to put here — because the renamer is the first phase that knows
+else GHC decided to put here: because the renamer is the first phase that knows
 what names *mean*, several problems that look like they belong elsewhere can only
 be solved once, right here.
 
@@ -42,7 +42,7 @@ data RdrName
   | Exact Name
 ```
 
-An `OccName` is a string plus a namespace — Haskell lets you use the same
+An `OccName` is a string plus a namespace: Haskell lets you use the same
 spelling for a variable, a type constructor, and a data constructor without
 collision, so "which namespace" is part of the name itself.
 
@@ -57,7 +57,7 @@ data Name = Name
 ```
 
 The `Unique` is what makes the rest of the compiler work. After renaming, two
-`Name`s refer to the same entity exactly when their uniques are equal — no string
+`Name`s refer to the same entity exactly when their uniques are equal: no string
 comparison, no scope walking, no ambiguity. Every later phase relies on this.
 
 Two environments drive the translation:
@@ -69,7 +69,7 @@ type GlobalRdrEnv = GlobalRdrEnvX GREInfo
 type GlobalRdrEnvX info = OccEnv [GlobalRdrEltX info]
 ```
 
-Note the asymmetry. The local environment maps an `OccName` to *one* `Name` —
+Note the asymmetry. The local environment maps an `OccName` to *one* `Name`:
 lexical scoping means the innermost binding wins and shadowing is resolved by
 construction. The global environment maps to a *list*, because a name can
 legitimately be in scope from several imports at once. That is not an error until
@@ -95,9 +95,9 @@ through both. That is by design, not layering violation.
 ## Fixity: the loose end from the parser
 
 The parser chapter ended with `x |+| y * 2` sitting in the tree as a flat chain,
-because the parser cannot know any operator's fixity. The renamer can — it has
+because the parser cannot know any operator's fixity. The renamer can (it has
 just resolved those operators to `Name`s, so it can look up their declared
-fixity — and so it re-associates the tree here:
+fixity), and so it re-associates the tree here:
 
 ```haskell
 mkOpAppRn :: NegationHandling
@@ -139,8 +139,8 @@ something else entirely, before the typechecker ever sees it.
 
 Read the nomenclature at the top carefully, because GHC is precise about it:
 *expansion* is `HsExpr GhcRn -> HsExpr GhcRn` and happens here; *desugaring* is
-`HsExpr GhcTc -> Core.Expr` and happens much later. The Note's own summary —
-"in effect, the renamer does a bit of desugaring" — is the honest description.
+`HsExpr GhcTc -> Core.Expr` and happens much later. The Note's own summary,
+"in effect, the renamer does a bit of desugaring", is the honest description.
 
 The reason this must happen at renaming time rather than later is
 `RebindableSyntax`. With the extension off, `#foo` expands using the built-in
@@ -148,8 +148,8 @@ The reason this must happen at renaming time rather than later is
 Only the renamer knows what is in scope. By the time the typechecker runs, the
 question is already settled, and `HsOverLabel` no longer exists in the tree.
 
-The `ExpandedThingRn` constructor keeps both halves — the original term the user
-wrote and the expansion to be typechecked — so error messages can still talk
+The `ExpandedThingRn` constructor keeps both halves (the original term the user
+wrote and the expansion to be typechecked) so error messages can still talk
 about the program you actually wrote rather than the one GHC rewrote it into.
 
 ## Order out of a flat file
@@ -157,7 +157,7 @@ about the program you actually wrote rather than the one GHC rewrote it into.
 Haskell declarations may appear in any order and may be mutually recursive. The
 typechecker cannot exploit that: it needs to generalise a binding group before
 typechecking anything that uses it, so it needs the groups, in dependency order.
-Computing them requires knowing what refers to what — which, again, is something
+Computing them requires knowing what refers to what. That, again, is something
 only the renamer knows.
 
 So the renamer performs strongly-connected-component analysis over the
@@ -182,7 +182,7 @@ The **Renamed** tab is this chapter's output. Compare it with **Parsed**:
 
 ## What the renamer hands on
 
-`HsGroup GhcRn` — the same AST types as before, at the next phase index. Every
+`HsGroup GhcRn`: the same AST types as before, at the next phase index. Every
 `RdrName` is now a `Name`; operator applications are correctly grouped; overloaded
 constructs have been expanded; declarations arrive in dependency order.
 
@@ -196,12 +196,12 @@ answering it, is the next chapter.
 1. **`GHC/Types/Name/Reader.hs`** first, for `RdrName`, `GlobalRdrEnv` and
    `GlobalRdrElt`. The renamer is mostly operations on these; the rest reads far
    more easily once the data types are familiar.
-2. **`GHC/Rename/Env.hs`** — lookup, and where ambiguity and shadowing are
+2. **`GHC/Rename/Env.hs`**: lookup, and where ambiguity and shadowing are
    actually decided.
-3. **`GHC/Rename/Expr.hs`** — start at the Note quoted above, then read
+3. **`GHC/Rename/Expr.hs`**: start at the Note quoted above, then read
    `rnExpr`. The expansion machinery is the least obvious thing in the phase.
 
 A good first contribution here is an error message. The renamer produces many of
-GHC's most user-visible diagnostics — out-of-scope names, ambiguous occurrences,
-unused imports — and improving one is self-contained, testable with a single
+GHC's most user-visible diagnostics (out-of-scope names, ambiguous occurrences,
+unused imports), and improving one is self-contained, testable with a single
 source file, and cannot break code generation.
