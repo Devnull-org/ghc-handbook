@@ -1,0 +1,78 @@
+name: Regenerate dumps and traces
+
+# Manually triggered. Installs the pinned GHC release as an official bindist,
+# regenerates data/dumps/ and data/traces/, validates that the site still
+# builds from them, and pushes the result back to the branch it ran on.
+#
+# This exists because dump regeneration needs a GHC matching ghc-pin.json, and
+# the sandboxed environments that edit this repo cannot always reach
+# downloads.haskell.org. A runner can. The output records ghcStage "external":
+# an official bindist of the pinned release, not a compiler built in
+# vendor/ghc. For the committed data the two are equivalent; the bindist IS
+# that release.
+#
+# Note for maintainers: a push made with the workflow's own token does not
+# trigger other workflows, so the Pages deploy must be dispatched by hand (or
+# by whoever triggered this) after a successful run.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: regen-data
+  cancel-in-progress: false
+
+jobs:
+  regen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The generators compile examples/, not GHC's source. The submodule
+          # stays out, same as the deploy workflow.
+          submodules: false
+
+      - name: Read the pinned GHC version
+        id: pin
+        run: echo "version=$(node -e 'process.stdout.write(require("./ghc-pin.json").ghcVersion)')" >> "$GITHUB_OUTPUT"
+
+      - uses: haskell-actions/setup@v2
+        with:
+          ghc-version: ${{ steps.pin.outputs.version }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Regenerate dumps
+        run: GHC="$(which ghc)" scripts/gen-dumps.sh
+
+      - name: Regenerate traces
+        run: GHC="$(which ghc)" scripts/gen-traces.sh
+
+      # The committed data is only as good as what the site can do with it. A
+      # parse regression or a Note id that stopped resolving must fail here,
+      # on the runner, not after the push.
+      - name: Validate
+        run: npm test && npm run build
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/dumps data/traces
+          if git diff --staged --quiet; then
+            echo "Nothing changed; dumps and traces were already current."
+          else
+            git commit -m "Regenerate dumps and traces with GHC ${{ steps.pin.outputs.version }}
+
+          Generated on a CI runner from the official ${{ steps.pin.outputs.version }} bindist
+          (ghcStage: external). Produced by the regen-data workflow."
+            git push
+          fi
