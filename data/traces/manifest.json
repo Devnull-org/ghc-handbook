@@ -1,9 +1,9 @@
 {
-  "ghcVersion": "9.4.7",
-  "ghcPath": "ghc",
+  "ghcVersion": "9.14.1",
+  "ghcPath": "/home/runner/.ghcup/bin/ghc",
   "ghcStage": "external",
   "pinnedVersion": "9.14.1",
-  "stale": true,
+  "stale": false,
   "examples": [
     "Dict",
     "Fuse",

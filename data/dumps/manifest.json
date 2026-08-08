@@ -1,7 +1,7 @@
 {
   "ghcVersion": "9.14.1",
-  "ghcPath": "vendor/ghc/_build/stage1/bin/ghc",
-  "ghcStage": "2",
+  "ghcPath": "/home/runner/.ghcup/bin/ghc",
+  "ghcStage": "external",
   "pinnedVersion": "9.14.1",
   "stale": false,
   "examples": [

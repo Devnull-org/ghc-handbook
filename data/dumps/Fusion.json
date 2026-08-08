@@ -15,8 +15,12 @@
       "full": "Fusion.pipeline :: [Int] -> Int\nFusion.pipeline = sum . map (* 2) . filter even\nFusion.countdown :: Int -> Int\nFusion.countdown n\n  = go n 0\n  where\n      go 0 acc = acc\n      go k acc = go (k - 1) (acc + k)"
     },
     "typechecked": {
-      "readable": "$trModule = Module (TrNameS \"main\"#) (TrNameS \"Fusion\"#)\ncountdown n\n  = go n 0\n  where\n      go 0 acc = acc\n      go k acc = go (k - 1) (acc + k)\npipeline = sum . map (* 2) . filter even",
-      "full": "Fusion.$trModule\n  = GHC.Internal.Types.Module\n      (GHC.Internal.Types.TrNameS \"main\"#)\n      (GHC.Internal.Types.TrNameS \"Fusion\"#)\ncountdown n\n  = go n 0\n  where\n      go 0 acc = acc\n      go k acc = go (k - 1) (acc + k)\npipeline = sum . map (* 2) . filter even"
+      "readable": "$trModule = Module (TrNameS \"main\"#) (TrNameS \"Fusion\"#)\nAbsBinds [] []\n  {Exports: [countdown <= countdown\n               wrap: <>]\n   Exported types: countdown :: Int -> Int\n   Binds: countdown n\n            = go @Int $dEq $dNum n 0\n            where\n                AbsBinds [t] [$dEq, $dNum]\n                  {Exports: [go <= go\n                               wrap: <>]\n                   Exported types: go :: forall {t}. (Eq t, Num t) => t -> t -> t\n                   Binds: go 0 acc = acc\n                          go k acc = go (k - 1) (acc + k)\n                   Evidence: [EvBinds{[W] $dNum = $dNum\n                                      [W] $dNum = $dNum\n                                      [W] $dNum = $dNum\n                                      [W] $dEq = $dEq\n                                      [W] $dNum = $dNum}]}\n   Evidence: [EvBinds{}]}\nAbsBinds [] []\n  {Exports: [pipeline <= pipeline\n               wrap: <>]\n   Exported types: pipeline :: [Int] -> Int\n   Binds: pipeline = sum . map (* 2) . filter even\n   Evidence: [EvBinds{}]}",
+      "full": "Fusion.$trModule\n  = GHC.Internal.Types.Module\n      (GHC.Internal.Types.TrNameS \"main\"#)\n      (GHC.Internal.Types.TrNameS \"Fusion\"#)\nAbsBinds [] []\n  {Exports: [countdown <= countdown\n               wrap: <>]\n   Exported types: countdown :: Int -> Int\n                   [LclId]\n   Binds: countdown n\n            = go @Int $dEq $dNum n 0\n            where\n                AbsBinds [t] [$dEq, $dNum]\n                  {Exports: [go <= go\n                               wrap: <>]\n                   Exported types: go :: forall {t}. (Eq t, Num t) => t -> t -> t\n                                   [LclId]\n                   Binds: go 0 acc = acc\n                          go k acc = go (k - 1) (acc + k)\n                   Evidence: [EvBinds{[W] $dNum = $dNum\n                                      [W] $dNum = $dNum\n                                      [W] $dNum = $dNum\n                                      [W] $dEq = $dEq\n                                      [W] $dNum = $dNum}]}\n   Evidence: [EvBinds{}]}\nAbsBinds [] []\n  {Exports: [pipeline <= pipeline\n               wrap: <>]\n   Exported types: pipeline :: [Int] -> Int\n                   [LclId]\n   Binds: pipeline = sum . map (* 2) . filter even\n   Evidence: [EvBinds{}]}"
+    },
+    "types": {
+      "readable": "TYPE SIGNATURES\n  countdown :: Int -> Int\n  pipeline :: [Int] -> Int\nDependent modules: []\nDependent packages: [(normal, base-4.22.0.0)]",
+      "full": "TYPE SIGNATURES\n  countdown :: Int -> Int\n  pipeline :: [Int] -> Int\nDependent modules: []\nDependent packages: [(normal, base-4.22.0.0)]"
     },
     "core-desugared": {
       "readable": "Result size of Desugar (after optimization)\n  = {terms: 58, types: 41, coercions: 0, joins: 0/3}\n\n-- RHS size: {terms: 5, types: 0, coercions: 0, joins: 0/0}\n$trModule :: Module\n$trModule = Module (TrNameS \"main\"#) (TrNameS \"Fusion\"#)\n\n-- RHS size: {terms: 19, types: 23, coercions: 0, joins: 0/2}\npipeline :: [Int] -> Int\npipeline\n  = . (sum $fFoldableList $fNumInt)\n      (. (map\n            (let {\n               v :: Int -> Int -> Int\n               v = * $fNumInt } in\n             let {\n               v :: Int\n               v = I# 2# } in\n             \\ (v :: Int) -> v v v))\n         (filter (even $fIntegralInt)))\n\n-- RHS size: {terms: 31, types: 12, coercions: 0, joins: 0/1}\ncountdown :: Int -> Int\ncountdown\n  = \\ (n :: Int) ->\n      letrec {\n        go :: Int -> Int -> Int\n        go\n          = \\ (ds :: Int) (acc :: Int) ->\n              case == $fEqInt ds (fromInteger $fNumInt (IS 0#)) of {\n                False ->\n                  go\n                    (- $fNumInt ds (fromInteger $fNumInt (IS 1#))) (+ $fNumInt acc ds);\n                True -> acc\n              }; } in\n      go n (I# 0#)",
@@ -32,8 +36,8 @@
     }
   },
   "ghcVersion": "9.14.1",
-  "ghcPath": "vendor/ghc/_build/stage1/bin/ghc",
-  "ghcStage": "2",
+  "ghcPath": "/home/runner/.ghcup/bin/ghc",
+  "ghcStage": "external",
   "pinnedVersion": "9.14.1",
   "stale": false
 }

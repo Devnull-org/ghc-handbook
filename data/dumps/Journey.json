@@ -15,8 +15,12 @@
       "full": "Journey.describe :: Show a => a -> String\nJourney.describe x = \"value: \" ++ show x\nJourney.classify :: Int -> String\nJourney.classify n\n  = case compare n 0 of\n      LT -> \"negative\"\n      EQ -> \"zero\"\n      GT -> positive\n  where\n      positive = if n > 100 then \"big\" else \"small\""
     },
     "typechecked": {
-      "readable": "$trModule = Module (TrNameS \"main\"#) (TrNameS \"Journey\"#)\nclassify n\n  = case compare n 0 of\n      LT -> \"negative\"\n      EQ -> \"zero\"\n      GT -> positive\n  where\n      positive = if n > 100 then \"big\" else \"small\"\ndescribe x = \"value: \" ++ show x",
-      "full": "Journey.$trModule\n  = GHC.Internal.Types.Module\n      (GHC.Internal.Types.TrNameS \"main\"#)\n      (GHC.Internal.Types.TrNameS \"Journey\"#)\nclassify n\n  = case compare n 0 of\n      LT -> \"negative\"\n      EQ -> \"zero\"\n      GT -> positive\n  where\n      positive = if n > 100 then \"big\" else \"small\"\ndescribe x = \"value: \" ++ show x"
+      "readable": "$trModule = Module (TrNameS \"main\"#) (TrNameS \"Journey\"#)\nAbsBinds [] []\n  {Exports: [classify <= classify\n               wrap: <>]\n   Exported types: classify :: Int -> String\n   Binds: classify n\n            = case compare @Int $dOrd n 0 of\n                LT{EvBinds{}} -> \"negative\"\n                EQ{EvBinds{}} -> \"zero\"\n                GT{EvBinds{}} -> positive\n            where\n                AbsBinds [] []\n                  {Exports: [positive <= positive\n                               wrap: <>]\n                   Exported types: positive :: String\n                   Binds: positive = if n > 100 then \"big\" else \"small\"\n                   Evidence: [EvBinds{[W] $dOrd = $fOrdInt\n                                      [W] $dNum = $fNumInt}]}\n   Evidence: [EvBinds{}]}\nAbsBinds [] []\n  {Exports: [describe <= describe\n               wrap: <>]\n   Exported types: describe :: forall a. Show a => a -> String\n   Binds: describe x = \"value: \" ++ show x\n   Evidence: [EvBinds{}]}",
+      "full": "Journey.$trModule\n  = GHC.Internal.Types.Module\n      (GHC.Internal.Types.TrNameS \"main\"#)\n      (GHC.Internal.Types.TrNameS \"Journey\"#)\nAbsBinds [] []\n  {Exports: [classify <= classify\n               wrap: <>]\n   Exported types: classify :: Int -> String\n                   [LclId]\n   Binds: classify n\n            = case compare @Int $dOrd n 0 of\n                LT{EvBinds{}} -> \"negative\"\n                EQ{EvBinds{}} -> \"zero\"\n                GT{EvBinds{}} -> positive\n            where\n                AbsBinds [] []\n                  {Exports: [positive <= positive\n                               wrap: <>]\n                   Exported types: positive :: String\n                                   [LclId]\n                   Binds: positive = if n > 100 then \"big\" else \"small\"\n                   Evidence: [EvBinds{[W] $dOrd = GHC.Internal.Classes.$fOrdInt\n                                      [W] $dNum = GHC.Internal.Num.$fNumInt}]}\n   Evidence: [EvBinds{}]}\nAbsBinds [] []\n  {Exports: [describe <= describe\n               wrap: <>]\n   Exported types: describe :: forall a. Show a => a -> String\n                   [LclId]\n   Binds: describe x = \"value: \" ++ show x\n   Evidence: [EvBinds{}]}"
+    },
+    "types": {
+      "readable": "TYPE SIGNATURES\n  classify :: Int -> String\n  describe :: forall a. Show a => a -> String\nDependent modules: []\nDependent packages: [(normal, base-4.22.0.0)]",
+      "full": "TYPE SIGNATURES\n  classify :: Int -> String\n  describe :: forall a. Show a => a -> String\nDependent modules: []\nDependent packages: [(normal, base-4.22.0.0)]"
     },
     "core-desugared": {
       "readable": "Result size of Desugar (after optimization)\n  = {terms: 43, types: 19, coercions: 0, joins: 0/0}\n\n-- RHS size: {terms: 9, types: 6, coercions: 0, joins: 0/0}\ndescribe :: forall a. Show a => a -> String\ndescribe\n  = \\ (@a) ($dShow :: Show a) (x :: a) ->\n      ++ (unpackCString# \"value: \"#) (show $dShow x)\n\n-- RHS size: {terms: 5, types: 0, coercions: 0, joins: 0/0}\n$trModule :: Module\n$trModule = Module (TrNameS \"main\"#) (TrNameS \"Journey\"#)\n\n-- RHS size: {terms: 26, types: 5, coercions: 0, joins: 0/0}\nclassify :: Int -> String\nclassify\n  = \\ (n :: Int) ->\n      case compare $fOrdInt n (I# 0#) of {\n        LT -> unpackCString# \"negative\"#;\n        EQ -> unpackCString# \"zero\"#;\n        GT ->\n          case > $fOrdInt n (I# 100#) of {\n            False -> unpackCString# \"small\"#;\n            True -> unpackCString# \"big\"#\n          }\n      }",
@@ -32,8 +36,8 @@
     }
   },
   "ghcVersion": "9.14.1",
-  "ghcPath": "vendor/ghc/_build/stage1/bin/ghc",
-  "ghcStage": "2",
+  "ghcPath": "/home/runner/.ghcup/bin/ghc",
+  "ghcStage": "external",
   "pinnedVersion": "9.14.1",
   "stale": false
 }
