@@ -10,8 +10,9 @@ import { join } from 'node:path';
 import { Code } from 'astro:components';
 import Base from '../layouts/Base.astro';
 import ExampleExplorer from '../components/ExampleExplorer.astro';
-import FunctionLedger from '../components/FunctionLedger.astro';
+import CallPath from '../components/CallPath.astro';
 import NoteCard from '../components/NoteCard.astro';
+import TypeSpine from '../components/TypeSpine.astro';
 import { chapterHref, withBase } from '../lib/paths';
 
 const journey = JSON.parse(readFileSync(join(process.cwd(), 'data', 'journey.json'), 'utf8'));
@@ -19,8 +20,8 @@ const source = readFileSync(join(process.cwd(), 'examples', 'Journey.hs'), 'utf8
 
 const byId = Object.fromEntries(journey.phases.map((p: any) => [p.id, p]));
 
-/** Ledger rows for one phase. */
-const ledger = (id: string) => byId[id]?.functions ?? [];
+/** The verified call path(s) for one phase. */
+const paths = (id: string) => byId[id]?.paths ?? [];
 ---
 
 <Base
@@ -31,9 +32,13 @@ const ledger = (id: string) => byId[id]?.functions ?? [];
 
   <p class="lede">
     This page takes one small module and walks it through the compiler, phase by phase. Each
-    section shows what the phase actually produced for this module, and names the functions in
-    GHC that did the work, linked to their definitions in <code>{journey.generatedFrom.tag}</code>.
-    Read it once and you will know where each phase lives in the source.
+    section shows what the phase actually produced for this module, and the <em>path</em> the
+    compiler takes through its own source to do it: the chain of calls from the driver down to
+    the function that touches your expression, every step linked to its definition in
+    <code>{journey.generatedFrom.tag}</code>. Every caller-to-callee edge shown is verified
+    against that source when the data is generated, so the paths cannot quietly drift from the
+    code. Read it once and you will know where each phase lives; follow a path with the links
+    and you are navigating GHC itself.
   </p>
 
   <p>
@@ -46,7 +51,9 @@ const ledger = (id: string) => byId[id]?.functions ?? [];
 
   <Code code={source.trim()} lang="haskell" themes={{ light: 'github-light', dark: 'github-dark' }} />
 
-  <section>
+  <TypeSpine />
+
+  <section id="phase-parse">
     <h2>1. Parsing</h2>
     <p>
       The lexer turns characters into tokens, applying the layout algorithm: the indentation
@@ -60,12 +67,12 @@ const ledger = (id: string) => byId[id]?.functions ?? [];
       stages={['parsed-ast', 'parsed']}
       caption="The raw tree, and the same tree printed back as Haskell. Note what layout became."
     />
-    <FunctionLedger rows={ledger('parse')} />
+    <CallPath paths={paths('parse')} />
     <NoteCard id="GHC.Parser.PostProcess.ambiguous-syntactic-categories" clamp={20} />
     <p class="onward">Depth: <a href={chapterHref('parser')}>the parser chapter</a>.</p>
   </section>
 
-  <section>
+  <section id="phase-rename">
     <h2>2. Renaming</h2>
     <p>
       The renamer decides what every name refers to. In the readable view the program looks almost
@@ -81,11 +88,11 @@ const ledger = (id: string) => byId[id]?.functions ?? [];
       stages={['renamed']}
       caption="Same program, but every occurrence now points at one specific entity."
     />
-    <FunctionLedger rows={ledger('rename')} />
+    <CallPath paths={paths('rename')} />
     <p class="onward">Depth: <a href={chapterHref('renamer')}>the renamer chapter</a>.</p>
   </section>
 
-  <section>
+  <section id="phase-typecheck">
     <h2>3. Typechecking</h2>
     <p>
       The typechecker walks the module writing down what must be true: <code>show x</code> needs
@@ -101,7 +108,14 @@ const ledger = (id: string) => byId[id]?.functions ?? [];
       stages={['typechecked']}
       caption="The elaborated program. The solved constraints are here, but you will see them in Core."
     />
-    <FunctionLedger rows={ledger('typecheck')} />
+    <CallPath paths={paths('typecheck')} />
+    <p>
+      The descent stops at <code>tcGRHSs</code> because from there generic walkers carry every
+      right-hand side into <code>tcExpr</code>, which is why it appears as its own root: it is
+      where all roads land. To watch this path executing rather than reading it, the
+      <a href={withBase('/traces/')}>Traces page</a> shows <code>-ddump-tc-trace</code> for a
+      module small enough to follow.
+    </p>
     <NoteCard id="GHC.Tc.Gen.HsType.bidirectional-type-checking" clamp={18} />
     <p class="onward">
       Depth: <a href={chapterHref('typechecker')}>the typechecker</a> and
@@ -109,7 +123,7 @@ const ledger = (id: string) => byId[id]?.functions ?? [];
     </p>
   </section>
 
-  <section>
+  <section id="phase-desugar">
     <h2>4. Desugaring</h2>
     <p>
       Now the evidence is a term you can point at. <code>describe</code> has grown a second
@@ -124,12 +138,12 @@ const ledger = (id: string) => byId[id]?.functions ?? [];
       stages={['core-desugared']}
       caption="All of Haskell reduced to Core. The dictionary argument $dShow is the typechecker's work made visible."
     />
-    <FunctionLedger rows={ledger('desugar')} />
+    <CallPath paths={paths('desugar')} />
     <NoteCard id="GHC.HsToCore.Pmc.long-distance-information" clamp={18} />
     <p class="onward">Depth: <a href={chapterHref('desugarer')}>the desugarer chapter</a>.</p>
   </section>
 
-  <section>
+  <section id="phase-optimise">
     <h2>5. The simplifier</h2>
     <p>
       Compare the two functions now, because the optimiser treats them completely differently.
@@ -144,12 +158,12 @@ const ledger = (id: string) => byId[id]?.functions ?? [];
       stages={['core-optimised']}
       caption="One function specialised to bare primops; the other keeps its dictionary. That difference is the cost of polymorphism."
     />
-    <FunctionLedger rows={ledger('optimise')} />
+    <CallPath paths={paths('optimise')} />
     <NoteCard id="GHC.Core.Opt.Specialise.specialising-polymorphic-dictionaries" clamp={18} />
     <p class="onward">Depth: <a href={chapterHref('simplifier')}>the simplifier chapter</a>.</p>
   </section>
 
-  <section>
+  <section id="phase-stg">
     <h2>6. STG</h2>
     <p>
       In STG the memory behaviour is syntax. <code>describe</code> contains
@@ -164,12 +178,12 @@ const ledger = (id: string) => byId[id]?.functions ?? [];
       stages={['stg']}
       caption="Count the lets and you have counted the allocations."
     />
-    <FunctionLedger rows={ledger('stg')} />
+    <CallPath paths={paths('stg')} />
     <NoteCard id="GHC.CoreToStg.Prep.speculative-evaluation" clamp={18} />
     <p class="onward">Depth: <a href={chapterHref('stg')}>the STG chapter</a>.</p>
   </section>
 
-  <section>
+  <section id="phase-codegen">
     <h2>7. Code generation</h2>
     <p>
       From here each STG closure becomes a C-- procedure with explicit stack and heap
@@ -177,7 +191,7 @@ const ledger = (id: string) => byId[id]?.functions ?? [];
       interesting decisions have all been made; the chapters below follow the story into the
       runtime.
     </p>
-    <FunctionLedger rows={ledger('codegen')} />
+    <CallPath paths={paths('codegen')} />
     <p class="onward">
       Depth: <a href={chapterHref('cmm')}>the Cmm chapter</a> and
       <a href={chapterHref('rts')}>the RTS chapter</a>.

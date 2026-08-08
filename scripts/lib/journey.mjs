@@ -1,17 +1,33 @@
 /**
- * The function ledger behind the "follow one module" page: for each compiler
- * phase, the handful of real functions a new contributor should meet first.
+ * The call paths behind the "follow one module" page: for each compiler phase,
+ * the actual chain of functions GHC goes through when compiling the Journey
+ * module, nested as caller and callee.
  *
- * Every entry names a definition in the pinned GHC tree. `pattern` is matched
- * against the start of a line (column 0), because that is where Haskell
- * definitions and their signatures live; the first matching line wins. Some
- * signatures span several lines or name two functions at once, which is why a
- * few patterns are a bare name rather than `name ::`.
+ * Every node names a definition in the pinned GHC tree; `pattern` is matched
+ * at column 0 and the first hit wins. Every parent-to-child edge is verified
+ * mechanically by gen-journey.mjs: the child's name must occur in the parent's
+ * body (for .y/.x grammar files, anywhere in the file, since happy and alex
+ * wire calls through directives). A path that drifts from the real code after
+ * a re-pin therefore breaks regeneration, never the published page.
  *
- * gen-journey.mjs resolves each pattern to a line number and refuses to emit
- * anything if one no longer matches, so a re-pin that moves a function breaks
- * regeneration loudly instead of publishing a dead link.
+ * Where a descent hops through generic walkers whose plumbing would drown the
+ * reader (the match and GRHS walkers), the phase carries a second root instead
+ * of a fake edge: rnExpr and tcExpr are where every walker lands.
  */
+
+const n = (name, file, pattern, role, children = []) => ({ name, file, pattern, role, children });
+
+/** Nest nodes linearly: chain(a, b, c) makes a -> b -> c. The last node keeps its children. */
+const chain = (...nodes) =>
+  nodes.reduceRight((child, parent) => ({ ...parent, children: [...parent.children, child] }));
+
+const M = 'compiler/GHC/Driver/Main.hs';
+const TCM = 'compiler/GHC/Tc/Module.hs';
+const TCB = 'compiler/GHC/Tc/Gen/Bind.hs';
+const TCMATCH = 'compiler/GHC/Tc/Gen/Match.hs';
+const RNB = 'compiler/GHC/Rename/Bind.hs';
+const DSB = 'compiler/GHC/HsToCore/Binds.hs';
+const PIPE = 'compiler/GHC/Core/Opt/Pipeline.hs';
 
 export const LEDGER = [
   {
@@ -19,31 +35,21 @@ export const LEDGER = [
     title: 'Parsing',
     stage: 'parsed-ast',
     chapter: 'parser',
-    functions: [
-      {
-        name: 'hscParse',
-        file: 'compiler/GHC/Driver/Main.hs',
-        pattern: 'hscParse ::',
-        role: 'The driver’s entry into the phase: reads the file, runs the lexer and parser, returns the parsed module.',
-      },
-      {
-        name: 'lexer',
-        file: 'compiler/GHC/Parser/Lexer.x',
-        pattern: 'lexer, lexerDbg ::',
-        role: 'The alex-generated lexer, and home of the layout algorithm that turns indentation into virtual braces.',
-      },
-      {
-        name: 'parseModuleNoHaddock',
-        file: 'compiler/GHC/Parser.y',
-        pattern: '%name parseModuleNoHaddock',
-        role: 'The happy grammar’s entry production; GHC.Parser.parseModule is a thin wrapper around it.',
-      },
-      {
-        name: 'runPV',
-        file: 'compiler/GHC/Parser/PostProcess.hs',
-        pattern: 'runPV ::',
-        role: 'Runs the disambiguation monad in which expression-versus-pattern ambiguity is resolved after the grammar.',
-      },
+    repr: {
+      type: 'HsModule GhcPs',
+      note: 'The syntax tree as parsed: "trees that grow", parameterised by phase, names still plain strings.',
+    },
+    keyFn: 'hscParse',
+    paths: [
+      chain(
+        n('hscParse', M, 'hscParse ::', 'The driver asks for a parsed module.'),
+        n("hscParse'", M, "hscParse' ::", 'The worker: reads the file, sets up the parser state.'),
+        n('parseModule', 'compiler/GHC/Parser.y', 'parseModule ::', 'The entry point exported from the generated parser.'),
+        n('parseModuleNoHaddock', 'compiler/GHC/Parser.y', '%name parseModuleNoHaddock', 'The happy grammar entry production. Everything below it is generated.', [
+          n('lexer', 'compiler/GHC/Parser/Lexer.x', 'lexer, lexerDbg ::', 'Pulled per token by the parser; home of the layout algorithm.'),
+          n('runPV', 'compiler/GHC/Parser/PostProcess.hs', 'runPV ::', 'Runs the disambiguation monad in grammar actions, where expression-versus-pattern ambiguity is resolved.'),
+        ]),
+      ),
     ],
   },
   {
@@ -51,37 +57,28 @@ export const LEDGER = [
     title: 'Renaming',
     stage: 'renamed',
     chapter: 'renamer',
-    functions: [
-      {
-        name: 'tcRnModule',
-        file: 'compiler/GHC/Tc/Module.hs',
-        pattern: 'tcRnModule ::',
-        role: 'Drives renaming and typechecking together, one declaration group at a time.',
-      },
-      {
-        name: 'rnTopSrcDecls',
-        file: 'compiler/GHC/Tc/Module.hs',
-        pattern: 'rnTopSrcDecls ::',
-        role: 'Renames the top-level declaration groups in dependency order.',
-      },
-      {
-        name: 'rnValBindsRHS',
-        file: 'compiler/GHC/Rename/Bind.hs',
-        pattern: 'rnValBindsRHS ::',
-        role: 'Renames the right-hand sides of value bindings, collecting free variables as it goes.',
-      },
-      {
-        name: 'rnExpr',
-        file: 'compiler/GHC/Rename/Expr.hs',
-        pattern: 'rnExpr ::',
-        role: 'One equation per expression form; where each RdrName becomes a Name.',
-      },
-      {
-        name: 'lookupOccRn',
-        file: 'compiler/GHC/Rename/Env.hs',
-        pattern: 'lookupOccRn ::',
-        role: 'The lookup itself: one occurrence, resolved against everything in scope.',
-      },
+    repr: {
+      type: 'HsGroup GhcRn',
+      note: 'The same tree shape, but the phase parameter changed: every name is now a Name with a unique.',
+    },
+    keyFn: 'rnTopSrcDecls',
+    paths: [
+      chain(
+        n('tcRnModule', TCM, 'tcRnModule ::', 'One entry point drives renaming and typechecking together.'),
+        n('tcRnModuleTcRnM', TCM, 'tcRnModuleTcRnM ::', 'Sets up the module context: imports, exports, the local environment.'),
+        n('tcRnSrcDecls', TCM, 'tcRnSrcDecls ::', 'Processes the declarations, then hands the collected constraints to the solver.'),
+        n('tc_rn_src_decls', TCM, 'tc_rn_src_decls ::', 'The loop over declaration groups; Template Haskell splices force it to alternate renaming and typechecking.'),
+        n('rnTopSrcDecls', TCM, 'rnTopSrcDecls ::', 'Renames one top-level group.'),
+        n('rnSrcDecls', 'compiler/GHC/Rename/Module.hs', 'rnSrcDecls ::', 'Dispatches by declaration kind. Its signature is the phase in one line.'),
+        n('rnValBindsRHS', RNB, 'rnValBindsRHS ::', 'Right-hand sides of value bindings, collecting free variables for dependency analysis.'),
+        n('rnLBind', RNB, 'rnLBind ::', 'One located binding.'),
+        n('rnBind', RNB, 'rnBind ::', 'The binding itself.'),
+        n('rnMatchGroup', RNB, 'rnMatchGroup ::', 'Into the equations, and from here through the match walkers to every expression.'),
+      ),
+      chain(
+        n('rnExpr', 'compiler/GHC/Rename/Expr.hs', 'rnExpr ::', 'Where the walkers land: one equation per expression form.'),
+        n('lookupExprOccRn', 'compiler/GHC/Rename/Env.hs', 'lookupExprOccRn ::', 'The lookup itself: an occurrence, resolved against everything in scope.'),
+      ),
     ],
   },
   {
@@ -89,37 +86,37 @@ export const LEDGER = [
     title: 'Typechecking',
     stage: 'typechecked',
     chapter: 'typechecker',
-    functions: [
-      {
-        name: 'tcTopBinds',
-        file: 'compiler/GHC/Tc/Gen/Bind.hs',
-        pattern: 'tcTopBinds ::',
-        role: 'Typechecks top-level bindings and decides what gets generalised.',
-      },
-      {
-        name: 'tcExpr',
-        file: 'compiler/GHC/Tc/Gen/Expr.hs',
-        pattern: 'tcExpr ::',
-        role: 'One equation per expression form: constraint generation for terms.',
-      },
-      {
-        name: 'tcApp',
-        file: 'compiler/GHC/Tc/Gen/App.hs',
-        pattern: 'tcApp ::',
-        role: 'Applications, including the instantiation of polymorphic functions.',
-      },
-      {
-        name: 'simplifyTop',
-        file: 'compiler/GHC/Tc/Solver.hs',
-        pattern: 'simplifyTop ::',
-        role: 'Hands the collected WantedConstraints to the solver once the module has been walked.',
-      },
-      {
-        name: 'solveWanteds',
-        file: 'compiler/GHC/Tc/Solver/Solve.hs',
-        pattern: 'solveWanteds ::',
-        role: 'The solver loop: work list in, inert set maintained, residual constraints out.',
-      },
+    repr: {
+      type: 'LHsBinds GhcTc',
+      note: 'The third growth of the tree: every node knows its type, and evidence bindings have appeared.',
+    },
+    keyFn: 'tcTopBinds',
+    paths: [
+      chain(
+        n('tc_rn_src_decls', TCM, 'tc_rn_src_decls ::', 'The same loop that renamed the group now typechecks it.'),
+        n('tcTopSrcDecls', TCM, 'tcTopSrcDecls ::', 'One renamed group, typechecked kind by kind.'),
+        n('tcTopBinds', TCB, 'tcTopBinds ::', 'The value bindings.'),
+        n('tcValBinds', TCB, 'tcValBinds ::', 'Brings signatures into scope, then the groups.'),
+        n('tcBindGroups', TCB, 'tcBindGroups ::', 'Strongly-connected groups, in dependency order.'),
+        n('tc_group', TCB, 'tc_group ::', 'One group, recursive or not.'),
+        n('tcPolyBinds', TCB, 'tcPolyBinds ::', 'Decides how to generalise the group.'),
+        n('tcPolyCheck', TCB, 'tcPolyCheck ::', 'The path taken here, because both Journey functions have signatures: check against the signature, no inference needed.'),
+        n('tcFunBindMatches', TCMATCH, 'tcFunBindMatches ::', 'A function binding’s equations against its type.'),
+        n('tcMatches', TCMATCH, 'tcMatches ::', 'All equations get the same type.'),
+        n('tcMatch', TCMATCH, 'tcMatch ::', 'One equation: patterns, then right-hand sides.'),
+        n('tcGRHSs', TCMATCH, 'tcGRHSs ::', 'Guards and bodies; from here the walkers reach every expression.'),
+      ),
+      chain(
+        n('tcExpr', 'compiler/GHC/Tc/Gen/Expr.hs', 'tcExpr ::', 'Where the walkers land: one equation per expression form, generating constraints.', [
+          n('tcCaseMatches', TCMATCH, 'tcCaseMatches ::', 'Case alternatives: classify’s three branches are checked here.'),
+        ]),
+        n('tcApp', 'compiler/GHC/Tc/Gen/App.hs', 'tcApp ::', 'Applications, including instantiation: this is what show x goes through.'),
+      ),
+      chain(
+        n('simplifyTop', 'compiler/GHC/Tc/Solver.hs', 'simplifyTop ::', 'After the walk: the collected WantedConstraints go to the solver.'),
+        n('simplifyTopWanteds', 'compiler/GHC/Tc/Solver.hs', 'simplifyTopWanteds ::', 'The top-level solving strategy, including defaulting.'),
+        n('solveWanteds', 'compiler/GHC/Tc/Solver/Solve.hs', 'solveWanteds ::', 'The solver loop: work list in, inert set maintained, residual constraints out.'),
+      ),
     ],
   },
   {
@@ -127,31 +124,25 @@ export const LEDGER = [
     title: 'Desugaring',
     stage: 'core-desugared',
     chapter: 'desugarer',
-    functions: [
-      {
-        name: 'deSugar',
-        file: 'compiler/GHC/HsToCore.hs',
-        pattern: 'deSugar ::',
-        role: 'The phase entry: elaborated Haskell in, Core out.',
-      },
-      {
-        name: 'dsTopLHsBinds',
-        file: 'compiler/GHC/HsToCore/Binds.hs',
-        pattern: 'dsTopLHsBinds ::',
-        role: 'Top-level bindings, including the evidence bindings the solver left behind.',
-      },
-      {
-        name: 'dsExpr',
-        file: 'compiler/GHC/HsToCore/Expr.hs',
-        pattern: 'dsExpr ::',
-        role: 'One equation per expression form, each returning plain Core.',
-      },
-      {
-        name: 'matchWrapper',
-        file: 'compiler/GHC/HsToCore/Match.hs',
-        pattern: 'matchWrapper',
-        role: 'The pattern-match compiler: equations and guards become case trees.',
-      },
+    repr: {
+      type: 'CoreProgram',
+      note: 'A different language entirely: a handful of constructors, and no sugar left.',
+    },
+    keyFn: 'dsTopLHsBinds',
+    paths: [
+      chain(
+        n('hscDesugar', M, 'hscDesugar ::', 'The driver moves to Core.'),
+        n("hscDesugar'", M, "hscDesugar' ::", 'The worker behind the -Werror-safe wrapper.'),
+        n('deSugar', 'compiler/GHC/HsToCore.hs', 'deSugar ::', 'The phase entry: elaborated Haskell in, Core out.'),
+        n('dsTopLHsBinds', DSB, 'dsTopLHsBinds ::', 'Top-level bindings, including the evidence the solver left behind.'),
+        n('dsLHsBinds', DSB, 'dsLHsBinds ::', 'The list.'),
+        n('dsLHsBind', DSB, 'dsLHsBind ::', 'One located binding.'),
+        n('dsHsBind', DSB, 'dsHsBind ::', 'The binding itself; AbsBinds is where dictionary abstraction becomes a lambda.'),
+        n('dsLExpr', 'compiler/GHC/HsToCore/Expr.hs', 'dsLExpr ::', 'Into the expression.'),
+        n('dsExpr', 'compiler/GHC/HsToCore/Expr.hs', 'dsExpr ::', 'One equation per expression form, each returning plain Core.'),
+        n('matchWrapper', 'compiler/GHC/HsToCore/Match.hs', 'matchWrapper', 'The pattern-match compiler’s front door.'),
+        n('match', 'compiler/GHC/HsToCore/Match.hs', 'match ::', 'Equations and guards become case trees; classify’s case is compiled here.'),
+      ),
     ],
   },
   {
@@ -159,37 +150,25 @@ export const LEDGER = [
     title: 'The simplifier',
     stage: 'core-optimised',
     chapter: 'simplifier',
-    functions: [
-      {
-        name: 'getCoreToDo',
-        file: 'compiler/GHC/Core/Opt/Pipeline.hs',
-        pattern: 'getCoreToDo ::',
-        role: 'Builds the list of passes the middle end will run at this optimisation level.',
-      },
-      {
-        name: 'simplifyPgm',
-        file: 'compiler/GHC/Core/Opt/Simplify.hs',
-        pattern: 'simplifyPgm ::',
-        role: 'One simplifier run: local rewrites applied everywhere, to a fixed point or the iteration cap.',
-      },
-      {
-        name: 'occurAnalysePgm',
-        file: 'compiler/GHC/Core/Opt/OccurAnal.hs',
-        pattern: 'occurAnalysePgm ::',
-        role: 'Answers how each binder is used; nearly every inlining decision consults it.',
-      },
-      {
-        name: 'dmdAnalProgram',
-        file: 'compiler/GHC/Core/Opt/DmdAnal.hs',
-        pattern: 'dmdAnalProgram ::',
-        role: 'Demand analysis: which arguments are certain to be evaluated.',
-      },
-      {
-        name: 'wwTopBinds',
-        file: 'compiler/GHC/Core/Opt/WorkWrap.hs',
-        pattern: 'wwTopBinds ::',
-        role: 'Worker/wrapper: turns demand information into unboxed workers.',
-      },
+    repr: {
+      type: 'CoreProgram',
+      note: 'Same type in, same type out. The entire middle end is Core to Core.',
+    },
+    keyFn: 'simplifyPgm',
+    paths: [
+      chain(
+        n('hscSimplify', M, 'hscSimplify ::', 'The driver hands Core to the middle end.'),
+        n("hscSimplify'", M, "hscSimplify' ::", 'The worker, with plugins loaded.'),
+        n('core2core', PIPE, 'core2core ::', 'The middle end as a whole.', [
+          n('getCoreToDo', PIPE, 'getCoreToDo ::', 'Builds the pass list for this optimisation level. Read it to learn what -O actually means.'),
+        ]),
+        n('runCorePasses', PIPE, 'runCorePasses ::', 'Folds the program through the passes.'),
+        n('doCorePass', PIPE, 'doCorePass ::', 'Dispatches one pass.'),
+        n('simplifyPgm', 'compiler/GHC/Core/Opt/Simplify.hs', 'simplifyPgm ::', 'One simplifier run: rewrites applied everywhere, to a fixed point or the iteration cap.', [
+          n('occurAnalysePgm', 'compiler/GHC/Core/Opt/OccurAnal.hs', 'occurAnalysePgm ::', 'Runs before each iteration; nearly every inlining decision consults its output.'),
+        ]),
+        n('simplTopBinds', 'compiler/GHC/Core/Opt/Simplify/Iteration.hs', 'simplTopBinds ::', 'Walks every top-level binding; the rewrites live under it.'),
+      ),
     ],
   },
   {
@@ -197,25 +176,22 @@ export const LEDGER = [
     title: 'STG',
     stage: 'stg',
     chapter: 'stg',
-    functions: [
-      {
-        name: 'corePrepPgm',
-        file: 'compiler/GHC/CoreToStg/Prep.hs',
-        pattern: 'corePrepPgm ::',
-        role: 'Normalises Core to A-normal form so the translation to STG is total.',
-      },
-      {
-        name: 'coreToStg',
-        file: 'compiler/GHC/CoreToStg.hs',
-        pattern: 'coreToStg ::',
-        role: 'The translation itself; on the far side of it, a let is an allocation.',
-      },
-      {
-        name: 'unarise',
-        file: 'compiler/GHC/Stg/Unarise.hs',
-        pattern: 'unarise ::',
-        role: 'Flattens unboxed tuples and sums away before code generation.',
-      },
+    repr: {
+      type: '[StgTopBinding]',
+      note: 'Operational at last: closures with listed free variables, update flags, saturated applications.',
+    },
+    keyFn: 'coreToStg',
+    paths: [
+      chain(
+        n('hscGenHardCode', M, 'hscGenHardCode ::', 'The driver’s back-end entry: everything from optimised Core to object code.', [
+          n('corePrepPgm', 'compiler/GHC/CoreToStg/Prep.hs', 'corePrepPgm ::', 'Normalises Core to A-normal form; describe_sat in the dump is its work.'),
+        ]),
+        n('myCoreToStg', M, 'myCoreToStg ::', 'The Core-to-STG leg.', [
+          n('coreToStg', 'compiler/GHC/CoreToStg.hs', 'coreToStg ::', 'The translation itself; on the far side, a let is an allocation.'),
+        ]),
+        n('stg2stg', 'compiler/GHC/Stg/Pipeline.hs', 'stg2stg ::', 'The STG-to-STG pass pipeline.'),
+        n('unarise', 'compiler/GHC/Stg/Unarise.hs', 'unarise ::', 'Flattens unboxed tuples and sums away.'),
+      ),
     ],
   },
   {
@@ -223,28 +199,39 @@ export const LEDGER = [
     title: 'Code generation',
     stage: null,
     chapter: 'cmm',
-    functions: [
-      {
-        name: 'codeGen',
-        file: 'compiler/GHC/StgToCmm.hs',
-        pattern: 'codeGen ::',
-        role: 'STG into C--, one closure at a time.',
-      },
-      {
-        name: 'cmmPipeline',
-        file: 'compiler/GHC/Cmm/Pipeline.hs',
-        pattern: 'cmmPipeline',
-        role: 'The C-- optimisation pipeline: stack layout and proc-point splitting.',
-      },
-      {
-        name: 'nativeCodeGen',
-        file: 'compiler/GHC/CmmToAsm.hs',
-        pattern: 'nativeCodeGen ::',
-        role: 'Instruction selection, register allocation, assembly out.',
-      },
+    repr: {
+      type: 'CmmGroup',
+      note: 'An imperative program: procedures, an explicit stack, registers and jumps.',
+    },
+    keyFn: 'codeGen',
+    paths: [
+      n('hscGenHardCode', M, 'hscGenHardCode ::', 'The same back-end entry, continuing past STG.', [
+        chain(
+          n('doCodeGen', M, 'doCodeGen ::', 'STG to C--, as a stream.', [
+            n('codeGen', 'compiler/GHC/StgToCmm.hs', 'codeGen ::', 'One closure at a time.'),
+          ]),
+          n('cmmPipeline', 'compiler/GHC/Cmm/Pipeline.hs', 'cmmPipeline', 'The C-- optimisation pipeline: stack layout, proc-point splitting.'),
+        ),
+        chain(
+          n('codeOutput', 'compiler/GHC/Driver/CodeOutput.hs', 'codeOutput', 'Writes whatever the target wants: assembly, LLVM, C.'),
+          n('outputAsm', 'compiler/GHC/Driver/CodeOutput.hs', 'outputAsm ::', 'The native-assembly branch.'),
+          n('nativeCodeGen', 'compiler/GHC/CmmToAsm.hs', 'nativeCodeGen ::', 'Instruction selection, register allocation, assembly out.'),
+        ),
+      ]),
     ],
   },
 ];
+
+/** Depth-first flatten of a phase's paths. */
+export function flattenPaths(paths) {
+  const out = [];
+  const walk = (node) => {
+    out.push(node);
+    for (const c of node.children) walk(c);
+  };
+  for (const root of paths) walk(root);
+  return out;
+}
 
 /**
  * First line (1-based) starting at column 0 with `pattern`, or null.
@@ -260,20 +247,87 @@ export function resolveDefinition(source, pattern) {
 }
 
 /**
- * Resolve every ledger entry via `readSource(file) -> string | null`.
- * Returns { phases, unresolved }; the caller decides that unresolved entries
- * are fatal. Pure apart from the injected reader, so tests need no checkout.
+ * The definition's own text, starting at `line` (1-based): the first line plus
+ * any indented continuation lines. Multi-line Haskell signatures indent their
+ * continuations, so this captures `matchWrapper\n  :: HsMatchContext ...` in
+ * full while stopping cleanly at the next top-level line or a blank. Capped so
+ * a surprise never embeds pages of source in the JSON.
+ */
+export function extractSignature(source, line, cap = 10) {
+  const lines = source.split('\n');
+  const out = [lines[line - 1]];
+  for (let i = line; i < lines.length && out.length < cap; i++) {
+    const l = lines[i];
+    if (l.trim() === '' || !/^[ \t]/.test(l)) break;
+    out.push(l);
+  }
+  return out.join('\n').trimEnd();
+}
+
+/**
+ * Everything that belongs to `name` at the top level of a module: every
+ * column-0 region that starts with the name (signature, each equation, their
+ * indented continuations). GHC interleaves helper definitions and comment
+ * prose between a function's equations, so a single start-to-next-definition
+ * slice misses real code; collecting all regions does not.
+ */
+export function functionBody(source, name) {
+  const lines = source.split('\n');
+  const out = [];
+  let inRegion = false;
+  const starts = new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\w'])`);
+  for (const l of lines) {
+    if (starts.test(l)) inRegion = true;
+    else if (/^\S/.test(l)) inRegion = false;
+    if (inRegion) out.push(l);
+  }
+  return out.join('\n');
+}
+
+/** Does `body` mention `callee` as a standalone name (qualified calls count)? */
+export function mentions(body, callee) {
+  const esc = callee.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`(?<![\\w'])${esc}(?![\\w'])`).test(body);
+}
+
+/**
+ * Resolve every node via `readSource(file) -> string | null` and verify every
+ * caller-to-callee edge. Grammar and lexer files (.y/.x) are checked at file
+ * scope, because happy and alex wire calls through directives rather than
+ * Haskell bodies. Returns { phases, unresolved, unverified }; the caller
+ * decides both lists are fatal. Pure apart from the injected reader.
  */
 export function resolveLedger(ledger, readSource) {
   const unresolved = [];
+  const unverified = [];
+
+  const resolveNode = (node) => {
+    const source = readSource(node.file);
+    const line = source == null ? null : resolveDefinition(source, node.pattern);
+    if (line == null) unresolved.push(`${node.name} (${node.file}: "${node.pattern}")`);
+    const signature = line == null ? null : extractSignature(source, line);
+
+    const parentScope =
+      source == null
+        ? null
+        : node.file.endsWith('.y') || node.file.endsWith('.x')
+          ? source
+          : functionBody(source, node.name);
+
+    const children = node.children.map((child) => {
+      if (parentScope != null && !mentions(parentScope, child.name)) {
+        unverified.push(`${node.name} -> ${child.name} (${node.file})`);
+      }
+      return resolveNode(child);
+    });
+
+    return { ...node, line, signature, children };
+  };
+
   const phases = ledger.map((phase) => ({
     ...phase,
-    functions: phase.functions.map((fn) => {
-      const source = readSource(fn.file);
-      const line = source == null ? null : resolveDefinition(source, fn.pattern);
-      if (line == null) unresolved.push(`${fn.name} (${fn.file}: "${fn.pattern}")`);
-      return { ...fn, line };
-    }),
+    paths: phase.paths.map(resolveNode),
   }));
-  return { phases, unresolved };
+
+  return { phases, unresolved, unverified };
 }

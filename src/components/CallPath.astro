@@ -1,0 +1,117 @@
+---
+/**
+ * The call path a phase actually takes through GHC, rendered as a nested
+ * tree: caller above, callee below. Every parent-to-child edge shown here
+ * was verified against the pinned source by gen-journey.mjs, so this is the
+ * real route, not a summary.
+ */
+interface Node {
+  name: string;
+  file: string;
+  line: number;
+  role: string;
+  url: string;
+  children: Node[];
+}
+
+interface Props {
+  paths?: Node[];
+  /** Internal: a single subtree during recursion. */
+  node?: Node;
+  depth?: number;
+}
+
+const { paths, node, depth = 0 } = Astro.props;
+const Self = Astro.self;
+---
+
+{
+  paths ? (
+    <div class="callpath">
+      <div class="callpath-title">The path the compiler takes</div>
+      {paths.map((root) => (
+        <ul class="root">
+          <Self node={root} depth={0} />
+        </ul>
+      ))}
+    </div>
+  ) : node ? (
+    <li>
+      <div class="row">
+        <span class="fn">
+          <a href={node.url}>
+            <code>{node.name}</code>
+          </a>
+          <span class="loc">{node.file.replace('compiler/GHC/', '')}:{node.line}</span>
+        </span>
+        <span class="role">{node.role}</span>
+      </div>
+      {node.children.length > 0 && (
+        <ul>
+          {node.children.map((c) => (
+            <Self node={c} depth={depth + 1} />
+          ))}
+        </ul>
+      )}
+    </li>
+  ) : null
+}
+
+<style>
+  .callpath {
+    margin: 1.5rem 0;
+    border: 1px solid var(--rule, #ddd);
+    border-radius: 6px;
+    padding: 0.9rem 1.1rem;
+    overflow-x: auto;
+  }
+  .callpath-title {
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    opacity: 0.7;
+    margin-bottom: 0.6rem;
+  }
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  ul.root + ul.root {
+    margin-top: 0.9rem;
+    padding-top: 0.9rem;
+    border-top: 1px dashed var(--rule, #ddd);
+  }
+  li li {
+    /* The descent: each callee steps in under its caller along a guide line. */
+    margin-left: 0.55rem;
+    padding-left: 0.9rem;
+    border-left: 1px solid var(--rule, #ddd);
+  }
+  .row {
+    display: grid;
+    grid-template-columns: minmax(15rem, 22rem) 1fr;
+    gap: 0.2rem 1rem;
+    align-items: baseline;
+    padding: 0.18rem 0;
+  }
+  @media (max-width: 44rem) {
+    .row {
+      grid-template-columns: 1fr;
+    }
+  }
+  .fn {
+    white-space: nowrap;
+  }
+  .loc {
+    font-family: var(--font-mono, monospace);
+    font-size: 0.7rem;
+    opacity: 0.55;
+    margin-left: 0.5rem;
+  }
+  .role {
+    font-size: 0.85rem;
+    opacity: 0.9;
+  }
+</style>

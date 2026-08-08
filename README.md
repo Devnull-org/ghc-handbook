@@ -30,7 +30,7 @@ scripts/
   gen-journey.mjs       resolves the function ledger -> data/journey.json
   lib/notes.mjs         the Note parser (unit-tested)
   lib/trace.mjs         the trace-to-tree parser (unit-tested)
-  lib/journey.mjs       the journey page's function ledger (unit-tested)
+  lib/journey.mjs       the journey page's verified call paths (unit-tested)
   lib/toolchain.mjs     compiler lookup + version/stage guards, shared by both generators
   lib/walk.mjs          source discovery + the build-output exclusions
 examples/               small .hs programs the site shows compiler output for
@@ -106,10 +106,11 @@ references that could not be resolved. Most of those are GHC's own drift, where 
 Note was renamed or removed and the comments pointing at it were left behind.
 
 `npm run regen` also runs `gen-journey.mjs`, which resolves the "follow one
-module" page's function ledger (`scripts/lib/journey.mjs`) to exact line numbers
-in the checkout and writes `data/journey.json`. It refuses to write anything if
-a ledger pattern no longer matches, so a re-pin that moves a function breaks
-regeneration loudly instead of publishing a dead link.
+module" page's call paths (`scripts/lib/journey.mjs`) to exact line numbers in
+the checkout, verifies every caller-to-callee edge by checking the callee is
+really mentioned in the caller's body, and writes `data/journey.json`. A
+function that moved or a call that no longer exists breaks regeneration loudly
+instead of publishing a dead link or a fictional path.
 
 `fetch-ghc-src.sh` refuses to proceed if `vendor/ghc` is not at the commit in
 `ghc-pin.json`, since extracting from a different tree would produce line numbers

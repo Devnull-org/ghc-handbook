@@ -1,0 +1,319 @@
+---
+/**
+ * The animated spine of the journey page: the program's representation type
+ * at every phase, the real signature of the function that produced it, and a
+ * glimpse of the actual dump. Data comes from data/journey.json (types and
+ * signatures resolved against the pinned tree) and data/dumps/Journey.json
+ * (the module's real output), so nothing shown here is hand-maintained.
+ *
+ * Autoplays once when scrolled into view, stops on any interaction, and does
+ * not animate at all under prefers-reduced-motion. Without JavaScript every
+ * panel renders stacked, so the content survives.
+ */
+import { readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+
+const journey = JSON.parse(readFileSync(join(process.cwd(), 'data', 'journey.json'), 'utf8'));
+const dumpPath = join(process.cwd(), 'data', 'dumps', 'Journey.json');
+const dumps = existsSync(dumpPath) ? JSON.parse(readFileSync(dumpPath, 'utf8')) : null;
+const source = readFileSync(join(process.cwd(), 'examples', 'Journey.hs'), 'utf8');
+
+const EXCERPT_LINES = 9;
+
+function excerpt(stage: string | null): string | null {
+  if (!stage || !dumps) return null;
+  const text: string | undefined = dumps.stages?.[stage]?.readable ?? dumps.stages?.[stage]?.full;
+  if (!text) return null;
+  const lines = text.split('\n').filter((l: string, i: number) => i > 0 || l.trim() !== '');
+  const cut = lines.slice(0, EXCERPT_LINES);
+  return cut.join('\n') + (lines.length > EXCERPT_LINES ? '\n…' : '');
+}
+
+interface Step {
+  id: string;
+  label: string;
+  type: string;
+  note: string;
+  fn: { name: string; signature: string; url: string } | null;
+  excerpt: string | null;
+  anchor: string | null;
+}
+
+const steps: Step[] = [
+  {
+    id: 'source',
+    label: 'Source',
+    type: 'Text',
+    note: 'Ten lines of Haskell. Everything below is this module, seen through GHC.',
+    fn: null,
+    excerpt: source.trim().split('\n').slice(0, EXCERPT_LINES).join('\n'),
+    anchor: null,
+  },
+  ...journey.phases.map((p: any): Step => {
+    const key = p.functions.find((f: any) => f.name === p.keyFn);
+    return {
+      id: p.id,
+      label: p.title,
+      type: p.repr.type,
+      note: p.repr.note,
+      fn: key ? { name: key.name, signature: key.signature, url: key.url } : null,
+      excerpt: excerpt(p.stage),
+      anchor: `#phase-${p.id}`,
+    };
+  }),
+];
+---
+
+<div class="spine" id="type-spine">
+  <div class="spine-head">
+    <h2>The shape of the program</h2>
+    <p>
+      Each phase hands the next a different type. Watch the module change representation, and
+      read the signature of the function that does it: the types below are extracted from
+      <code>{journey.generatedFrom.tag}</code> itself.
+    </p>
+  </div>
+
+  <div class="rail" role="tablist" aria-label="Compiler phases">
+    {
+      steps.map((s, i) => (
+        <button
+          class:list={['stop', { active: i === 0 }]}
+          role="tab"
+          aria-selected={i === 0 ? 'true' : 'false'}
+          data-step={i}
+        >
+          <span class="stop-label">{s.label}</span>
+          <code class="stop-type">{s.type}</code>
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="panels">
+    {
+      steps.map((s, i) => (
+        <div class:list={['panel', { active: i === 0 }]} data-panel={i} role="tabpanel">
+          <div class="panel-repr">
+            <code class="repr-type">{s.type}</code>
+            <p class="repr-note">{s.note}</p>
+          </div>
+          {s.fn && (
+            <div class="panel-fn">
+              <div class="fn-title">
+                produced by <a href={s.fn.url}><code>{s.fn.name}</code></a>
+              </div>
+              <pre class="fn-sig">{s.fn.signature}</pre>
+            </div>
+          )}
+          {s.excerpt && <pre class="panel-excerpt">{s.excerpt}</pre>}
+          {s.anchor && (
+            <p class="panel-more">
+              <a href={s.anchor}>Read this phase in full ↓</a>
+            </p>
+          )}
+        </div>
+      ))
+    }
+  </div>
+
+  <div class="controls">
+    <button data-nav="prev" aria-label="Previous phase">←</button>
+    <button data-nav="play" aria-label="Play">▶ Play</button>
+    <button data-nav="next" aria-label="Next phase">→</button>
+  </div>
+</div>
+
+<script>
+  const root = document.getElementById('type-spine');
+  if (root) {
+    const stops = [...root.querySelectorAll<HTMLButtonElement>('[data-step]')];
+    const panels = [...root.querySelectorAll<HTMLElement>('[data-panel]')];
+    const play = root.querySelector<HTMLButtonElement>('[data-nav="play"]')!;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let current = 0;
+    let timer: number | null = null;
+
+    const show = (i: number) => {
+      current = (i + stops.length) % stops.length;
+      stops.forEach((s, j) => {
+        s.classList.toggle('active', j === current);
+        s.setAttribute('aria-selected', j === current ? 'true' : 'false');
+      });
+      panels.forEach((p, j) => p.classList.toggle('active', j === current));
+    };
+
+    const stop = () => {
+      if (timer != null) window.clearInterval(timer);
+      timer = null;
+      play.textContent = '▶ Play';
+    };
+
+    const start = () => {
+      stop();
+      play.textContent = '⏸ Pause';
+      timer = window.setInterval(() => {
+        if (current === stops.length - 1) stop();
+        else show(current + 1);
+      }, 4500);
+    };
+
+    stops.forEach((s, i) =>
+      s.addEventListener('click', () => {
+        stop();
+        show(i);
+      }),
+    );
+    root.querySelector('[data-nav="prev"]')!.addEventListener('click', () => {
+      stop();
+      show(current - 1);
+    });
+    root.querySelector('[data-nav="next"]')!.addEventListener('click', () => {
+      stop();
+      show(current + 1);
+    });
+    play.addEventListener('click', () => (timer == null ? start() : stop()));
+
+    if (!reduced) {
+      const once = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((e) => e.isIntersecting)) {
+            once.disconnect();
+            start();
+          }
+        },
+        { threshold: 0.4 },
+      );
+      once.observe(root);
+    }
+  }
+</script>
+
+<style>
+  .spine {
+    margin: 2.5rem 0 3rem;
+    border: 1px solid var(--border, #ddd);
+    border-radius: 8px;
+    padding: 1.4rem 1.6rem;
+  }
+  .spine-head h2 {
+    margin: 0 0 0.4rem;
+  }
+  .spine-head p {
+    margin: 0 0 1.2rem;
+    font-size: 0.95rem;
+  }
+
+  .rail {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 1.2rem;
+  }
+  .stop {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.1rem;
+    padding: 0.4rem 0.65rem;
+    border: 1px solid var(--border, #ddd);
+    border-radius: 6px;
+    background: none;
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+    opacity: 0.75;
+  }
+  .stop.active {
+    opacity: 1;
+    border-color: currentColor;
+  }
+  .stop-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .stop-type {
+    font-size: 0.78rem;
+  }
+
+  .panels {
+    position: relative;
+    min-height: 21rem;
+  }
+  .panel {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transform: translateY(0.4rem);
+    transition:
+      opacity 0.45s ease,
+      transform 0.45s ease;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .panel.active {
+    position: relative;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .panel {
+      transition: none;
+    }
+  }
+
+  .repr-type {
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+  .repr-note {
+    margin: 0.3rem 0 1rem;
+    font-size: 0.92rem;
+  }
+  .panel-fn {
+    margin-bottom: 1rem;
+  }
+  .fn-title {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.7;
+    margin-bottom: 0.3rem;
+  }
+  .fn-sig,
+  .panel-excerpt {
+    margin: 0;
+    padding: 0.7rem 0.9rem;
+    border: 1px solid var(--border, #ddd);
+    border-radius: 6px;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .panel-excerpt {
+    margin-top: 0.6rem;
+    opacity: 0.9;
+  }
+  .panel-more {
+    margin: 0.7rem 0 0;
+    font-size: 0.85rem;
+  }
+
+  .controls {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+  .controls button {
+    font: inherit;
+    font-size: 0.85rem;
+    padding: 0.35rem 0.8rem;
+    border: 1px solid var(--border, #ddd);
+    border-radius: 6px;
+    background: none;
+    cursor: pointer;
+  }
+</style>
