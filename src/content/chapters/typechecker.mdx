@@ -173,7 +173,7 @@ The whole of that is the next chapter.
 
 <ExampleExplorer
   example="Gadt"
-  stages={['renamed', 'typechecked', 'core-desugared']}
+  stages={['renamed', 'typechecked', 'types', 'core-desugared']}
   caption="An evaluator over a GADT. Each branch of `eval` type-checks under a different assumption, which is the whole reason this phase defers solving."
 />
 
@@ -190,6 +190,16 @@ That `co` is the Given. The fact "in this branch, `a` is `Int`" started life as
 an implication constraint here in the typechecker, was discharged by the solver,
 and survives into Core as a coercion: a term, not an annotation. The elaborated
 program carries its own proof.
+
+Before the Core, though, look at **Typechecked** itself. The output is the
+elaborated Haskell this chapter has been describing: bindings wrapped in
+`AbsBinds`, and `EvBinds` recording what the solver concluded. In the `Add`
+branch you will find `[W] $dNum = GHC.Num.$fNumInt`: a solved Wanted, still
+wearing its `[W]` tag, bound to the concrete instance that discharged it. And in
+a GADT match like `eval (Eq{co EvBinds{...}} x y)`, the `co` bound inside the
+pattern is the Given itself, exactly where it enters scope. The **Types** tab is
+the quiet summary of the same phase: every top-level type as finally inferred,
+with the `forall`s and contexts you did not write spelled out.
 
 `describe` in the same file is the contrast: no refinement, no implication, just
 a flat `Show a` Wanted that becomes a dictionary argument.

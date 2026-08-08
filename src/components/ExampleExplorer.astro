@@ -22,6 +22,7 @@ const ALL_STAGES = [
   'parsed',
   'renamed',
   'typechecked',
+  'types',
   'core-desugared',
   'core-optimised',
   'stg',
@@ -33,6 +34,7 @@ const LABELS: Record<string, string> = {
   parsed: 'Parsed',
   renamed: 'Renamed',
   typechecked: 'Typechecked',
+  types: 'Types',
   'core-desugared': 'Core (desugared)',
   'core-optimised': 'Core (optimised)',
   stg: 'STG',
@@ -43,8 +45,11 @@ const HINTS: Record<string, string> = {
   'parsed-ast':
     'The raw syntax tree, including the annotations that let GHC reprint your source exactly as written.',
   parsed: 'The same tree, pretty-printed back out as Haskell: note what layout became.',
-  renamed: 'Every name now resolved to the specific entity it refers to.',
-  typechecked: 'Types inferred, and class constraints made explicit.',
+  renamed:
+    'Every name now resolved to the specific entity it refers to. The readable view suppresses the qualifiers; flip Full detail to see them.',
+  typechecked:
+    'The elaborated program: AbsBinds wrappers, dictionary arguments at call sites, and Evidence lines naming the instance each solved constraint resolved to.',
+  types: 'Every top-level type as the typechecker finally inferred it, hidden foralls included.',
   'core-desugared': 'All of Haskell reduced to Core, before any optimisation.',
   'core-optimised': 'The same program after the simplifier has run.',
   stg: 'Allocation and evaluation made explicit, ready for code generation.',

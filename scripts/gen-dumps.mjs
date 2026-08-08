@@ -23,6 +23,7 @@ const STAGES = [
   ['parsed', '-ddump-parsed'],
   ['renamed', '-ddump-rn'],
   ['typechecked', '-ddump-tc'],
+  ['types', '-ddump-types'],
   ['core-desugared', '-ddump-ds'],
   ['core-optimised', '-ddump-simpl'],
   ['stg', '-ddump-stg-final'],
@@ -36,7 +37,20 @@ const STAGES = [
  * (type applications, coercions, IdInfo), which is the distinction that actually
  * teaches something about Core.
  */
-const COMMON = ['-fforce-recomp', '-O', '-ddump-to-file', '-dsuppress-uniques'];
+/**
+ * `-fprint-typechecker-elaboration` is not cosmetic. Without it GHC prints the
+ * typechecked program to look like the renamed one: no AbsBinds, no EvBinds,
+ * no dictionary applications. That hides the entire point of the stage — the
+ * evidence the solver produced — and made the Typechecked tab a duplicate of
+ * the Renamed tab.
+ */
+const COMMON = [
+  '-fforce-recomp',
+  '-O',
+  '-ddump-to-file',
+  '-dsuppress-uniques',
+  '-fprint-typechecker-elaboration',
+];
 const READABLE_ONLY = [
   '-dsuppress-idinfo',
   '-dsuppress-coercions',

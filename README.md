@@ -119,8 +119,11 @@ checkout, update `commit` in `ghc-pin.json` and regenerate.
 ### Compiler dumps: needs a built GHC
 
 `data/dumps/` holds what GHC prints for each example at each stage
-(`-ddump-parsed-ast`, `-ddump-rn`, `-ddump-tc`, `-ddump-ds`, `-ddump-simpl`,
-`-ddump-stg-final`), in both a readable and a full-detail variant.
+(`-ddump-parsed-ast`, `-ddump-rn`, `-ddump-tc`, `-ddump-types`, `-ddump-ds`,
+`-ddump-simpl`, `-ddump-stg-final`), in both a readable and a full-detail
+variant. `-fprint-typechecker-elaboration` is always on: without it the
+typechecked output hides `AbsBinds`, `EvBinds` and dictionary applications,
+which are the whole point of showing that stage.
 
 ```sh
 scripts/gen-dumps.sh
