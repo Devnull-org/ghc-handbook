@@ -27,6 +27,7 @@ const paths = (id: string) => byId[id]?.paths ?? [];
 <Base
   title="Follow one module"
   description="One ten-line module, traced through every phase of GHC, with the real compiler functions named at each step."
+  width="page"
 >
   <h1>Follow one module through GHC</h1>
 
@@ -211,6 +212,15 @@ const paths = (id: string) => byId[id]?.paths ?? [];
 </Base>
 
 <style>
+  /* Text stays at the reading measure; the diagrams, explorers and Note cards
+     get the full page width, same split the chapter pages use. */
+  h1,
+  p {
+    max-width: var(--measure);
+  }
+  section > p {
+    max-width: var(--measure);
+  }
   .lede {
     font-size: 1.1rem;
     color: var(--fg-muted, inherit);

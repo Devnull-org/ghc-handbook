@@ -1,9 +1,10 @@
 ---
 /**
- * The call path a phase actually takes through GHC, rendered as a nested
- * tree: caller above, callee below. Every parent-to-child edge shown here
- * was verified against the pinned source by gen-journey.mjs, so this is the
- * real route, not a summary.
+ * The call path a phase actually takes through GHC, drawn as a vertical flow
+ * graph: caller above, callee below, an arrow for every call. Forks lay their
+ * branches side by side under a shared connector. Every edge shown here was
+ * verified against the pinned source by gen-journey.mjs, so this is the real
+ * route, not a summary.
  */
 interface Node {
   name: string;
@@ -18,10 +19,9 @@ interface Props {
   paths?: Node[];
   /** Internal: a single subtree during recursion. */
   node?: Node;
-  depth?: number;
 }
 
-const { paths, node, depth = 0 } = Astro.props;
+const { paths, node } = Astro.props;
 const Self = Astro.self;
 ---
 
@@ -29,31 +29,43 @@ const Self = Astro.self;
   paths ? (
     <div class="callpath">
       <div class="callpath-title">The path the compiler takes</div>
-      {paths.map((root) => (
-        <ul class="root">
-          <Self node={root} depth={0} />
-        </ul>
-      ))}
+      <div class="scroll">
+        {paths.map((root) => (
+          <div class="flow">
+            <Self node={root} />
+          </div>
+        ))}
+      </div>
     </div>
   ) : node ? (
-    <li>
-      <div class="row">
-        <span class="fn">
-          <a href={node.url}>
-            <code>{node.name}</code>
-          </a>
-          <span class="loc">{node.file.replace('compiler/GHC/', '')}:{node.line}</span>
-        </span>
+    <div class="chain">
+      <div class="box">
+        <a class="fn" href={node.url}>
+          <code>{node.name}</code>
+        </a>
+        <span class="loc">{node.file.replace('compiler/GHC/', '')}:{node.line}</span>
         <span class="role">{node.role}</span>
       </div>
-      {node.children.length > 0 && (
-        <ul>
-          {node.children.map((c) => (
-            <Self node={c} depth={depth + 1} />
-          ))}
-        </ul>
+      {node.children.length === 1 && (
+        <>
+          <div class="arrow" aria-hidden="true" />
+          <Self node={node.children[0]} />
+        </>
       )}
-    </li>
+      {node.children.length > 1 && (
+        <>
+          <div class="arrow no-head" aria-hidden="true" />
+          <div class="branches">
+            {node.children.map((c) => (
+              <div class="branch">
+                <div class="arrow branch-arrow" aria-hidden="true" />
+                <Self node={c} />
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
   ) : null
 }
 
@@ -62,56 +74,130 @@ const Self = Astro.self;
     margin: 1.5rem 0;
     border: 1px solid var(--rule, #ddd);
     border-radius: 6px;
-    padding: 0.9rem 1.1rem;
-    overflow-x: auto;
+    padding: 1rem 1.2rem 1.2rem;
   }
   .callpath-title {
+    font-family: var(--font-sans);
     font-weight: 600;
     font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    opacity: 0.7;
-    margin-bottom: 0.6rem;
+    color: var(--ink-muted, #666);
+    margin-bottom: 0.8rem;
   }
-  ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  .scroll {
+    overflow-x: auto;
   }
-  ul.root + ul.root {
-    margin-top: 0.9rem;
-    padding-top: 0.9rem;
+
+  .flow + .flow {
+    margin-top: 1rem;
+    padding-top: 1rem;
     border-top: 1px dashed var(--rule, #ddd);
   }
-  li li {
-    /* The descent: each callee steps in under its caller along a guide line. */
-    margin-left: 0.55rem;
-    padding-left: 0.9rem;
-    border-left: 1px solid var(--rule, #ddd);
+
+  .chain {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
   }
-  .row {
+
+  .box {
     display: grid;
-    grid-template-columns: minmax(15rem, 22rem) 1fr;
-    gap: 0.2rem 1rem;
+    grid-template-columns: auto auto;
+    gap: 0 0.7rem;
     align-items: baseline;
-    padding: 0.18rem 0;
-  }
-  @media (max-width: 44rem) {
-    .row {
-      grid-template-columns: 1fr;
-    }
+    border: 1px solid var(--rule-strong, #bbb);
+    border-radius: 5px;
+    background: var(--paper-raised, #fff);
+    padding: 0.4rem 0.7rem;
+    max-width: 34rem;
   }
   .fn {
-    white-space: nowrap;
+    text-decoration: none;
+  }
+  .fn code {
+    font-size: 0.85rem;
+    font-weight: 600;
   }
   .loc {
     font-family: var(--font-mono, monospace);
-    font-size: 0.7rem;
-    opacity: 0.55;
-    margin-left: 0.5rem;
+    font-size: 0.68rem;
+    color: var(--ink-faint, #999);
+    white-space: nowrap;
   }
   .role {
-    font-size: 0.85rem;
-    opacity: 0.9;
+    grid-column: 1 / -1;
+    font-size: 0.8rem;
+    color: var(--ink-muted, #666);
+    line-height: 1.35;
+  }
+
+  /* The call: a short stem with an arrowhead, offset into the box's left side
+     so the flow reads as a single descending spine. */
+  .arrow {
+    width: 0;
+    height: 0.9rem;
+    margin-left: 1.4rem;
+    border-left: 1.5px solid var(--rule-strong, #bbb);
+    position: relative;
+  }
+  .arrow::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: -4.5px;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 6px solid var(--rule-strong, #bbb);
+  }
+
+  .arrow.no-head {
+    height: 0.55rem;
+  }
+  .arrow.no-head::after {
+    display: none;
+  }
+
+  /* A fork: branches side by side. Each branch except the last draws the
+     segment of the horizontal bar from its own stem across the gap to the
+     next branch's stem, so the bar always ends exactly at the last stem. */
+  .branches {
+    display: flex;
+    gap: 1.4rem;
+    align-items: flex-start;
+    padding-top: 0.55rem;
+  }
+  .branch {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    position: relative;
+  }
+  .branch:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    top: -0.55rem;
+    left: 1.4rem;
+    right: -2.8rem;
+    border-top: 1.5px solid var(--rule-strong, #bbb);
+  }
+  .branch-arrow {
+    height: 1.1rem;
+    margin-top: -0.55rem;
+  }
+
+  @media (max-width: 44rem) {
+    .branches {
+      flex-direction: column;
+      gap: 0.6rem;
+      padding-top: 0;
+    }
+    .branch:not(:last-child)::before {
+      display: none;
+    }
+    .branch-arrow {
+      margin-top: 0;
+      height: 0.9rem;
+    }
   }
 </style>
