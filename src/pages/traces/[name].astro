@@ -40,8 +40,8 @@ const PAGES: Record<
         what: 'The instance lookup itself, and the dictionary it produces as evidence. This is step four of the solver loop: solve outright from a top-level instance.',
       },
       {
-        where: 'Typechecker trace → addInertCan',
-        what: 'A constraint entering the inert set, with everything already rewritten with respect to it, per the invariant the solver chapter is built around.',
+        where: 'Typechecker trace → Adding inert dict / Kept inert DictCt',
+        what: 'Constraints entering and surviving in the inert set. The paired lines are worth reading closely: [G] $dShow is the Given from the signature, [W] $dShow the Wanted from the call, same class, opposite obligations.',
       },
     ],
     chapters: [
